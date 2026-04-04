@@ -29,8 +29,25 @@ spring:
     locations: classpath:db/migration
     baseline-version: 0
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:smartwallet@example.com}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 server:
   port: 8080
+
+jwt:
+  secret: ${JWT_SECRET:smartwallet-secret-key-for-jwt-token-generation-must-be-at-least-256-bits}
+  expiration-ms: 900000
+  refresh-expiration-ms: 86400000
 
 logging:
   level:
