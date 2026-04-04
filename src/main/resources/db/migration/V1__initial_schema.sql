@@ -9,6 +9,8 @@ CREATE TABLE users (
     full_name VARCHAR(255) NOT NULL,
     cpf VARCHAR(14) UNIQUE,
     phone VARCHAR(20),
+    is_active BOOLEAN DEFAULT true,
+    email_verified BOOLEAN DEFAULT false,
     role VARCHAR(20) NOT NULL DEFAULT 'USER',
     profile_image_url VARCHAR(500),
     is_active BOOLEAN DEFAULT true,
