@@ -32,6 +32,27 @@ spring:
 server:
   port: 8080
 
+stripe:
+  api-key: ${STRIPE_API_KEY:}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+  success-url: ${STRIPE_SUCCESS_URL:http://localhost:4200/subscription/success}
+  cancel-url: ${STRIPE_CANCEL_URL:http://localhost:4200/subscription/cancel}
+
+app:
+  base-url: ${APP_BASE_URL:http://localhost:8080}
+  email:
+    from: ${EMAIL_FROM:noreply@smartwallet.app}
+    enabled: ${EMAIL_ENABLED:false}
+
+spring.mail:
+  host: ${MAIL_HOST:smtp.gmail.com}
+  port: ${MAIL_PORT:587}
+  username: ${MAIL_USERNAME:}
+  password: ${MAIL_PASSWORD:}
+  properties:
+    mail.smtp.auth: true
+    mail.smtp.starttls.enable: true
+
 logging:
   level:
     root: INFO
