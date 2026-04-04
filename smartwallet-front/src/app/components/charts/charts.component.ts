@@ -34,7 +34,7 @@ export type ChartOptions = {
           <h3 class="text-lg font-semibold text-white">Evolução do Portfólio</h3>
           <div class="flex gap-2">
             @for (benchmark of availableBenchmarks; track benchmark) {
-              <button 
+              <button
                 (click)="toggleBenchmark(benchmark)"
                 [class]="isBenchmarkActive(benchmark) ? 'bg-blue-600' : 'bg-gray-700'"
                 class="px-3 py-1 text-xs rounded-full transition-colors"
@@ -46,7 +46,7 @@ export type ChartOptions = {
             }
           </div>
         </div>
-        
+
         @if (loadingEvolution()) {
           <div class="h-80 flex items-center justify-center">
             <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -74,7 +74,7 @@ export type ChartOptions = {
       <!-- Allocation Pie Chart -->
       <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
         <h3 class="text-lg font-semibold text-white mb-4">Alocação por Tipo</h3>
-        
+
         @if (loadingAllocation()) {
           <div class="h-80 flex items-center justify-center">
             <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -101,7 +101,7 @@ export type ChartOptions = {
       <!-- Performance Bar Chart -->
       <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 col-span-1 lg:col-span-2">
         <h3 class="text-lg font-semibold text-white mb-4">Desempenho por Ativo</h3>
-        
+
         @if (loadingPerformance()) {
           <div class="h-64 flex items-center justify-center">
             <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -130,7 +130,7 @@ export type ChartOptions = {
 })
 export class ChartsComponent implements OnInit {
   @ViewChild("chart") chart: ChartComponent | undefined;
-  
+
   chartService = inject(ChartService);
 
   loadingEvolution = signal(true);
@@ -154,7 +154,7 @@ export class ChartsComponent implements OnInit {
     this.chartService.getPortfolioEvolution(90).subscribe({
       next: (data) => {
         const activeSeries = data.series.filter(s => this.activeBenchmarks().includes(s.name));
-        
+
         this.evolutionChartOptions = {
           series: activeSeries,
           chart: {
@@ -163,7 +163,6 @@ export class ChartsComponent implements OnInit {
             fontFamily: 'Inter, sans-serif',
             background: 'transparent',
             toolbar: { show: true, tools: { download: true, selection: true, zoom: true, pan: true, reset: true } },
-            animations: { enabled: true, speed: 800 }
           },
           dataLabels: { enabled: false },
           stroke: { curve: "smooth", width: 2 },
@@ -174,7 +173,7 @@ export class ChartsComponent implements OnInit {
             axisTicks: { show: false }
           },
           yaxis: {
-            labels: { 
+            labels: {
               style: { colors: '#9CA3AF' },
               formatter: (val) => (val / 1000).toFixed(1) + 'k'
             }
@@ -251,11 +250,8 @@ export class ChartsComponent implements OnInit {
           chart: { type: "bar", height: 250, fontFamily: 'Inter, sans-serif', background: 'transparent', toolbar: { show: false } },
           plotOptions: { bar: { horizontal: true, distributed: true, borderRadius: 4, barHeight: '70%' } },
           xaxis: { categories: sortedData.map((d: any) => d.x), labels: { style: { colors: '#9CA3AF' } } },
-          yaxis: { labels: { style: { colors: '#9CA3AF' }, formatter: (val: any) => Number(val).toFixed(1) + '%' } },
           colors: sortedData.map((d: any) => d.y >= 0 ? '#10B981' : '#EF4444'),
           grid: { borderColor: '#374151', strokeDashArray: 4 },
-          tooltip: { theme: 'dark', y: { formatter: (val: any) => Number(val).toFixed(2) + '%' } },
-          dataLabels: { enabled: true, style: { colors: ['#000'] }, formatter: (val: any) => Number(val).toFixed(1) + '%' },
           legend: { show: false }
         };
         this.loadingPerformance.set(false);
