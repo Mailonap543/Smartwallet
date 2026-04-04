@@ -9,14 +9,33 @@ CREATE TABLE users (
     full_name VARCHAR(255) NOT NULL,
     cpf VARCHAR(14) UNIQUE,
     phone VARCHAR(20),
+    role VARCHAR(20) NOT NULL DEFAULT 'USER',
+    profile_image_url VARCHAR(500),
     is_active BOOLEAN DEFAULT true,
     email_verified BOOLEAN DEFAULT false,
+    reset_token VARCHAR(255),
+    reset_token_expiry TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_cpf ON users(cpf);
+CREATE INDEX idx_users_reset_token ON users(reset_token);
+CREATE INDEX idx_users_role ON users(role);
+
+-- Refresh tokens table
+CREATE TABLE refresh_tokens (
+    id BIGSERIAL PRIMARY KEY,
+    token VARCHAR(255) NOT NULL UNIQUE,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    expires_at TIMESTAMP NOT NULL,
+    is_revoked BOOLEAN DEFAULT false,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens(user_id);
+CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token);
 
 -- Subscriptions table
 CREATE TABLE subscriptions (
