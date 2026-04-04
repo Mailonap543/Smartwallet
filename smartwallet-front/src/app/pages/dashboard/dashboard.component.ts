@@ -165,7 +165,7 @@ export class DashboardComponent implements OnInit {
 
   loadData() {
     this.loading.set(true);
-    
+
     this.api.getWallets().subscribe({
       next: (data) => {
         this.wallets.set(data);
@@ -197,11 +197,8 @@ export class DashboardComponent implements OnInit {
   createWallet() {
     const name = prompt('Nome da wallet:');
     if (name) {
-      this.api.createWallet({ name }).subscribe({
         next: (wallet) => {
           this.wallets.update(w => [...w, wallet]);
-        },
-        error: () => {}
       });
     }
   }
