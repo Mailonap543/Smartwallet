@@ -32,9 +32,6 @@ public class PortfolioController {
     @GetMapping("/wallets")
     public ResponseEntity<ApiResponse<List<WalletResponse>>> getWallets(
             @AuthenticationPrincipal CustomUserDetails user) {
-        if (user == null) {
-            return ResponseEntity.status(401).body(ApiResponse.success("Usuário não autenticado", null));
-        }
         List<WalletResponse> response = portfolioService.getUserWallets(user.getId());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
@@ -100,9 +97,6 @@ public class PortfolioController {
     @GetMapping("/summary")
     public ResponseEntity<ApiResponse<PortfolioService.PortfolioSummary>> getPortfolioSummary(
             @AuthenticationPrincipal CustomUserDetails user) {
-        if (user == null) {
-            return ResponseEntity.status(401).body(ApiResponse.success("Sessão expirada ou usuário não identificado", null));
-        }
         PortfolioService.PortfolioSummary response = portfolioService.getPortfolioSummary(user.getId());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
