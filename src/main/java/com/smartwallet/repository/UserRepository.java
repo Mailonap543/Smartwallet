@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
@@ -23,4 +24,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT COUNT(a) FROM Asset a WHERE a.wallet.user.id = :userId")
     int countAssetsByUserId(Long userId);
+    Optional<User> findByEmail(String email);
+    boolean existsByEmail(String email);
+    Optional<User> findByResetToken(String token);
+    Optional<User> findByCpf(String cpf);
 }

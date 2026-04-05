@@ -1,11 +1,17 @@
 package com.smartwallet.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "wallets")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Wallet {
 
     @Id
@@ -18,11 +24,27 @@ public class Wallet {
 
     @Column(nullable = false)
     private String name;
-
+ feature/sistema-saas-planos
     private String description;
 
     @Column(name = "total_balance", precision = 15, scale = 2)
     private BigDecimal totalBalance = BigDecimal.ZERO;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "total_balance", precision = 15, scale = 2)
+    @Builder.Default
+    private BigDecimal totalBalance = BigDecimal.ZERO;
+
+    @Column(name = "total_invested", precision = 15, scale = 2)
+    @Builder.Default
+    private BigDecimal totalInvested = BigDecimal.ZERO;
+
+    @Column(name = "total_profit_loss", precision = 15, scale = 2)
+    @Builder.Default
+    private BigDecimal totalProfitLoss = BigDecimal.ZERO;
+
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
