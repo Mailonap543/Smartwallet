@@ -67,12 +67,16 @@ jobs:
             # kubectl apply -f k8s/production/ -n production
           fi
 
-      - name: Notify deployment
+      - name: Notify deployment (optional)
         if: always()
         run: |
-          STATUS="${{ job.status }}"
-          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
-            -H 'Content-Type: application/json' \
-            -d "{\"text\": \"Deployment to ${{ github.event.inputs.environment }} finished: $STATUS\"}"
+          if [ -n "${{ secrets.SLACK_WEBHOOK }}" ]; then
+            STATUS="${{ job.status }}"
+            curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+              -H 'Content-Type: application/json' \
+              -d "{\"text\": \"Deployment to ${{ github.event.inputs.environment }}: $STATUS\"}"
+          else
+            echo "SLACK_WEBHOOK not configured, skipping notification"
+          fi
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
