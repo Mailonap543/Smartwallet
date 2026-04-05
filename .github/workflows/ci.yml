@@ -63,7 +63,7 @@ jobs:
           cache-dependency-path: smartwallet-front/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
         working-directory: ./smartwallet-front
 
       - name: Build frontend
