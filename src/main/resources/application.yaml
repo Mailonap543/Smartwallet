@@ -31,6 +31,22 @@ spring:
 
 server:
   port: 8080
+  ssl:
+    enabled: ${SSL_ENABLED:false}
+    key-store: ${SSL_KEYSTORE:}
+    key-store-password: ${SSL_KEYSTORE_PASSWORD:}
+    key-store-type: ${SSL_KEYSTORE_TYPE:jks}
+  tomcat:
+    remote-ip-header: X-Forwarded-For
+    protocol-header: X-Forwarded-Proto
+    secure: ${SSL_ENABLED:false}
+
+security:
+  rate-limit:
+    requests: 100
+    window-seconds: 60
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:4200}
 
 logging:
   level:
