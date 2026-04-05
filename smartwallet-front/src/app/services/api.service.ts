@@ -111,9 +111,55 @@ export class ApiService {
   }
 
   // Portfolio endpoints
-  getWallets(): Observable<Wallet[]> {
-    return this.http.get<ApiResponse<Wallet[]>>(`${this.baseUrl}/portfolio/wallets`, { headers: this.getHeaders() })
-      .pipe(map(res => res.data));
+getWallets(): Observable<Wallet[]> {
+    return this.http.get<any>(`${this.baseUrl}/wallets`, { headers: this.getHeaders() })
+      .pipe(map((res: ApiResponse<Wallet[]>) => res.data as Wallet[]));
+  }
+
+  getWallet(id: number): Observable<Wallet> {
+    return this.http.get<any>(`${this.baseUrl}/wallets/${id}`, { headers: this.getHeaders() })
+      .pipe(map((res: ApiResponse<Wallet>) => res.data as Wallet));
+  }
+
+  createWallet(data: any): Observable<Wallet> {
+    return this.http.post<any>(`${this.baseUrl}/wallets`, data, { headers: this.getHeaders() })
+      .pipe(map((res: ApiResponse<Wallet>) => res.data as Wallet));
+  }
+
+  updateWallet(id: number, data: any): Observable<Wallet> {
+    return this.http.put<any>(`${this.baseUrl}/wallets/${id}`, data, { headers: this.getHeaders() })
+      .pipe(map((res: ApiResponse<Wallet>) => res.data as Wallet));
+  }
+
+  deleteWallet(id: number): Observable<void> {
+    return this.http.delete<any>(`${this.baseUrl}/wallets/${id}`, { headers: this.getHeaders() })
+      .pipe(map((res: ApiResponse<void>) => res.data as void));
+  }
+
+  // Asset endpoints
+  getAssets(walletId: number): Observable<Asset[]> {
+    return this.http.get<any>(`${this.baseUrl}/assets?walletId=${walletId}`, { headers: this.getHeaders() })
+      .pipe(map((res: ApiResponse<Asset[]>) => res.data as Asset[]));
+  }
+
+  getAsset(id: number): Observable<Asset> {
+    return this.http.get<any>(`${this.baseUrl}/assets/${id}`, { headers: this.getHeaders() })
+      .pipe(map((res: ApiResponse<Asset>) => res.data as Asset));
+  }
+
+  createAsset(data: any): Observable<Asset> {
+    return this.http.post<any>(`${this.baseUrl}/assets`, data, { headers: this.getHeaders() })
+      .pipe(map((res: ApiResponse<Asset>) => res.data as Asset));
+  }
+
+  updateAsset(id: number, data: any): Observable<Asset> {
+    return this.http.put<any>(`${this.baseUrl}/assets/${id}`, data, { headers: this.getHeaders() })
+      .pipe(map((res: ApiResponse<Asset>) => res.data as Asset));
+  }
+
+  deleteAsset(id: number): Observable<void> {
+    return this.http.delete<any>(`${this.baseUrl}/assets/${id}`, { headers: this.getHeaders() })
+      .pipe(map((res: ApiResponse<void>) => res.data as void));
   }
 
   getWallet(id: number): Observable<Wallet> {
@@ -183,20 +229,20 @@ export class ApiService {
 
   // Market endpoints
   getQuote(symbol: string): Observable<MarketQuote | null> {
-    return this.http.get<ApiResponse<MarketQuote>>(`${this.baseUrl}/market/quote/${symbol}`, { headers: this.getHeaders() })
+    return this.http.get<any>(`${this.baseUrl}/market/quote/${symbol}`, { headers: this.getHeaders() })
       .pipe(
-        map(res => res.success ? res.data : null),
+        map((res: ApiResponse<MarketQuote>) => res.success ? res.data as MarketQuote : null),
         catchError(() => null as any)
       );
   }
 
   getQuotes(symbols: string[]): Observable<MarketQuote[]> {
-    return this.http.post<ApiResponse<MarketQuote[]>>(`${this.baseUrl}/market/quotes`, symbols, { headers: this.getHeaders() })
-      .pipe(map(res => res.data));
+    return this.http.post<any>(`${this.baseUrl}/market/quotes`, symbols, { headers: this.getHeaders() })
+      .pipe(map((res: ApiResponse<MarketQuote[]>) => res.data as MarketQuote[]));
   }
 
   getMarketStatus(): Observable<any> {
-    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/market/status`, { headers: this.getHeaders() })
-      .pipe(map(res => res.data));
+    return this.http.get<any>(`${this.baseUrl}/market/status`, { headers: this.getHeaders() })
+      .pipe(map((res: ApiResponse<any>) => res.data as any));
   }
 }
