@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 
 export interface ApiResponse<T> {
@@ -104,9 +104,12 @@ export class ApiService {
   private http = inject(HttpClient);
   private baseUrl = 'http://localhost:8080/api';
 
-  private getAuthHeaders() {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token') || '';
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
   }
 
   // WALLETS
@@ -154,6 +157,10 @@ export class ApiService {
   updateAsset(id: number, data: any): Observable<Asset> {
     return this.http.put<ApiResponse<Asset>>(`${this.baseUrl}/assets/${id}`, data, { headers: this.getAuthHeaders() })
       .pipe(map((res: ApiResponse<Asset>) => res.data as Asset));
+  }
+
+  updateAssetPrice(id: number, price: number): Observable<Asset> {
+    return this.updateAsset(id, { currentPrice: price });
   }
 
   deleteAsset(id: number): Observable<void> {
