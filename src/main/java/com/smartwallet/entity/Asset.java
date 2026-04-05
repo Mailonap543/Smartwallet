@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "assets")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -78,7 +80,26 @@ public class Asset {
         updatedAt = LocalDateTime.now();
     }
 
+    public void calculateProfitLoss() {
+        if (currentPrice != null && averagePrice != null && quantity != null) {
+            this.currentValue = currentPrice.multiply(quantity);
+            this.totalInvested = averagePrice.multiply(quantity);
+            this.profitLoss = currentValue.subtract(totalInvested);
+            if (totalInvested.compareTo(BigDecimal.ZERO) > 0) {
+                this.profitLossPercentage = profitLoss.divide(totalInvested, 6, java.math.RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100));
+            }
         }
     }
 
+    public enum AssetType {
+        STOCK,       // Ações
+        ETF,         // ETFs
+        FII,         // Fundos Imobiliários
+        CRYPTO,      // Criptomoedas
+        BOND,        // Títulos de Renda Fixa
+        FUND,        // Fundos de Investimento
+        COMMODITY,   // Commodities
+        OTHER        // Outros
+    }
 }

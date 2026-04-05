@@ -5,8 +5,6 @@ import com.smartwallet.subscription.PlanFeatures;
 import com.smartwallet.subscription.PlanType;
 import com.smartwallet.exception.BusinessException;
 import com.smartwallet.repository.UserRepository;
-import com.smartwallet.repository.WalletRepository;
-import com.smartwallet.repository.AssetRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +16,6 @@ import java.util.Map;
 public class PlanService {
 
     private final UserRepository userRepository;
-    private final WalletRepository walletRepository;
-    private final AssetRepository assetRepository;
 
     public PlanType getUserPlan(Long userId) {
         User user = userRepository.findById(userId)
@@ -34,7 +30,6 @@ public class PlanService {
 
     public void validateWalletCreation(Long userId) {
         PlanType plan = getUserPlan(userId);
-        int currentWallets = (int) walletRepository.countByUserId(userId);
         
         if (!plan.isUnlimited(plan.getMaxWallets()) && currentWallets >= plan.getMaxWallets()) {
             throw new BusinessException(
@@ -46,7 +41,6 @@ public class PlanService {
 
     public void validateAssetCreation(Long userId) {
         PlanType plan = getUserPlan(userId);
-        int currentAssets = (int) assetRepository.countByUserId(userId);
         
         if (!plan.isUnlimited(plan.getMaxAssets()) && currentAssets >= plan.getMaxAssets()) {
             throw new BusinessException(
