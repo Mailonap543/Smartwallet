@@ -29,6 +29,8 @@ public class Asset {
     @Column(nullable = false)
     private String name;
 
+    @Column(name = "asset_type", nullable = false, length = 20)
+    private String assetType;
     @Enumerated(EnumType.STRING)
     @Column(name = "asset_type", nullable = false, length = 20)
     private AssetType assetType;
@@ -80,26 +82,26 @@ public class Asset {
         updatedAt = LocalDateTime.now();
     }
 
-    public void calculateProfitLoss() {
-        if (currentPrice != null && averagePrice != null && quantity != null) {
-            this.currentValue = currentPrice.multiply(quantity);
-            this.totalInvested = averagePrice.multiply(quantity);
-            this.profitLoss = currentValue.subtract(totalInvested);
-            if (totalInvested.compareTo(BigDecimal.ZERO) > 0) {
-                this.profitLossPercentage = profitLoss.divide(totalInvested, 6, java.math.RoundingMode.HALF_UP)
-                        .multiply(BigDecimal.valueOf(100));
-            }
-        }
-    }
-
-    public enum AssetType {
-        STOCK,       // Ações
-        ETF,         // ETFs
-        FII,         // Fundos Imobiliários
-        CRYPTO,      // Criptomoedas
-        BOND,        // Títulos de Renda Fixa
-        FUND,        // Fundos de Investimento
-        COMMODITY,   // Commodities
-        OTHER        // Outros
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Wallet getWallet() { return wallet; }
+    public void setWallet(Wallet wallet) { this.wallet = wallet; }
+    public String getSymbol() { return symbol; }
+    public void setSymbol(String symbol) { this.symbol = symbol; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getAssetType() { return assetType; }
+    public void setAssetType(String assetType) { this.assetType = assetType; }
+    public BigDecimal getQuantity() { return quantity; }
+    public void setQuantity(BigDecimal quantity) { this.quantity = quantity; }
+    public BigDecimal getPurchasePrice() { return purchasePrice; }
+    public void setPurchasePrice(BigDecimal purchasePrice) { this.purchasePrice = purchasePrice; }
+    public BigDecimal getCurrentPrice() { return currentPrice; }
+    public void setCurrentPrice(BigDecimal currentPrice) { this.currentPrice = currentPrice; }
+    public LocalDate getPurchaseDate() { return purchaseDate; }
+    public void setPurchaseDate(LocalDate purchaseDate) { this.purchaseDate = purchaseDate; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }
