@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-
+          
+      - name: Build with Maven
+        run: ./mvnw clean package -DskipTests
+        
+      - name: Run unit tests
+        run: ./mvnw test
+        
+  frontend-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '21'
+          cache: 'smartwallet-front'
+          
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./smartwallet-front
+        
+      - name: Run linter
+        run: npm run lint
+        working-directory: ./smartwallet-front
+        
+      - name: Run tests
+        run: npm test -- --coverage=false
+        working-directory: ./smartwallet-front
+
+  build-docker:
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-test]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Build backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: smartwallet/backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          
+      - name: Build frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./smartwallet-front
+          push: false
+          tags: smartwallet/frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
