@@ -26,11 +26,86 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+    locations: db/migration
     locations: classpath:db/migration
     baseline-version: 0
 
 server:
   port: 8080
+  ssl:
+    enabled: ${SSL_ENABLED:false}
+    key-store: ${SSL_KEYSTORE:}
+    key-store-password: ${SSL_KEYSTORE_PASSWORD:}
+    key-store-type: ${SSL_KEYSTORE_TYPE:jks}
+  tomcat:
+    remote-ip-header: X-Forwarded-For
+    protocol-header: X-Forwarded-Proto
+    secure: ${SSL_ENABLED:false}
+
+security:
+  rate-limit:
+    requests: 100
+    window-seconds: 60
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:4200}
+
+spring.data:
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    timeout: 60000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+
+cache:
+  type: redis
+  redis:
+    time-to-live: 600000
+    cache-null-values: false
+
+jpa:
+  open-in-view: false
+  properties:
+    hibernate:
+      jdbc:
+        batch_size: 50
+      order_inserts: true
+      order_updates: true
+      batch_versioned_data: true
+
+spring.data:
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    timeout: 60000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+
+cache:
+  type: redis
+  redis:
+    time-to-live: 600000
+    cache-null-values: false
+
+jpa:
+  open-in-view: false
+  properties:
+    hibernate:
+      jdbc:
+        batch_size: 50
+      order_inserts: true
+      order_updates: true
+      batch_versioned_data: true
 
 logging:
   level:
