@@ -1,12 +1,8 @@
 package com.smartwallet.subscription;
 
-import com.smartwallet.subscription.service.PlanService;
-
 import com.smartwallet.entity.User;
 import com.smartwallet.exception.BusinessException;
 import com.smartwallet.repository.UserRepository;
-import com.smartwallet.repository.WalletRepository;
-import com.smartwallet.repository.AssetRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,10 +20,6 @@ class PlanServiceTest {
 
     @Mock
     private UserRepository userRepository;
-    @Mock
-    private WalletRepository walletRepository;
-    @Mock
-    private AssetRepository assetRepository;
 
     @InjectMocks
     private PlanService planService;
@@ -73,7 +65,6 @@ class PlanServiceTest {
     void validateWalletCreation_FreeUserWith5Wallets_ThrowsException() {
         testUser.setPlan(PlanType.FREE);
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-        when(walletRepository.countByUserId(1L)).thenReturn(5L);
         
         assertThrows(BusinessException.class, () -> planService.validateWalletCreation(1L));
     }
@@ -82,7 +73,6 @@ class PlanServiceTest {
     void validateWalletCreation_FreeUserWith4Wallets_Success() {
         testUser.setPlan(PlanType.FREE);
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-        when(walletRepository.countByUserId(1L)).thenReturn(4L);
         
         assertDoesNotThrow(() -> planService.validateWalletCreation(1L));
     }
@@ -91,7 +81,6 @@ class PlanServiceTest {
     void validateWalletCreation_PremiumUser_Success() {
         testUser.setPlan(PlanType.PREMIUM);
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-        when(walletRepository.countByUserId(1L)).thenReturn(100L);
         
         assertDoesNotThrow(() -> planService.validateWalletCreation(1L));
     }
@@ -116,7 +105,6 @@ class PlanServiceTest {
     void validateAssetCreation_FreeUserWith10Assets_ThrowsException() {
         testUser.setPlan(PlanType.FREE);
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-        when(assetRepository.countByUserId(1L)).thenReturn(10L);
         
         assertThrows(BusinessException.class, () -> planService.validateAssetCreation(1L));
     }
