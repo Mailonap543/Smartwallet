@@ -1,12 +1,18 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, catchError, throwError } from 'rxjs';
+import { ToastService } from '../shared/toast.service';
 
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
   data: T;
   timestamp: string;
+}
+
+export interface ApiError {
+  status: number;
+  message: string;
 }
 
 export interface Wallet {
@@ -102,6 +108,7 @@ export interface MarketQuote {
 })
 export class ApiService {
   private http = inject(HttpClient);
+  private toast = inject(ToastService);
   private baseUrl = 'http://localhost:8080/api';
 
   private getAuthHeaders(): HttpHeaders {
@@ -110,6 +117,12 @@ export class ApiService {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     });
+  }
+
+  private handleError(error: any, defaultMsg = 'Algo deu errado') {
+    const message = error?.error?.message || error?.message || defaultMsg;
+    this.toast.error(message);
+    return throwError(() => ({ status: error?.status, message }));
   }
 
   // WALLETS
