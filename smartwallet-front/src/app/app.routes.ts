@@ -19,8 +19,13 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent)
   },
   {
-    path: 'assets',
+    path: 'market',
     loadComponent: () => import('./pages/assets/assets.component').then(m => m.AssetsComponent)
+  },
+  {
+    path: 'assets',
+    redirectTo: 'market',
+    pathMatch: 'full'
   },
   {
     path: 'ai-analysis',
