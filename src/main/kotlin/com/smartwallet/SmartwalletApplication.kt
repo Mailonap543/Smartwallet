@@ -1,7 +1,11 @@
 package com.smartwallet
 
-/**
- * Suporte Kotlin para módulos de IA.
- * Sem classe principal aqui para evitar duplicidade com o entrypoint Java.
- */
-class KotlinAiSupport
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.runApplication
+
+@SpringBootApplication
+class SmartwalletApplication
+
+fun main(args: Array<String>) {
+    runApplication<SmartwalletApplication>(*args)
+}
