@@ -1,16 +1,16 @@
-FROM node:21-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 COPY . .
 RUN npm run build
 
 FROM nginx:alpine
 
-COPY --from=builder /app/dist/smartwallet-front /usr/share/nginx/html
+COPY --from=builder /app/dist/smartwallet-front/browser /usr/share/nginx/html
 
 RUN rm /etc/nginx/conf.d/default.conf
 
