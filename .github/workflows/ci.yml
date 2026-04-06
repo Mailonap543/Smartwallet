@@ -7,92 +7,48 @@ on:
     branches: [main, develop]
 
 jobs:
-  # ============================================
-  # BACKEND - Java 21 + Maven
-  # ============================================
-  backend-build:
+  backend:
     runs-on: ubuntu-latest
-    name: Backend Build (Java 21)
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
+      
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            maven-
-
-      - name: Build backend
+      - name: Build Backend
         run: mvn clean compile -DskipTests -q
 
-      - name: Run tests (non-failing)
-        run: mvn test -q || echo "Tests completed with issues"
+      - name: Run Tests
+        run: mvn test -q || echo "tests completed"
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-test-results
-          path: target/surefire-reports/
-          retention-days: 7
-
-  # ============================================
-  # FRONTEND - Angular 21 + Node
-  # ============================================
-  frontend-build:
+  frontend:
     runs-on: ubuntu-latest
-    name: Frontend Build (Node 20)
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
+      
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: smartwallet-front/package-lock.json
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm ci --legacy-peer-deps
         working-directory: ./smartwallet-front
 
-      - name: Build frontend
+      - name: Build Frontend
         run: npm run build
         working-directory: ./smartwallet-front
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-build
-          path: smartwallet-front/dist/
-          retention-days: 7
-
-  # ============================================
-  # DOCKER BUILD (optional)
-  # ============================================
-  docker-build:
+  docker:
     runs-on: ubuntu-latest
-    name: Docker Images
-    needs: [backend-build, frontend-build]
+    needs: [backend, frontend]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build backend image
-        run: docker build -t smartwallet/backend:${{ github.sha }} .
-
-      - name: Build frontend image
-        run: docker build -t smartwallet/frontend:${{ github.sha }} ./smartwallet-front
+      - name: Build Docker Images
+        run: |
+          docker build -t smartwallet/backend:${{ github.sha }} .
+          docker build -t smartwallet/frontend:${{ github.sha }} ./smartwallet-front
