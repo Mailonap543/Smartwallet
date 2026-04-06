@@ -21,7 +21,7 @@ import { AuthService } from '../../services/auth.service';
                 <p class="text-gray-400 text-sm">Seu plano atual</p>
                 <h2 class="text-2xl font-bold text-white">{{ currentPlan()?.['planName'] }}</h2>
               </div>
-              <button (click)="showPlans = !showPlans" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg">
+              <button (click)="togglePlans()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg">
                 Alterar Plano
               </button>
             </div>
@@ -39,7 +39,7 @@ import { AuthService } from '../../services/auth.service';
         }
 
         <!-- Plans -->
-        @if (showPlans) {
+        @if (showPlans()) {
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             @for (plan of availablePlans(); track plan.name) {
               <div class="bg-gray-800 rounded-xl p-6 border" 
@@ -124,7 +124,7 @@ import { AuthService } from '../../services/auth.service';
         }
 
         <!-- Limits Info -->
-        @if (!showPlans && currentPlan()?.['limits']) {
+        @if (!showPlans() && currentPlan()?.['limits']) {
           <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
             <h3 class="text-lg font-semibold mb-4"> Seus Limites</h3>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -204,5 +204,9 @@ export class SubscriptionComponent implements OnInit {
       },
       error: () => this.upgrading.set(false)
     });
+  }
+
+  togglePlans() {
+    this.showPlans.set(!this.showPlans());
   }
 }

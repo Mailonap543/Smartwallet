@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 
 @Component
-@ConditionalOnProperty(name = "ai.ml.enabled", havingValue = "false")
+@ConditionalOnProperty(name = ["ai.ml.enabled"], havingValue = "false", matchIfMissing = true)
 class MLPredictionService {
 
     private val log = LoggerFactory.getLogger(MLPredictionService::class.java)
