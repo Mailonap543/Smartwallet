@@ -117,7 +117,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>com.smartwallet.SmartwalletApplication</mainClass>
+					<mainClass>com.smartwallet.SmartwalletApplicationKt</mainClass>
 					<excludes>
 						<exclude>
 							<groupId>org.projectlombok</groupId>
