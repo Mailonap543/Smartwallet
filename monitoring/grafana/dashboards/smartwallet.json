@@ -1,0 +1,50 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [{"options": {"0": {"color": "red", "index": 0}}, "type": "value"}],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 0}]}
+        }
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+      "id": 1,
+      "options": {"orientation": "auto", "reduceOptions": {"values": false, "calcs": ["lastNotNull"]}, "showThresholdLabels": false, "showThresholdMarkers": true},
+      "pluginVersion": "8.0.0",
+      "targets": [{"expr": "up{job=\"backend\"}", "refId": "A"}],
+      "title": "Backend Status",
+      "type": "gauge"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom_axisID": 1,
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 60}, {"color": "red", "value": 80}]}
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0},
+      "id": 2,
+      "options": {"barRadius": 0, "barWidth": 0.97, "groupBy": ["*"],"orientation": 0,"showValue": "auto","tooltipMode":"single","xTickLabelRotation":0,"xTickLabelSpacing":0},"pluginVersion":"8.0.0","targets":[{"expr":"sum(rate(http_server_requests_seconds_count[5m])) by (status)\n","legendFormat":"{{status}}","refId":"A"}],"title":"HTTP Requests by Status","type":"bargauge"},{"datasource":"Prometheus","fieldConfig":{"defaults":{"color":{"mode":"palette-classic"},"custom_axisID":2,"mappings":[],"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null}]}},"gridPos":{"h":8,"w":6,"x":18,"y":0},"id":3,"options":{"legend":{"calcs":["lastNotNull"],"displayMode":"list","placement":"bottom"},"orientation":"auto","tooltipMode":"all","xTickLabelRotation":0,"xTickLabelSpacing":0},"pluginVersion":"8.0.0","targets":[{"expr":"sum(rate(http_server_requests_seconds_sum[5m])) / sum(rate(http_server_requests_seconds_count[5m]))","legendFormat":"Response Time P95","refId":"A"}],"title":"Response Time","type":"timeseries"},{"datasource":"Prometheus","fieldConfig":{"defaults":{"color":{"mode":"thresholds"},"mappings":[],"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"yellow","value":60},{"color":"red","value":85}]}},"gridPos":{"h":4,"w":6,"x":0,"y":4},"id":4,"options":{"orientation":"auto","reduceOptions":{"values":false,"calcs":["lastNotNull"]},"showThresholdLabels":false,"showThresholdMarkers":true},"pluginVersion":"8.0.0","targets":[{"expr":"(container_memory_usage_bytes / container_spec_memory_limit_bytes) * 100","legendFormat":"Memory Usage %","refId":"A"}],"title":"Memory Usage","type":"gauge"},{"datasource":"Loki","fieldConfig":{"defaults":{"color":{"mode":"palette-classic"},"custom_axisID":3,"mappings":[]},"gridPos":{"h":8,"w":12,"x":0,"y":8},"id":5,"options":{"dedupStrategy":"exact+number","enableLogDetails":true,"prettyPrint":false,"showLabels":false,"showTime":false},"pluginVersion":"8.0.0","queries":[{"editorType":"lucene","expr":"{job=\"smartwallet\"} | json | level=\"ERROR\"","legendFormat":"","refId":"A"}],"title":"Error Logs","type":"logs"}],"refresh":"30s","schemaVersion":27,"style":"dark","tags":["smartwallet"],"templating":{"list":[]},"time":{"from":"now-1h","to":"now"},"timepicker":{},"timezone":"","title":"SmartWallet Dashboard","uid":"smartwallet","version":1}
