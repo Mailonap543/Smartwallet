@@ -11,7 +11,7 @@ import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
   template: `
     <div class="compare-page">
       <h1>Comparar Ativos</h1>
-      
+
       <div class="add-asset">
         <input #searchInput type="text" placeholder="Buscar ativo..." (input)="onSearch(searchInput.value)" />
         @if (searchResults().length) {

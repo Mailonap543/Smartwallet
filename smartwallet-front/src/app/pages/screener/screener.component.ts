@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService, Asset } from '../../services/api.service';
-import { CardComponent } from '../../shared/components/card-input.component';
 
 @Component({
   selector: 'app-screener',
@@ -14,7 +13,6 @@ import { CardComponent } from '../../shared/components/card-input.component';
       <h1>Screener</h1>
       <p class="subtitle">Encontre ativos baseados em critérios</p>
 
-      
       <div class="builder">
         <h3>Filtros</h3>
         <div class="filters-grid">
@@ -139,7 +137,6 @@ import { CardComponent } from '../../shared/components/card-input.component';
 export class ScreenerComponent {
   private api = inject(ApiService);
 
-  
   filters = {
     category: '',
     maxPe: null as number | null,
@@ -149,7 +146,6 @@ export class ScreenerComponent {
     sector: ''
   };
 
-  
   presetActive = '';
   loading = signal(false);
   searched = signal(false);
@@ -171,19 +167,8 @@ export class ScreenerComponent {
   runScreener() {
     this.loading.set(true);
     this.searched.set(true);
-    this.api.runScreener({
-      category: this.filters.category || null,
-      maxPe: this.filters.maxPe,
-      maxPb: this.filters.maxPb,
-      minDy: this.filters.minDy,
-      minRoe: this.filters.minRoe,
-      sector: this.filters.sector || null
-    }).subscribe({
-      next: data => {
-        this.results.set(data);
-        this.loading.set(false);
+            this.loading.set(false);
       },
-      error: () => this.loading.set(false)
     });
   }
 }

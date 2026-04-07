@@ -1,8 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { CardComponent } from '../../shared/components/card-input.component';
-import { ApiService, Asset } from '../../services/api.service';
 
 @Component({
   selector: 'app-favorites',
@@ -12,7 +9,6 @@ import { ApiService, Asset } from '../../services/api.service';
     <div class="favorites-page">
       <h1>Favoritos</h1>
 
-      
       @if (favorites.length) {
         <div class="favorites-list">
           @for (fav of favorites; track fav.symbol) {
@@ -24,8 +20,6 @@ import { ApiService, Asset } from '../../services/api.service';
               </div>
               <div class="price">
                 <span class="value">{{ fav.currentPrice | number:'1.2-2' }}</span>
-                <span class="change" [class.positive]="(fav.changePercent ?? 0) >= 0" [class.negative]="(fav.changePercent ?? 0) < 0">
-                  {{ (fav.changePercent ?? 0) >= 0 ? '+' : '' }}{{ fav.changePercent ?? 0 | number:'1.2-2' }}%
                 </span>
               </div>
             </app-card>
@@ -57,22 +51,8 @@ import { ApiService, Asset } from '../../services/api.service';
     .empty a { color: var(--primary-light); }
   `]
 })
-export class FavoritesComponent implements OnInit {
-  private api = inject(ApiService);
-  favorites: Asset[] = [];
 
-  ngOnInit() {
-    this.api.getFavorites().subscribe({
-      next: data => this.favorites = data
-    });
-  }
-
-  removeFavorite(fav: Asset, event: Event) {
     event.stopPropagation();
-    this.api.removeFavorite(fav.symbol).subscribe({
-      next: () => {
-        this.favorites = this.favorites.filter(f => f.symbol !== fav.symbol);
-      }
-    });
+    this.favorites = this.favorites.filter(f => f.symbol !== fav.symbol);
   }
 }

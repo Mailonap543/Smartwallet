@@ -1,9 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { ApiService, Asset, Wallet } from '../../services/api.service';
-import { CardComponent } from '../../shared/components/card-input.component';
-import { ButtonComponent } from '../../shared/components/button.component';
 
 interface Holding {
   asset: Asset;
@@ -23,7 +20,6 @@ interface Holding {
     <div class="wallet-page">
       <h1>Minha Carteira</h1>
 
-      
       <div class="summary">
         <div class="summary-card">
           <span class="label">Patrimônio Total</span>
@@ -109,42 +105,11 @@ export class WalletComponent implements OnInit {
   totalPLPercent = 0;
   totalInvested = 0;
   showAddModal = false;
-  wallets: Wallet[] = [];
-  selectedWalletId: number | null = null;
 
   ngOnInit() {
-    this.loadWallets();
-  }
-
-  loadWallets() {
-    this.api.getWallets().subscribe({
-      next: wallets => {
-        this.wallets = wallets;
-        if (wallets.length) {
-          this.selectedWalletId = wallets[0].id;
-          this.loadAssets(wallets[0].id);
-        }
-      }
-    });
-  }
-
-  loadAssets(walletId: number) {
-    this.api.getWalletAssets(walletId).subscribe({
-      next: assets => {
-        this.holdings = assets.map(a => ({
-          asset: a,
-          quantity: a.quantity || 0,
-          avgPrice: a.purchasePrice || 0,
-          currentPrice: a.currentPrice || a.purchasePrice || 0,
-          totalValue: (a.currentPrice || a.purchasePrice || 0) * (a.quantity || 0),
-          profitLoss: ((a.currentPrice || a.purchasePrice || 0) - (a.purchasePrice || 0)) * (a.quantity || 0),
-          profitLossPercent: a.purchasePrice ? (((a.currentPrice || a.purchasePrice || 0) - a.purchasePrice) / a.purchasePrice) * 100 : 0
-        }));
-        this.totalValue = this.holdings.reduce((sum, h) => sum + h.totalValue, 0);
-        this.totalPL = this.holdings.reduce((sum, h) => sum + h.profitLoss, 0);
-        this.totalInvested = this.totalValue - this.totalPL;
-        this.totalPLPercent = this.totalInvested ? (this.totalPL / this.totalInvested) * 100 : 0;
-      }
-    });
+    }));
+    this.totalValue = this.holdings.reduce((sum, h) => sum + h.totalValue, 0);
+    this.totalPL = this.holdings.reduce((sum, h) => sum + h.profitLoss, 0);
+    this.totalInvested = this.totalValue - this.totalPL;
   }
 }

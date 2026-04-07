@@ -1,8 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { CardComponent } from '../../shared/components/card-input.component';
-import { ApiService } from '../../services/api.service';
 
 interface NewsItem {
   id: number;
@@ -22,7 +19,6 @@ interface NewsItem {
     <div class="news-page">
       <h1>Notícias</h1>
 
-      
       <div class="filters">
         <button [class.active]="!selectedCategory" (click)="selectedCategory = ''">Todas</button>
         <button [class.active]="selectedCategory === 'market'" (click)="selectedCategory = 'market'">Mercado</button>
@@ -72,25 +68,5 @@ interface NewsItem {
     .tag { padding: var(--space-xs) var(--space-sm); background: var(--card-hover); border-radius: var(--radius-sm); font-size: var(--font-xs); }
   `]
 })
-export class NewsComponent implements OnInit {
   selectedCategory = '';
-  newsItems: NewsItem[] = [];
-  private api = inject(ApiService);
-
-  ngOnInit() {
-    this.api.getNews().subscribe({
-      next: res => {
-        const content = res?.content || [];
-        this.newsItems = content.map((n: any) => ({
-          id: n.id,
-          title: n.title,
-          summary: n.summary,
-          source: n.source,
-          date: n.publishedAt,
-          relatedAssets: (n.symbols || '').split(',').filter((s: string) => !!s),
-          url: n.url
-        }));
-      }
-    });
-  }
 }

@@ -35,6 +35,3 @@ data class Transaction(
 
     @Column(name = "created_at")
     val createdAt: Instant? = null
-) {
-    fun getTotalWithFees(): BigDecimal = totalValue.add(fees ?: BigDecimal.ZERO)
-}

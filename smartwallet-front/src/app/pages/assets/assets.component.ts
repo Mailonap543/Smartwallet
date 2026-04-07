@@ -34,8 +34,8 @@ import { ApiService, Wallet, Asset } from '../../services/api.service';
         <!-- Wallet Selector -->
         <div class="mb-6">
           <label class="text-gray-400 text-sm mr-3">Carteira:</label>
-          <select 
-            (change)="onWalletChange($event)" 
+          <select
+            (change)="onWalletChange($event)"
             class="bg-gray-800 border border-gray-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             @for (wallet of wallets(); track wallet.id) {
@@ -46,7 +46,7 @@ import { ApiService, Wallet, Asset } from '../../services/api.service';
 
         <!-- Add Asset Button -->
         <div class="flex justify-end mb-6">
-          <button 
+          <button
             (click)="showAddModal.set(true)"
             class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
           >
@@ -116,7 +116,7 @@ import { ApiService, Wallet, Asset } from '../../services/api.service';
           <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div class="bg-gray-800 rounded-xl p-6 w-full max-w-md border border-gray-700">
               <h3 class="text-xl font-semibold text-white mb-4">{{ editingAsset() ? 'Editar' : 'Adicionar' }} Ativo</h3>
-              
+
               <form (ngSubmit)="saveAsset()" class="space-y-4">
                 <div>
                   <label class="block text-sm text-gray-300 mb-1">Símbolo</label>
@@ -223,22 +223,22 @@ export class AssetsComponent implements OnInit {
     this.assetForm = {
       symbol: asset.symbol,
       name: asset.name,
-      assetType: asset.assetType || 'STOCK',
-      quantity: +(asset.quantity || 0),
-      purchasePrice: +(asset.purchasePrice || 0),
-      purchaseDate: asset.purchaseDate?.split('T')[0] || new Date().toISOString().split('T')[0]
+      assetType: asset.assetType,
+      quantity: +asset.quantity,
+      purchasePrice: +asset.purchasePrice,
+      purchaseDate: asset.purchaseDate.split('T')[0]
     };
     this.showAddModal.set(true);
   }
 
   deleteAsset(asset: Asset) {
-    if (!asset.id || !confirm(`Tem certeza que deseja excluir ${asset.symbol}?`)) return;
-    this.api.deleteAsset(asset.id).subscribe({
-      next: () => {
-        this.assets.update(a => a.filter(x => x.id !== asset.id));
-      },
-      error: () => {}
-    });
+    if (confirm(`Tem certeza que deseja excluir ${asset.symbol}?`)) {
+      this.api.deleteAsset(asset.id).subscribe({
+        next: () => {
+          this.assets.update(a => a.filter(x => x.id !== asset.id));
+        }
+      });
+    }
   }
 
   saveAsset() {
@@ -255,17 +255,15 @@ export class AssetsComponent implements OnInit {
       purchaseDate: this.assetForm.purchaseDate
     };
 
-    const editingId = this.editingAsset()?.id;
-    const request = editingId
-      ? this.api.updateAssetPrice(editingId, this.assetForm.purchasePrice)
+    const request = this.editingAsset()
+      ? this.api.updateAssetPrice(this.editingAsset()!.id, this.assetForm.purchasePrice)
       : this.api.addAsset(walletId, assetData);
 
     request.subscribe({
       next: () => {
         this.closeModal();
         this.loadAssets(walletId);
-      },
-      error: () => {}
+      }
     });
   }
 

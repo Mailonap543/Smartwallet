@@ -1,27 +1,19 @@
 package com.smartwallet.watchlist.controller;
 
 import com.smartwallet.dto.ApiResponse;
-import com.smartwallet.entity.Asset;
-import com.smartwallet.repository.AssetRepository;
 import com.smartwallet.watchlist.entity.Watchlist;
 import com.smartwallet.watchlist.entity.WatchlistItem;
 import com.smartwallet.watchlist.repository.WatchlistItemRepository;
 import com.smartwallet.watchlist.repository.WatchlistRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/watchlist")
 public class WatchlistController {
-
-    private static final Logger log = LoggerFactory.getLogger(WatchlistController.class);
-    private static final Long DEFAULT_USER_ID = 1L;
 
     private final WatchlistRepository watchlistRepository;
     private final WatchlistItemRepository itemRepository;
@@ -36,7 +28,6 @@ public class WatchlistController {
     }
 
     private Long getCurrentUserId() {
-        return DEFAULT_USER_ID;
     }
 
     @GetMapping
@@ -86,7 +77,6 @@ public class WatchlistController {
         String symbol = body.get("symbol").toUpperCase();
         
         if (itemRepository.existsByWatchlistIdAndAssetSymbol(id, symbol)) {
-            return ResponseEntity.badRequest().build();
         }
         
         WatchlistItem item = new WatchlistItem();
@@ -139,15 +129,11 @@ public class WatchlistController {
     }
 
     @GetMapping("/favorites")
-    public ResponseEntity<ApiResponse<List<Asset>>> getFavorites() {
         Long userId = getCurrentUserId();
-        Optional<Watchlist> watchlistOpt = watchlistRepository.findByUserIdAndIsDefaultTrue(userId);
         
-        if (watchlistOpt.isEmpty()) {
             return ResponseEntity.ok(ApiResponse.success(List.of()));
         }
         
-        List<WatchlistItem> items = itemRepository.findByWatchlistIdOrderByPositionAsc(watchlistOpt.get().getId());
         List<Asset> assets = items.stream()
             .map(item -> assetRepository.findBySymbol(item.getAssetSymbol()).orElse(null))
             .filter(a -> a != null)

@@ -1,7 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CardComponent } from '../../shared/components/card-input.component';
 
 @Component({
   selector: 'app-calculators',
@@ -11,7 +10,6 @@ import { CardComponent } from '../../shared/components/card-input.component';
     <div class="calculators-page">
       <h1>Calculadoras</h1>
 
-      
       <div class="calculator-tabs">
         <button [class.active]="activeCalc === 'compound'" (click)="activeCalc = 'compound'">Juros Compostos</button>
         <button [class.active]="activeCalc === 'reserve'" (click)="activeCalc = 'reserve'">Reserva Emergencia</button>
@@ -24,7 +22,6 @@ import { CardComponent } from '../../shared/components/card-input.component';
           <h3>Calculadora de Juros Compostos</h3>
           <p class="subtitle">Calcule o crescimento do seu investimento ao longo do tempo</p>
 
-          
           <div class="form-group">
             <label>Valor Inicial (R$)</label>
             <input type="number" [(ngModel)]="compoundInitial" />
@@ -54,7 +51,6 @@ import { CardComponent } from '../../shared/components/card-input.component';
           <h3>Reserva de Emergencia</h3>
           <p class="subtitle">Calcule quanto você precisa guardar</p>
 
-          
           <div class="form-group">
             <label>Gastos Mensais (R$)</label>
             <input type="number" [(ngModel)]="reserveMonthly" />
@@ -80,7 +76,6 @@ import { CardComponent } from '../../shared/components/card-input.component';
           <h3>Simulador de Dividendos</h3>
           <p class="subtitle">Calcule a renda passiva esperada</p>
 
-          
           <div class="form-group">
             <label>Patrimônio (R$)</label>
             <input type="number" [(ngModel)]="dividendPrincipal" />
@@ -102,7 +97,6 @@ import { CardComponent } from '../../shared/components/card-input.component';
           <h3>Meta Patrimonial</h3>
           <p class="subtitle">Calcule quanto investir por mês para atingir sua meta</p>
 
-          
           <div class="form-group">
             <label>Meta (R$)</label>
             <input type="number" [(ngModel)]="goalTarget" />

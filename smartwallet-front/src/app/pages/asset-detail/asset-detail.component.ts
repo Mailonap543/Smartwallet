@@ -2,9 +2,6 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiService, Asset } from '../../services/api.service';
-import { LoadingComponent } from '../../shared/components/loading.component';
-import { ButtonComponent } from '../../shared/components/button.component';
-import { CardComponent } from '../../shared/components/card-input.component';
 
 @Component({
   selector: 'app-asset-detail',
@@ -18,7 +15,6 @@ import { CardComponent } from '../../shared/components/card-input.component';
         <div class="header animate-fade-in">
           <a routerLink="/market" class="back-link">← Voltar ao mercado</a>
 
-          
           <div class="asset-header">
             <div class="asset-icon">
               @if (asset.logoUrl) {
@@ -40,7 +36,6 @@ import { CardComponent } from '../../shared/components/card-input.component';
             </div>
           </div>
 
-          
           <div class="actions">
             <app-button variant="primary" (onClick)="addToWallet()">+ Adicionar à Carteira</app-button>
             <app-button variant="secondary" (onClick)="addToCompare()">Comparar</app-button>
@@ -62,7 +57,6 @@ import { CardComponent } from '../../shared/components/card-input.component';
           </div>
           <div class="chart-placeholder">
             <p class="chart-text">Gráfico de cotação: {{ period() }}</p>
-            <p class="chart-subtext">Dados históricos do ativo</p>
             <p class="chart-subtext">Dados históricos serão carregados via API</p>
           </div>
         </div>
@@ -146,49 +140,6 @@ import { CardComponent } from '../../shared/components/card-input.component';
             </div>
           </app-card>
         </div>
-
-        <div class="sections">
-          <app-card>
-            <h3>Fatos Relevantes</h3>
-            @if (facts.length === 0) {
-              <p class="muted">Sem fatos relevantes recentes.</p>
-            } @else {
-              <ul class="facts">
-                @for (fact of facts; track fact.id) {
-                  <li>
-                    <div class="fact-title">{{ fact.title }}</div>
-                    <div class="fact-date">{{ fact.eventDate }}</div>
-                    <div class="fact-desc">{{ fact.description }}</div>
-                  </li>
-                }
-              </ul>
-            }
-          </app-card>
-
-          <app-card>
-            <h3>Resultados</h3>
-            @if (earnings.length === 0) {
-              <p class="muted">Sem resultados recentes.</p>
-            } @else {
-              <table class="earnings-table">
-                <thead>
-                  <tr><th>Período</th><th>Data</th><th>Receita</th><th>Lucro</th><th>EPS</th></tr>
-                </thead>
-                <tbody>
-                  @for (e of earnings; track e.eventDate) {
-                    <tr>
-                      <td>{{ e.period || e.periodo }}</td>
-                      <td>{{ e.eventDate || e.date }}</td>
-                      <td>{{ e.revenue || e.receita | number:'1.0-0' }}</td>
-                      <td>{{ e.netIncome || e.lucro | number:'1.0-0' }}</td>
-                      <td>{{ e.earningsPerShare || e.eps | number:'1.2-2' }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            }
-          </app-card>
-        </div>
       } @else {
         <div class="not-found">
           <p>Ativo não encontrado</p>
@@ -255,13 +206,6 @@ import { CardComponent } from '../../shared/components/card-input.component';
     .label { font-size: var(--font-sm); color: var(--text-muted); }
     .value { font-size: var(--font-md); font-weight: 500; }
     .value a { color: var(--primary-light); }
-    .facts { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-sm); }
-    .fact-title { font-weight: 600; }
-    .fact-date { font-size: var(--font-xs); color: var(--text-muted); }
-    .fact-desc { font-size: var(--font-sm); color: var(--text-secondary); }
-    .earnings-table { width: 100%; border-collapse: collapse; }
-    .earnings-table th, .earnings-table td { padding: var(--space-xs); border-bottom: 1px solid var(--border); text-align: left; }
-    .muted { color: var(--text-muted); }
     .not-found { text-align: center; padding: var(--space-2xl); }
     .not-found a { color: var(--primary-light); }
   `]
@@ -270,15 +214,10 @@ export class AssetDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private api = inject(ApiService);
 
-  
   asset: Asset | null = null;
   loading = true;
   isFavorite = false;
   period = signal('3M');
-  dividends: any[] = [];
-  earnings: any[] = [];
-  history: any[] = [];
-  facts: any[] = [];
 
   setPeriod(p: string) {
     this.period.set(p);
@@ -291,10 +230,6 @@ export class AssetDetailComponent implements OnInit {
         next: (asset) => { this.asset = asset; this.loading = false; },
         error: () => { this.loading = false; }
       });
-      this.api.getDividendsBySymbol(symbol).subscribe({ next: d => this.dividends = d });
-      this.api.getEarningsBySymbol(symbol).subscribe({ next: e => this.earnings = e });
-      this.api.getHistory(symbol, this.period()).subscribe({ next: h => this.history = h });
-      this.api.getFactsBySymbol(symbol).subscribe({ next: f => this.facts = f });
     }
   }
 

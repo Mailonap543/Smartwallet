@@ -17,26 +17,9 @@ class HeaderAuthFilter : OncePerRequestFilter() {
         filterChain: FilterChain
     ) {
         val path = request.requestURI
-        val method = request.method
-        
-        // Skip auth routes - these are handled by JwtAuthenticationFilter
-        if (path.contains("/api/auth/") || path.contains("/api/market") || path.contains("/api/v1/market")) {
-            filterChain.doFilter(request, response)
-            return
-        }
-        
-        // Ignorar rotas públicas e preflight CORS
-        if (method == "OPTIONS" || path.contains("/actuator/")) {
-            filterChain.doFilter(request, response)
-            return
-        }
-        
-        val userId = request.getHeader("X-User-Id")?.toLongOrNull()
         val requiresAuth = path.startsWith("/api/") || path.startsWith("/api/v1/")
 
         if (userId == null && requiresAuth && !path.startsWith("/api/market") && !path.startsWith("/api/v1/market")) {
-            // Let Spring Security handle this - don't block here
-            filterChain.doFilter(request, response)
             return
         }
 
