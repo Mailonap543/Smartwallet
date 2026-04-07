@@ -14,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +23,7 @@ import java.util.Map;
 public class MarketController {
 
     private static final Logger log = LoggerFactory.getLogger(MarketController.class);
+    private static final SecureRandom RNG = new SecureRandom();
 
     private final AssetRepository assetRepository;
     private final AssetCategoryRepository categoryRepository;
@@ -39,9 +41,6 @@ public class MarketController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "symbol") String sortBy,
             @RequestParam(defaultValue = "asc") String sortOrder) {
-        
-        log.info("Searching assets: q={}, category={}, page={}", q, category, page);
-        
         Sort sort = sortOrder.equalsIgnoreCase("desc") 
             ? Sort.by(sortBy).descending() 
             : Sort.by(sortBy).ascending();
@@ -181,7 +180,7 @@ public class MarketController {
         
         for (int i = days; i >= 0; i--) {
             java.time.LocalDate date = java.time.LocalDate.now().minusDays(i);
-            double variation = (Math.random() - 0.5) * 0.04;
+            double variation = (RNG.nextDouble() - 0.5) * 0.04;
             price = price * (1 + variation);
             
             history.add(Map.of(
@@ -190,7 +189,7 @@ public class MarketController {
                 "high", price * 1.02,
                 "low", price * 0.98,
                 "close", price,
-                "volume", (long)(Math.random() * 10000000)
+                "volume", RNG.nextLong(0, 10_000_000L)
             ));
         }
         
