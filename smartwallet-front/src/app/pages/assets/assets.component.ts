@@ -223,22 +223,21 @@ export class AssetsComponent implements OnInit {
     this.assetForm = {
       symbol: asset.symbol,
       name: asset.name,
-      assetType: asset.assetType,
-      quantity: +asset.quantity,
-      purchasePrice: +asset.purchasePrice,
-      purchaseDate: asset.purchaseDate.split('T')[0]
+      assetType: asset.assetType || 'STOCK',
+      quantity: +(asset.quantity || 0),
+      purchasePrice: +(asset.purchasePrice || 0),
+      purchaseDate: asset.purchaseDate?.split('T')[0] || new Date().toISOString().split('T')[0]
     };
     this.showAddModal.set(true);
   }
 
   deleteAsset(asset: Asset) {
-    if (confirm(`Tem certeza que deseja excluir ${asset.symbol}?`)) {
-      this.api.deleteAsset(asset.id).subscribe({
-        next: () => {
-          this.assets.update(a => a.filter(x => x.id !== asset.id));
-        }
-      });
-    }
+    if (!asset.id || !confirm(`Tem certeza que deseja excluir ${asset.symbol}?`)) return;
+    this.api.deleteAsset(asset.id).subscribe({
+      next: () => {
+        this.assets.update(a => a.filter(x => x.id !== asset.id));
+      }
+    });
   }
 
   saveAsset() {
@@ -255,8 +254,9 @@ export class AssetsComponent implements OnInit {
       purchaseDate: this.assetForm.purchaseDate
     };
 
-    const request = this.editingAsset() 
-      ? this.api.updateAssetPrice(this.editingAsset()!.id, this.assetForm.purchasePrice)
+    const editingId = this.editingAsset()?.id;
+    const request = editingId
+      ? this.api.updateAssetPrice(editingId, this.assetForm.purchasePrice)
       : this.api.addAsset(walletId, assetData);
 
     request.subscribe({
