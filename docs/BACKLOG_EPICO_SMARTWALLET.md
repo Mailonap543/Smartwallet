@@ -1,593 +1,444 @@
 # Backlog Epico - SmartWallet
 
-## 1. Objetivo
+## 1. Objetivo desta versao
 
-Transformar o SmartWallet em uma plataforma de investimentos mais completa, mais clara, mais rapida e mais acessivel que a referencia de mercado, mantendo a stack atual:
+Esta versao do backlog foi atualizada para mostrar apenas:
 
-- Frontend: Angular 21, TypeScript, Tailwind CSS, RxJS, ApexCharts, Chart.js
-- Backend: Spring Boot 3.2, Kotlin, Spring Security, JPA, PostgreSQL, Flyway
-- Infra: Docker, Nginx
+- o que ainda falta implementar
+- o que existe so na interface, mock ou schema
+- o que esta incompleto na integracao frontend + backend + dados
 
-O backlog abaixo foi quebrado sobre a base atual do projeto:
+Itens ja visiveis no frontend, como homepage, rankings, comparador, screener, noticias, carteira, favoritos, detalhe de ativo e calculadoras, nao foram removidos do backlog quando ainda dependem de backend real, acessibilidade, qualidade ou regras de negocio.
 
-- Frontend ja existente: `dashboard`, `assets`, `ai-analysis`, `login`, `register`, `subscription`
-- Backend ja existente: servicos de IA, webhook bancario e estrutura Spring Boot/Kotlin
+## 2. Leitura rapida do estado atual
 
-## 2. Prioridades Macro
+### Ja existe
 
-### P0 - Fundacao do produto
+- Rotas e paginas principais no Angular
+- `ApiService` com contratos esperados para market, wallet, portfolio, watchlist e IA
+- Migrations para mercado, watchlist, alertas, goals, dividendos recebidos, benchmark e rename de `portfolio_assets`
+- Servicos basicos de IA e webhook bancario inicial
+- Backend implementado para market (search/featured/trending/rankings/quote/history/dividends/earnings), carteira, portfolio assets/transactions, watchlist/favoritos/alertas
+- Seeds e ingestao dev de mercado (`market_seed.json` + job)
+- Testes de integracao para market, wallet e watchlist
 
-- Organizar arquitetura frontend por dominio
-- Estruturar API versionada e contratos padronizados
-- Garantir acessibilidade, performance e observabilidade desde o inicio
-- Criar base de dados de ativos, cotacoes, indicadores e eventos
-- Evoluir busca global, listagem de ativos e pagina de detalhe
+### Ainda pendente ou incompleto
 
-### P1 - Diferenciadores principais
+- Autenticacao/autorizacao real (user vem de `X-User-Id`)
+- Pipeline externo de ingestao de mercado, dividendos/earnings/agenda
+- Integracao ponta a ponta: frontend ainda tem mocks (carteira, favoritos, comparador, screener)
+- Acessibilidade sistematica
+- Testes E2E e suite completa
+- Admin, premium robusto, observabilidade
 
-- Rankings
-- Comparador
-- Screener
-- Calendarios de dividendos e resultados
-- Carteira completa com proventos, metas e benchmark
+## 3. Backlog pendente por epico
 
-### P2 - Expansao e monetizacao
-
-- Noticias e educacao
-- Calculadoras
-- Alertas e notificacoes
-- Premium com feature gating consistente
-- Painel administrativo
-
-### P3 - Vantagem competitiva
-
-- IA contextual para explicar ativos e carteiras
-- Personalizacao por perfil
-- Insights proativos
-- Acessibilidade avancada e testes continuos
-
-## 3. Epicos e Tarefas
-
-## Epico 1 - Fundacao de arquitetura e design system
+## Epico 1 - Backend de dominio e API real
 
 ### Objetivo
 
-Criar a base tecnica para escalar o produto sem retrabalho.
+Sustentar com backend verdadeiro as telas que ja existem no frontend.
 
-### Tarefas
+### Faltando
 
-- [ ] Reorganizar o frontend por dominios: `market`, `assets`, `rankings`, `screener`, `wallet`, `news`, `education`, `auth`, `subscription`, `shared`
-- [ ] Extrair componentes reutilizaveis existentes para um design system interno acessivel
-- [ ] Criar tokens de cor, espaco, tipografia, elevacao e estados de foco
-- [ ] Padronizar layout principal, header, sidebar, breadcrumb, empty states e loading states
-- [ ] Criar biblioteca de componentes acessiveis: button, input, select, tabs, dialog, table, card, badge, toast
-- [ ] Definir convencoes de naming, estrutura de pastas e padrao de lazy loading no Angular
-- [ ] Padronizar `ApiResponse`, erros de negocio e codigos de erro no backend
-- [ ] Criar namespace `/api/v1`
-- [ ] Definir estrategia de auditoria, timestamps e soft delete quando aplicavel
-- [ ] Configurar logs estruturados, health checks e metricas basicas
-- [ ] Criar checklist WCAG 2.2 AA para PRs
+- [x] Criar controllers para `market`, `wallets`, `portfolio`, `watchlist`, `alerts`
+- [ ] Criar controllers para `ai`, `news`, `subscription` e `admin`
+- [x] Criar entidades JPA e repositories para os dominos de mercado, carteira, watchlist, alertas
+- [ ] Criar entidades/repositorio para noticias
+- [x] Criar services de negocio reais para busca, ranking, comparacao, carteira, favoritos
+- [ ] Criar services para proventos consolidados, assinatura e admin
+- [x] Padronizar `ApiResponse`, mensagens de erro e codigos de negocio
+- [ ] Versionar a API com `/api/v1`
+- [ ] Implementar autenticacao/autorizacao consistente nos endpoints protegidos
+- [ ] Criar auditoria minima para alteracoes criticas
 
-### Entregaveis
+### Observacao atual
 
-- Arquitetura de pastas consolidada
-- Componentes base reutilizaveis
-- Guia de design system
-- Contratos de API padronizados
+Hoje o backend exposto encontrado no codigo esta basicamente restrito ao webhook bancario, entao este epico e o maior gargalo do projeto.
 
-## Epico 2 - Base de dados de mercado e ingestao
+## Epico 2 - Mercado e ingestao de dados reais
 
 ### Objetivo
 
-Garantir dados confiaveis, atualizados e auditaveis para alimentar a plataforma.
+Parar de depender de placeholders e passar a servir dados confiaveis.
 
-### Tarefas
+### Faltando
 
-- [ ] Modelar entidades principais: `Asset`, `AssetCategory`, `Quote`, `DividendEvent`, `EarningsEvent`, `RelevantFact`, `IndicatorSnapshot`, `NewsItem`
-- [ ] Criar migracoes Flyway para as tabelas acima
-- [ ] Criar pipeline de ingestao separado da API transacional
-- [ ] Definir estrategia para identificadores de ativos nacionais e internacionais
-- [ ] Implementar historico de cotacoes e snapshots de indicadores
-- [ ] Salvar origem do dado, timestamp da coleta e status de confianca
-- [ ] Criar jobs para sincronizacao incremental e reprocessamento
-- [ ] Criar validacoes de consistencia para dados faltantes ou divergentes
-- [ ] Criar endpoints de leitura paginados e filtraveis
-- [ ] Preparar cache para consultas mais acessadas
+- [x] Modelagem do dominio de mercado com `Asset`, `AssetCategory`, `QuoteHistory`, `DividendEvent`, `EarningsEvent`
+- [ ] Adicionar `RelevantFact`, `IndicatorSnapshot`, `NewsItem`
+- [ ] Criar migracoes adicionais para fatos relevantes, snapshots de indicadores e noticias
+- [ ] Implementar ingestao/sincronizacao externa de dados de mercado (hoje apenas seed/dev)
+- [ ] Salvar origem do dado, horario da ultima atualizacao e status de confianca
+- [ ] Criar jobs de sincronizacao incremental e reprocessamento com fonte real
+- [ ] Criar validacoes de consistencia e tratamento de divergencia
+- [ ] Criar cache para endpoints pesados de mercado
 
-### Entregaveis
+### Incompleto hoje
 
-- Modelo de dados de mercado
-- Mecanismo inicial de sincronizacao
-- Endpoints publicos de leitura
+- [ ] O schema inicial existe, mas nao ha pipeline real de ingestao nem endpoints sustentando todo o dominio
 
-## Epico 3 - Busca global e descoberta de ativos
+## Epico 3 - Busca global e exploracao de ativos
 
 ### Objetivo
 
-Fazer o usuario encontrar qualquer ativo e navegar com rapidez.
+Concluir o modulo de busca e descoberta com dados reais e navegacao forte.
 
-### Tarefas de frontend
+### Faltando
 
-- [ ] Substituir a pagina simples de `assets` por hub de descoberta
-- [ ] Criar busca global com autocomplete, atalhos de teclado e historico recente
-- [ ] Adicionar filtros por tipo: acoes, FIIs, BDRs, ETFs, stocks, reits, criptos, renda fixa, indices, moedas, commodities
-- [ ] Exibir cards e tabelas responsivas com estados de carregamento e vazio
-- [ ] Criar navegacao rapida para detalhes, comparador, favoritos e carteira
+- [x] Implementar backend real para `search`, `featured`, `trending` e `categories`
+- [ ] Implementar ordenacao por relevancia de busca
+- [ ] Adicionar filtros reais por categoria, setor e tipo de ativo
+- [ ] Trocar qualquer dado fake ou parcial por resposta de API validada no frontend
+- [ ] Adicionar historico recente e atalhos de teclado na busca
+- [ ] Melhorar acessibilidade da busca com foco, announcer e navegacao por teclado
 
-### Tarefas de backend
+### Incompleto hoje
 
-- [ ] Criar endpoint de busca global por ticker, nome e categoria
-- [ ] Implementar ordenacao por relevancia
-- [ ] Expor ativos em destaque, mais buscados e tendencias
+- [ ] A interface de busca existe, mas ainda depende de a API esperada existir de verdade
 
-### Acessibilidade
-
-- [ ] Garantir busca completamente operavel por teclado
-- [ ] Anunciar resultados dinamicos para leitor de tela
-- [ ] Garantir alvo de toque adequado em mobile
-
-### Entregaveis
-
-- Busca global
-- Pagina de ativos com filtros reais
-- Navegacao de descoberta consistente
-
-## Epico 4 - Pagina de detalhe de ativo
+## Epico 4 - Pagina de detalhe de ativo completa
 
 ### Objetivo
 
-Criar a principal tela de valor do produto.
+Transformar a tela de detalhe em modulo completo e funcional.
 
-### Tarefas
+### Faltando
 
-- [ ] Criar rota publica de detalhe por ativo
-- [ ] Exibir resumo do ativo com preco, variacao, setor, segmento e descricao curta
-- [ ] Exibir indicadores fundamentalistas com glossario e explicacao simples
-- [ ] Exibir historico de cotacao com grafico e fallback tabular
-- [ ] Exibir dividendos/proventos historicos e agenda futura
-- [ ] Exibir calendario de resultados e fatos relevantes
-- [ ] Exibir bloco de tese resumida e riscos principais
-- [ ] Exibir comparacao rapida com setor e media da categoria
-- [ ] Permitir favoritar, adicionar a carteira e abrir comparador
-- [ ] Criar SEO tecnico para paginas publicas
+- [ ] Implementar grafico historico real em vez de placeholder (backend pronto)
+- [ ] Trazer dividendos historicos e agenda futura por API (backend pronto; falta integrar)
+- [ ] Trazer calendario de resultados e fatos relevantes por API
+- [ ] Implementar tese resumida, riscos principais e comparacao com setor
+- [ ] Fazer os botoes de favoritar, comparar e adicionar a carteira funcionarem de verdade (backend pronto)
+- [ ] Adicionar glossario simples para indicadores
+- [ ] Preparar SEO tecnico das paginas publicas
+- [ ] Criar fallback tabular e resumo textual para graficos
 
-### Acessibilidade
+### Incompleto hoje
 
-- [ ] Garantir hierarquia correta de headings
-- [ ] Incluir resumo textual para graficos
-- [ ] Garantir tabelas responsivas com contexto preservado
+- [ ] A pagina carrega dados basicos do ativo, mas varias acoes ainda sao placeholder local
 
-### Entregaveis
-
-- Pagina de detalhe completa para cada classe de ativo
-
-## Epico 5 - Dashboard inicial e homepage publica
+## Epico 5 - Dashboard e homepage conectados ao produto real
 
 ### Objetivo
 
-Tornar a primeira experiencia mais forte que a referencia.
+Evoluir as telas iniciais para servirem valor real ao usuario.
 
-### Tarefas
+### Faltando
 
-- [ ] Evoluir `dashboard` atual para diferenciar visitante e usuario logado
-- [ ] Criar homepage publica com secoes de mercado, rankings, noticias, agenda e atalhos
-- [ ] Criar dashboard logado com personalizacao por widgets
-- [ ] Exibir resumo da carteira, watchlist, calendario e insights
-- [ ] Criar onboarding guiado para iniciantes
-- [ ] Criar atalhos para os fluxos principais em ate 1 clique
+- [ ] Diferenciar claramente homepage publica e dashboard logado
+- [ ] Integrar dashboard com carteira, watchlist, eventos e insights reais
+- [ ] Adicionar widgets configuraveis no dashboard logado
+- [ ] Criar onboarding guiado de usuario iniciante
+- [ ] Exibir alertas, favoritos e calendario pessoal no dashboard
 
-### Entregaveis
+### Incompleto hoje
 
-- Homepage publica
-- Dashboard logado modular
-- Onboarding inicial
+- [ ] A homepage existe e usa dados esperados da API, mas o dashboard ainda precisa ficar mais orientado a uso real
 
-## Epico 6 - Rankings de ativos
+## Epico 6 - Rankings reais e configuraveis
 
 ### Objetivo
 
-Entregar rankings mais uteis, mais confiaveis e mais rapidos.
+Concluir rankings com criterios, performance e confiabilidade.
 
-### Tarefas
+### Faltando
 
-- [ ] Criar modulo `rankings` no frontend
-- [ ] Implementar rankings por tipo de ativo
-- [ ] Permitir ordenacao, filtros, presets e exportacao
-- [ ] Criar rankings prontos: maiores dividendos, menor P/VP, maior ROE, maior liquidez, maior receita, maior lucro, mais buscados
-- [ ] Exibir metodologia do ranking e timestamp da ultima atualizacao
-- [ ] Permitir salvar ranking como visualizacao favorita
-- [ ] Criar endpoint backend para rankings configuraveis
+- [ ] Implementar backend real para rankings por criterio
+- [ ] Adicionar filtros, presets, exportacao e paginacao
+- [ ] Incluir mais rankings prontos alem dos basicos
+- [ ] Exibir metodologia do ranking e data da ultima atualizacao
+- [ ] Permitir salvar visualizacoes favoritas
 
-### Entregaveis
+### Incompleto hoje
 
-- Rankings publicos e filtraveis
-- Presets prontos para usuario iniciante
+- [ ] A pagina existe, mas depende de endpoints e regras de ordenacao completas no backend
 
-## Epico 7 - Comparador de ativos
+## Epico 7 - Comparador de ativos completo
 
 ### Objetivo
 
-Permitir comparacao clara entre multiplos ativos.
+Levar o comparador de uma tela funcional para um recurso forte.
 
-### Tarefas
+### Faltando
 
-- [ ] Criar fluxo para adicionar ativos ao comparador a partir da busca e do detalhe
-- [ ] Permitir comparar 2 a 5 ativos simultaneamente
-- [ ] Exibir comparacao por indicadores, dividendos, desempenho e risco
-- [ ] Destacar melhores e piores valores por criterio
-- [ ] Criar modo mobile com comparacao por secoes em vez de tabela gigante
+- [ ] Criar endpoint agregador para comparacao
+- [ ] Adicionar comparacao de dividendos, desempenho, risco e eventos
+- [ ] Destacar melhores e piores metricas automaticamente
+- [ ] Criar modo mobile melhor que tabela simples
 - [ ] Criar link compartilhavel da comparacao
-- [ ] Criar endpoint backend agregando dados comparativos
+- [ ] Integrar adicionar ao comparador a partir do detalhe do ativo
 
-### Entregaveis
+### Incompleto hoje
 
-- Comparador funcional para todas as classes suportadas
+- [ ] O comparador existe no frontend, mas ainda trabalha de forma simples e local
 
-## Epico 8 - Screener / rastreador de ativos
-
-### Objetivo
-
-Superar a referencia em descoberta de oportunidades.
-
-### Tarefas
-
-- [ ] Criar construtor de filtros com operadores compostos
-- [ ] Permitir filtros por categoria, setor, indicadores, liquidez, dividendos, preco, variacao e crescimento
-- [ ] Permitir salvar screeners
-- [ ] Permitir duplicar, editar e compartilhar screeners
-- [ ] Criar resultados paginados e exportaveis
-- [ ] Criar endpoint backend para filtragem dinamica com validacao segura
-- [ ] Criar presets iniciais: dividendos, valor, qualidade, crescimento, renda passiva
-
-### Entregaveis
-
-- Screener avancado com filtros salvos
-
-## Epico 9 - Calendarios e eventos de mercado
+## Epico 8 - Screener com motor real de filtros
 
 ### Objetivo
 
-Centralizar os eventos mais importantes do investidor.
+Trocar o filtro local por um screener de verdade.
 
-### Tarefas
+### Faltando
 
-- [ ] Criar modulo de agenda de dividendos
-- [ ] Criar modulo de agenda de resultados
-- [ ] Criar modulo de fatos relevantes e comunicados
-- [ ] Criar modulo de IPOs e eventos especiais
-- [ ] Permitir filtros por data, categoria, ativo e carteira do usuario
-- [ ] Permitir notificacao e favorito por evento
-- [ ] Integrar eventos ao dashboard e as paginas de ativos
+- [ ] Criar endpoint backend de screener com filtros dinamicos e validacao segura
+- [ ] Implementar operadores compostos e filtros mais profundos
+- [ ] Adicionar paginacao e exportacao
+- [ ] Permitir salvar, editar, duplicar e compartilhar screeners
+- [ ] Criar presets sustentados por dados reais
 
-### Entregaveis
+### Incompleto hoje
 
-- Calendario unificado
-- Visao personalizada por carteira
+- [ ] O screener atual filtra dados no frontend e nao representa um motor real de rastreamento
 
-## Epico 10 - Carteira, proventos e metas
+## Epico 9 - Calendarios e eventos
 
 ### Objetivo
 
-Converter o produto em gestor de carteira, nao apenas vitrine de dados.
+Completar agenda de mercado e integrar com o resto da plataforma.
 
-### Tarefas de backend
+### Faltando
 
-- [ ] Modelar `Portfolio`, `PortfolioHolding`, `Transaction`, `DividendReceipt`, `Goal`, `Benchmark`
-- [ ] Criar migracoes Flyway da carteira
-- [ ] Criar endpoints para CRUD de carteira e lancamentos
-- [ ] Integrar classificacao bancaria com lancamentos quando fizer sentido
-- [ ] Criar calculo de preco medio, rentabilidade, alocacao e proventos
-- [ ] Criar benchmark comparativo
-- [ ] Criar trilha tributaria basica para IR
+- [ ] Implementar agenda de dividendos com API real
+- [ ] Criar agenda de resultados
+- [ ] Criar fatos relevantes e comunicados
+- [ ] Criar eventos especiais e IPOs
+- [ ] Permitir filtros por ativo, data, categoria e carteira
+- [ ] Integrar eventos ao dashboard, detalhe do ativo e notificacoes
 
-### Tarefas de frontend
+### Incompleto hoje
 
-- [ ] Criar modulo `wallet`
-- [ ] Criar telas de resumo, holdings, lancamentos, proventos, metas, benchmark e analise
-- [ ] Permitir adicionar compra, venda, dividendo, bonificacao e transferencia
+- [ ] O calendario de dividendos existe visualmente, mas ainda usa dados mockados
+
+## Epico 10 - Carteira, holdings, lancamentos e benchmark
+
+### Objetivo
+
+Transformar a carteira em modulo produtivo real.
+
+### Faltando no backend
+
+- [x] Criar CRUD real de carteiras
+- [x] Criar CRUD de holdings e movimentacoes
+- [ ] Criar CRUD de proventos
+- [ ] Calcular preco medio, lucro/prejuizo, alocacao, benchmark e consolidado
+- [ ] Integrar goals, benchmark snapshots e dividend receipts ao dominio
+- [ ] Integrar classificacao bancaria com movimentacoes quando aplicavel
+- [ ] Criar base para visao tributaria
+
+### Faltando no frontend
+
+- [ ] Parar de usar dados aleatorios na tela de carteira
+- [ ] Integrar holdings, movimentacoes e proventos a endpoints reais
+- [ ] Criar fluxo de nova movimentacao funcional
+- [ ] Criar abas reais para movimentacoes, proventos, metas e benchmark
 - [ ] Criar visao por carteira e consolidada
-- [ ] Exibir calendario pessoal de proventos e eventos
-- [ ] Criar empty states educativos para iniciantes
 
-### Entregaveis
+### Incompleto hoje
 
-- Carteira completa
-- Proventos e metas
-- Benchmark e consolidado
+- [ ] O schema parcial existe e a tela existe, mas a carteira ainda nao esta implementada de ponta a ponta
 
-## Epico 11 - Watchlist, favoritos e alertas
+## Epico 11 - Favoritos, watchlists e alertas
 
 ### Objetivo
 
-Manter o usuario engajado com monitoramento relevante.
+Concluir persistencia e notificacao dos recursos de acompanhamento.
 
-### Tarefas
+### Faltando
 
-- [ ] Criar favoritos por usuario
-- [ ] Criar watchlists customizadas
-- [ ] Permitir alertas de preco, dividendos, resultado e variacao
+- [x] Persistir favoritos por usuario
+- [x] Criar watchlists customizadas reais
+- [x] Implementar CRUD de itens de watchlist
+- [x] Implementar alertas de preco, dividendos, resultados e variacao (endpoint pronto; logica de disparo pendente)
 - [ ] Criar central de notificacoes no frontend
-- [ ] Implementar preferencia granular de notificacoes
-- [ ] Exibir eventos relevantes no dashboard
+- [ ] Criar preferencias de notificacao por usuario
 
-### Entregaveis
+### Incompleto hoje
 
-- Favoritos
-- Alertas configuraveis
-- Centro de notificacoes
+- [ ] O banco ja tem tabelas para watchlist e alertas, mas a tela de favoritos ainda usa lista local
 
-## Epico 12 - IA util de verdade
+## Epico 12 - IA contextual e util
 
 ### Objetivo
 
-Aproveitar a base de IA ja existente como diferencial pratico.
+Evoluir a IA de respostas fixas para inteligencia aplicada ao usuario.
 
-### Tarefas
+### Faltando
 
-- [ ] Evoluir `ai-analysis` para usar contexto real da carteira e dos ativos
+- [ ] Usar dados reais da carteira para score, risco e recomendacoes
 - [ ] Criar resumo automatico de ativo em linguagem simples
 - [ ] Criar explicador de indicadores
 - [ ] Criar comparacao assistida por IA
-- [ ] Criar resumo de carteira com pontos fortes, riscos e concentracao
-- [ ] Criar disclaimers e nivel de confianca da resposta
-- [ ] Registrar feedback do usuario sobre utilidade das respostas
+- [ ] Criar resumo da carteira com concentracao, riscos e oportunidades
+- [ ] Adicionar disclaimer, confianca e feedback do usuario
 
-### Entregaveis
+### Incompleto hoje
 
-- IA contextual na carteira
-- IA contextual no detalhe de ativo
-- Explicacoes simples para iniciantes
+- [ ] A IA atual ainda retorna respostas basicas e estaticas demais
 
 ## Epico 13 - Noticias, educacao e glossario
 
 ### Objetivo
 
-Conectar conteudo e decisao de investimento.
+Trocar conteudo mockado por conteudo util e integrado.
 
-### Tarefas
+### Faltando
 
-- [ ] Criar modulo de noticias com relacionamento por ativo
-- [ ] Criar pagina de conteudo educacional e trilhas por perfil
+- [ ] Integrar noticias reais relacionadas a ativos
+- [ ] Criar dominio backend para noticias e relacionamento por simbolo
+- [ ] Criar modulo de educacao por trilhas e perfil
 - [ ] Criar glossario de termos financeiros
-- [ ] Exibir noticias relacionadas na pagina do ativo
-- [ ] Exibir conteudo educativo contextual em momentos de duvida
-- [ ] Criar blocos "entenda este indicador" e "como interpretar"
+- [ ] Exibir contexto educativo nas paginas de ativo e indicadores
 
-### Entregaveis
+### Incompleto hoje
 
-- Noticias contextualizadas
-- Centro educacional
-- Glossario navegavel
+- [ ] A pagina de noticias existe, mas ainda usa dados locais
 
 ## Epico 14 - Calculadoras e simuladores
 
 ### Objetivo
 
-Cobrir ferramentas utilitarias esperadas pelo mercado.
+Polir e ampliar as calculadoras ja iniciadas.
 
-### Tarefas
+### Faltando
 
-- [ ] Criar calculadora de juros compostos
-- [ ] Criar calculadora de reserva de emergencia
-- [ ] Criar simulador de dividendos
-- [ ] Criar simulador de meta patrimonial
-- [ ] Criar simulador de renda fixa
-- [ ] Garantir acessibilidade e compartilhamento de resultados
+- [ ] Adicionar simulador de renda fixa
+- [ ] Melhorar validacao de formularios e tratamento de erro
+- [ ] Melhorar acessibilidade das calculadoras
+- [ ] Permitir compartilhamento de resultados
+- [ ] Padronizar apresentacao e explicacoes educativas
 
-### Entregaveis
+### Incompleto hoje
 
-- Suite de calculadoras financeiras
+- [ ] As calculadoras basicas existem, mas ainda faltam cobertura completa e refinamento
 
-## Epico 15 - Premium, assinatura e feature gating
+## Epico 15 - Premium e controle de acesso
 
 ### Objetivo
 
-Monetizar sem destruir a experiencia base.
+Fechar monetizacao e gating de recursos.
 
-### Tarefas
+### Faltando
 
-- [ ] Revisar `subscription` atual para planos claros e comparaveis
-- [ ] Definir grade de recursos free vs premium
+- [ ] Revisar assinatura atual e alinhar planos com recursos reais
 - [ ] Implementar feature flags por assinatura
-- [ ] Criar paywall contextual e nao intrusivo
-- [ ] Implementar limites de uso por recurso premium
+- [ ] Criar paywall contextual
+- [ ] Implementar limites de uso por plano
 - [ ] Medir conversao por tela e recurso
 
-### Entregaveis
-
-- Assinatura consistente
-- Controles de acesso por plano
-
-## Epico 16 - Admin, curadoria e operacao
+## Epico 16 - Admin e operacao
 
 ### Objetivo
 
-Permitir operacao segura da plataforma.
+Dar capacidade operacional para sustentar o produto.
 
-### Tarefas
+### Faltando
 
 - [ ] Criar area admin protegida
-- [ ] Gerenciar ativos, categorias e status de cobertura
-- [ ] Revisar noticias, eventos e conteudo educativo
-- [ ] Reprocessar sincronizacoes com falha
+- [ ] Gerenciar ativos, categorias, noticias, eventos e conteudo
+- [ ] Reprocessar ingestoes com falha
+- [ ] Criar dashboard operacional de jobs, erros e filas
 - [ ] Auditar alteracoes de dados
-- [ ] Criar dashboard operacional com filas, erros e jobs
 
-### Entregaveis
-
-- Painel administrativo minimo viavel
-
-## Epico 17 - Acessibilidade e UX operacional
+## Epico 17 - Acessibilidade e UX transversal
 
 ### Objetivo
 
-Fazer acessibilidade ser requisito continuo, nao retoque final.
+Fechar o gap entre interface pronta e experiencia acessivel de verdade.
 
-### Tarefas
+### Faltando
 
-- [ ] Auditar todas as paginas atuais e futuras com foco em WCAG 2.2 AA
-- [ ] Revisar contraste, foco, ordem de tabulacao e semantica
-- [ ] Criar padrao de erro acessivel para formularios
-- [ ] Garantir fallback tabular para graficos
+- [ ] Auditar as telas atuais com foco em WCAG 2.2 AA
+- [ ] Revisar contraste, tabulacao, semantica e foco visivel
+- [ ] Garantir navegacao completa por teclado
+- [ ] Criar padrao acessivel para mensagens de erro
+- [ ] Garantir fallback tabular e resumo textual para graficos
 - [ ] Implementar `prefers-reduced-motion`
-- [ ] Criar testes automatizados de acessibilidade para fluxos criticos
-- [ ] Rodar testes moderados com usuarios reais
-
-### Entregaveis
-
-- Base acessivel validada
-- Checklist e testes automatizados
+- [ ] Testar com leitores de tela e usuarios reais
 
 ## Epico 18 - Qualidade, testes e observabilidade
 
 ### Objetivo
 
-Dar confiabilidade ao produto e ao time.
+Trocar cobertura ilustrativa por qualidade real.
 
-### Tarefas
+### Faltando
 
-- [ ] Criar testes unitarios para servicos backend e componentes frontend criticos
-- [ ] Criar testes de integracao para auth, ativos, carteira e rankings
+- [ ] Criar testes unitarios reais para componentes e servicos principais
+- [ ] Criar testes de integracao no backend
 - [ ] Criar testes E2E para login, busca, detalhe, comparador, screener e carteira
-- [ ] Medir cobertura minima dos fluxos criticos
-- [ ] Configurar pipeline de build, teste e validacoes de qualidade
-- [ ] Criar metricas de performance frontend e backend
-- [ ] Criar alertas operacionais para falhas de jobs e APIs
+- [ ] Substituir specs ilustrativos por testes do comportamento real
+- [ ] Configurar pipeline de qualidade
+- [ ] Criar metricas e health checks de negocio e infraestrutura
+- [ ] Criar alertas operacionais para falha de API, job e ingestao
 
-### Entregaveis
+## 4. Prioridade recomendada agora
 
-- Pipeline de qualidade
-- Suite minima de testes
-- Visibilidade operacional
+### P0 - Bloqueios principais
 
-## 4. Backlog por Fase
+- [ ] Epico 1 (auth real, versionamento, admin/news/subscription)
+- [ ] Epico 2 (ingestao externa, fatos relevantes, snapshots)
+- [ ] Epico 10 (proventos, calculos, metas/benchmark)
+- [ ] Epico 11 (notificacoes/front, preferencias, disparo de alertas)
 
-## Fase 1 - Base e descoberta
+### P1 - Finalizar modulos ja visiveis
 
-### Meta
-
-Deixar o produto com fundacao forte e primeira experiencia publica relevante.
-
-### Itens
-
-- [ ] Epico 1
-- [ ] Epico 2
 - [ ] Epico 3
 - [ ] Epico 4
-- [ ] Epico 5
-- [ ] Primeiros itens do Epico 17
-- [ ] Primeiros itens do Epico 18
-
-## Fase 2 - Analise e comparacao
-
-### Meta
-
-Transformar o produto em ferramenta real de pesquisa de ativos.
-
-### Itens
-
 - [ ] Epico 6
 - [ ] Epico 7
 - [ ] Epico 8
 - [ ] Epico 9
-
-## Fase 3 - Carteira e recorrencia
-
-### Meta
-
-Fazer o usuario voltar diariamente e gerir sua carteira na plataforma.
-
-### Itens
-
-- [ ] Epico 10
-- [ ] Epico 11
-- [ ] Parte aplicada do Epico 12
-
-## Fase 4 - Conteudo e monetizacao
-
-### Meta
-
-Expandir valor percebido e conversao.
-
-### Itens
-
+- [ ] Epico 12
 - [ ] Epico 13
-- [ ] Epico 14
+
+### P2 - Robustez e escala
+
 - [ ] Epico 15
 - [ ] Epico 16
+- [ ] Epico 17
+- [ ] Epico 18
 
-## Fase 5 - Diferenciacao competitiva
+## 5. Proximas sprints recomendadas
 
-### Meta
+## Sprint 1 (concluida)
 
-Consolidar vantagem frente a concorrencia.
+- [x] Criar controllers e services reais de `market`
+- [x] Criar entidades e repositories de mercado
+- [x] Expor `search`, `featured`, `trending`, `categories` e `asset detail`
+- [ ] Integrar detalhe do ativo com dados reais alem dos campos basicos (falta frontend)
+- [x] Padronizar resposta de API e erros
 
-### Itens
+## Sprint 2 (concluida parcialmente)
 
-- [ ] Profundidade total do Epico 12
-- [ ] Personalizacao avancada no dashboard
-- [ ] Insights proativos por perfil
-- [ ] Otimizacoes finais de UX, acessibilidade e performance
+- [x] Criar backend real de carteira e holdings
+- [ ] Remover dados aleatorios da pagina `wallet`
+- [x] Criar favoritos e watchlists persistidos
+- [ ] Fazer botoes de detalhe do ativo funcionarem de verdade
+- [x] Criar testes de integracao para market e wallet
 
-## 5. Primeiras Sprints Recomendadas
+## Sprint 3 (planejada)
 
-## Sprint 1
+- [ ] Criar rankings reais (ajustar ordenacao/criterios e integrar frontend)
+- [ ] Criar comparador com endpoint agregador
+- [ ] Criar screener backend
+- [ ] Integrar agenda de dividendos real
+- [ ] Melhorar acessibilidade de busca, tabelas e graficos
 
-- [ ] Reorganizar estrutura Angular por dominio
-- [ ] Criar design system base
-- [ ] Padronizar respostas e erros no backend
-- [ ] Criar entidades e migracoes iniciais de ativos
-- [ ] Criar endpoint `/api/v1/assets/search`
-- [ ] Evoluir pagina `assets` para listagem filtravel simples
+## Sprint 4 (planejada)
 
-## Sprint 2
+- [ ] Evoluir IA com contexto real da carteira
+- [ ] Integrar noticias reais
+- [ ] Finalizar alertas (disparo + central frontend)
+- [ ] Criar observabilidade basica
+- [ ] Iniciar area admin
 
-- [ ] Criar homepage publica
-- [ ] Criar detalhe basico de ativo
-- [ ] Integrar cotacao, indicadores e dividendos
-- [ ] Melhorar acessibilidade dos fluxos de login, cadastro e busca
-- [ ] Adicionar testes unitarios minimos no frontend e backend
+## 6. Definicao de pronto
 
-## Sprint 3
+Um item deste backlog so pode ser considerado concluido quando tiver:
 
-- [ ] Criar rankings iniciais
-- [ ] Criar favoritos
-- [ ] Integrar atalhos de adicionar ativo a favoritos e comparador
-- [ ] Criar observabilidade basica e metricas de API
-
-## Sprint 4
-
-- [ ] Criar comparador v1
-- [ ] Criar agenda de dividendos v1
-- [ ] Criar watchlist simples
-- [ ] Evoluir `ai-analysis` com contexto de ativo
-
-## 6. Dependencias Criticas
-
-- Sem Epico 2, os modulos publicos vao parecer incompletos ou inconsistentes
-- Sem Epico 1, o frontend tende a virar um conjunto de paginas isoladas
-- Sem Epico 17, a melhoria "mais acessivel" nao se sustenta
-- Sem Epico 18, o crescimento vai aumentar regressao e retrabalho
-- Epicos 6 a 12 dependem fortemente da qualidade da modelagem dos Epicos 2 e 10
-
-## 7. Definicao de pronto por modulo
-
-- Interface responsiva desktop e mobile
-- Navegacao por teclado funcional
-- Contraste validado
-- Estados de loading, erro e vazio implementados
-- Telemetria basica do fluxo
-- Testes minimos cobrindo regras criticas
-- Documentacao curta de uso tecnico e funcional
-- Endpoint ou contrato versionado quando houver backend
-
-## 8. Proxima acao sugerida
-
-Se o time for executar isso agora, a melhor sequencia e:
-
-1. Fundacao de arquitetura
-2. Base de dados de mercado
-3. Busca e detalhe de ativo
-4. Rankings e comparador
-5. Carteira e alertas
-6. IA contextual e monetizacao
+- frontend integrado a backend real
+- persistencia real quando aplicavel
+- estados de loading, erro e vazio
+- navegacao por teclado e semantica minima
+- testes cobrindo o fluxo principal
+- ausencia de mock, placeholder ou dado aleatorio no fluxo final
