@@ -8,7 +8,6 @@ Plataforma de investimentos full-stack com backend em Spring Boot/Kotlin e front
 - Infra: Docker, Nginx
 
 ## Pré-requisitos
-- Java 25
 - Node.js 20+ e npm 10+
 - PostgreSQL (ou usar perfis dev com seed)
 
