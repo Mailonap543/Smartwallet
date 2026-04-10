@@ -201,6 +201,31 @@ export class ApiService {
       .pipe(map((res: ApiResponse<{code: string; name: string}[]>) => res.data as {code: string; name: string}[]));
   }
 
+  getFactsBySymbol(symbol: string): Observable<any[]> {
+    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/facts/${symbol}`, { headers: this.getAuthHeaders() })
+      .pipe(map((res: ApiResponse<any[]>) => res.data as any[]));
+  }
+
+  getDividendsBySymbol(symbol: string): Observable<any[]> {
+    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/assets/${symbol}/dividends`, { headers: this.getAuthHeaders() })
+      .pipe(map((res: ApiResponse<any[]>) => res.data as any[]));
+  }
+
+  getEarningsBySymbol(symbol: string): Observable<any[]> {
+    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/assets/${symbol}/earnings`, { headers: this.getAuthHeaders() })
+      .pipe(map((res: ApiResponse<any[]>) => res.data as any[]));
+  }
+
+  getHistory(symbol: string, period = '3M'): Observable<any[]> {
+    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/assets/${symbol}/history?period=${period}`, { headers: this.getAuthHeaders() })
+      .pipe(map((res: ApiResponse<any[]>) => res.data as any[]));
+  }
+
+  getNews(page = 0, size = 20): Observable<any> {
+    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/news?page=${page}&size=${size}`, { headers: this.getAuthHeaders() })
+      .pipe(map((res: ApiResponse<any>) => res.data));
+  }
+
   searchMarket(query: string, category?: string, page = 0, size = 20): Observable<{content: Asset[]; totalElements: number; totalPages: number}> {
     let url = `${this.baseUrl}/market/search?q=${encodeURIComponent(query)}&page=${page}&size=${size}`;
     if (category) url += `&category=${category}`;

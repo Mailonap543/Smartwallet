@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Entity
 @Table(name = "assets", indexes = {
     @Index(name = "idx_asset_symbol", columnList = "symbol"),
     @Index(name = "idx_asset_category", columnList = "category_id"),

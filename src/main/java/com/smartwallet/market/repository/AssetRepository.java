@@ -44,4 +44,28 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
     
     @Query("SELECT COUNT(a) FROM Asset a WHERE a.category = :category AND a.isActive = true")
     long countByCategory(@Param("category") AssetCategory category);
+
+    @Query("SELECT a FROM Asset a WHERE a.dividendYield IS NOT NULL AND a.dividendYield > 0 AND a.isActive = true ORDER BY a.dividendYield DESC")
+    Page<Asset> findTopByDividendYield(Pageable pageable);
+    
+    @Query("SELECT a FROM Asset a WHERE a.priceToBook IS NOT NULL AND a.priceToBook > 0 AND a.isActive = true ORDER BY a.priceToBook ASC")
+    Page<Asset> findLowestPriceToBook(Pageable pageable);
+    
+    @Query("SELECT a FROM Asset a WHERE a.roe IS NOT NULL AND a.isActive = true ORDER BY a.roe DESC")
+    Page<Asset> findHighestROE(Pageable pageable);
+    
+    @Query("SELECT a FROM Asset a WHERE a.revenue IS NOT NULL AND a.isActive = true ORDER BY a.revenue DESC")
+    Page<Asset> findHighestRevenue(Pageable pageable);
+    
+    @Query("SELECT a FROM Asset a WHERE a.netIncome IS NOT NULL AND a.isActive = true ORDER BY a.netIncome DESC")
+    Page<Asset> findHighestNetIncome(Pageable pageable);
+    
+    @Query("SELECT a FROM Asset a WHERE a.dayVolume IS NOT NULL AND a.isActive = true ORDER BY a.dayVolume DESC")
+    Page<Asset> findHighestVolume(Pageable pageable);
+    
+    @Query("SELECT a FROM Asset a WHERE a.changePercent IS NOT NULL AND a.changePercent > 0 AND a.isActive = true ORDER BY a.changePercent DESC")
+    Page<Asset> findTopGainers(Pageable pageable);
+    
+    @Query("SELECT a FROM Asset a WHERE a.changePercent IS NOT NULL AND a.changePercent < 0 AND a.isActive = true ORDER BY a.changePercent ASC")
+    Page<Asset> findTopLosers(Pageable pageable);
 }

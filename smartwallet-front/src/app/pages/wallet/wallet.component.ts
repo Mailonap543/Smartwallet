@@ -1,6 +1,9 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ApiService, Asset } from '../../services/api.service';
+import { CardComponent } from '../../shared/card-input.component';
+import { ButtonComponent } from '../../shared/button.component';
 
 interface Holding {
   asset: Asset;
@@ -107,9 +110,18 @@ export class WalletComponent implements OnInit {
   showAddModal = false;
 
   ngOnInit() {
+    this.holdings = Array(5).fill(0).map((_, i) => ({
+      asset: { symbol: ` Asset${i + 1}`, name: `Empresa ${i + 1}`, currentPrice: Math.random() * 100 } as Asset,
+      quantity: Math.floor(Math.random() * 100),
+      avgPrice: Math.random() * 100,
+      currentPrice: Math.random() * 100,
+      totalValue: Math.random() * 10000,
+      profitLoss: Math.random() * 1000 - 500,
+      profitLossPercent: Math.random() * 20 - 10
     }));
     this.totalValue = this.holdings.reduce((sum, h) => sum + h.totalValue, 0);
     this.totalPL = this.holdings.reduce((sum, h) => sum + h.profitLoss, 0);
     this.totalInvested = this.totalValue - this.totalPL;
+    this.totalPLPercent = (this.totalPL / this.totalInvested) * 100;
   }
 }

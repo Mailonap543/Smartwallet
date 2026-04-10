@@ -2,6 +2,8 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService, Asset } from '../../services/api.service';
+import { LoadingComponent } from '../../shared/loading.component';
+import { ButtonComponent } from '../../shared/button.component';
 
 @Component({
   selector: 'app-homepage',

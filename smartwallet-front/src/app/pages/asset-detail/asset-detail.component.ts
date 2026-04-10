@@ -2,6 +2,9 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiService, Asset } from '../../services/api.service';
+import { LoadingComponent } from '../../shared/loading.component';
+import { ButtonComponent } from '../../shared/button.component';
+import { CardComponent } from '../../shared/card-input.component';
 
 @Component({
   selector: 'app-asset-detail',

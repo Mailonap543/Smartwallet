@@ -24,6 +24,11 @@ public class Wallet {
 
     @Column(nullable = false)
     private String name;
+ feature/sistema-saas-planos
+    private String description;
+
+    @Column(name = "total_balance", precision = 15, scale = 2)
+    private BigDecimal totalBalance = BigDecimal.ZERO;
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -39,6 +44,7 @@ public class Wallet {
     @Column(name = "total_profit_loss", precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal totalProfitLoss = BigDecimal.ZERO;
+
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -56,4 +62,19 @@ public class Wallet {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public BigDecimal getTotalBalance() { return totalBalance; }
+    public void setTotalBalance(BigDecimal totalBalance) { this.totalBalance = totalBalance; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

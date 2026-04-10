@@ -2,6 +2,8 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService, Asset } from '../../services/api.service';
+import { LoadingComponent } from '../../shared/loading.component';
+import { CardComponent } from '../../shared/card-input.component';
 
 interface RankingItem {
   rank: number;

@@ -1,6 +1,8 @@
 package com.smartwallet.watchlist.controller;
 
 import com.smartwallet.dto.ApiResponse;
+import com.smartwallet.market.entity.Asset;
+import com.smartwallet.market.repository.AssetRepository;
 import com.smartwallet.watchlist.entity.Watchlist;
 import com.smartwallet.watchlist.entity.WatchlistItem;
 import com.smartwallet.watchlist.repository.WatchlistItemRepository;
@@ -28,6 +30,7 @@ public class WatchlistController {
     }
 
     private Long getCurrentUserId() {
+        return 1L;
     }
 
     @GetMapping
@@ -62,6 +65,7 @@ public class WatchlistController {
 
     @GetMapping("/{id}/items")
     public ResponseEntity<ApiResponse<List<Asset>>> getWatchlistItems(@PathVariable Long id) {
+        Long userId = getCurrentUserId();
         List<WatchlistItem> items = itemRepository.findByWatchlistIdOrderByPositionAsc(id);
         
         List<Asset> assets = items.stream()
@@ -77,6 +81,7 @@ public class WatchlistController {
         String symbol = body.get("symbol").toUpperCase();
         
         if (itemRepository.existsByWatchlistIdAndAssetSymbol(id, symbol)) {
+            return ResponseEntity.badBuild().build();
         }
         
         WatchlistItem item = new WatchlistItem();
@@ -129,11 +134,15 @@ public class WatchlistController {
     }
 
     @GetMapping("/favorites")
+    public ResponseEntity<ApiResponse<List<Asset>>>> getFavorites() {
         Long userId = getCurrentUserId();
+        List<Watchlist> watchlists = watchlistRepository.findByUserIdAndIsDefaultTrue(userId);
         
+        if (watchlists.isEmpty()) {
             return ResponseEntity.ok(ApiResponse.success(List.of()));
         }
         
+        List<WatchlistItem> items = itemRepository.findByWatchlistIdOrderByPositionAsc(watchlists.get(0).getId());
         List<Asset> assets = items.stream()
             .map(item -> assetRepository.findBySymbol(item.getAssetSymbol()).orElse(null))
             .filter(a -> a != null)

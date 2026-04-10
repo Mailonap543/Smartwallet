@@ -30,6 +30,7 @@ public class PlanService {
 
     public void validateWalletCreation(Long userId) {
         PlanType plan = getUserPlan(userId);
+        int currentWallets = userRepository.countWalletsByUserId(userId);
         
         if (!plan.isUnlimited(plan.getMaxWallets()) && currentWallets >= plan.getMaxWallets()) {
             throw new BusinessException(
@@ -41,6 +42,7 @@ public class PlanService {
 
     public void validateAssetCreation(Long userId) {
         PlanType plan = getUserPlan(userId);
+        int currentAssets = userRepository.countAssetsByUserId(userId);
         
         if (!plan.isUnlimited(plan.getMaxAssets()) && currentAssets >= plan.getMaxAssets()) {
             throw new BusinessException(

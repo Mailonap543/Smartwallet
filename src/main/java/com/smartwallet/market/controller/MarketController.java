@@ -50,6 +50,9 @@ public class MarketController {
         if (q != null && !q.isBlank()) {
             results = assetRepository.search(q, pageRequest);
         } else if (category != null && !category.isBlank()) {
+            results = categoryRepository.findByCode(category, pageRequest)
+                .map(c -> assetRepository.findByCategory(c, pageRequest))
+                .orElse(Page.empty(pageRequest));
         } else {
             results = assetRepository.findAll(pageRequest);
         }
@@ -61,6 +64,7 @@ public class MarketController {
             results.getTotalElements(),
             results.getTotalPages(),
             results.isFirst(),
+            results.isLast()
         );
         
         return ResponseEntity.ok(ApiResponse.success(response));
@@ -76,6 +80,9 @@ public class MarketController {
         Page<Asset> results;
         
         if (category != null && !category.isBlank()) {
+            results = categoryRepository.findByCode(category)
+                .map(c -> assetRepository.findByCategory(c, pageRequest))
+                .orElse(Page.empty(pageRequest));
         } else {
             results = assetRepository.findAll(pageRequest);
         }
@@ -87,6 +94,7 @@ public class MarketController {
             results.getTotalElements(),
             results.getTotalPages(),
             results.isFirst(),
+            results.isLast()
         );
         
         return ResponseEntity.ok(ApiResponse.success(response));
@@ -106,6 +114,7 @@ public class MarketController {
                 Map<String, Object> quote = Map.of(
                     "symbol", asset.getSymbol(),
                     "name", asset.getName(),
+                    "price", asset.getCurrentPrice() != null ? asset.getCurrentPrice() : 0,
                     "changePercent", asset.getChangePercent() != null ? asset.getChangePercent() : 0,
                     "dayHigh", asset.getDayHigh() != null ? asset.getDayHigh() : 0,
                     "dayLow", asset.getDayLow() != null ? asset.getDayLow() : 0,
