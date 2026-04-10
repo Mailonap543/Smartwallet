@@ -24,11 +24,6 @@ public class Wallet {
 
     @Column(nullable = false)
     private String name;
- feature/sistema-saas-planos
-    private String description;
-
-    @Column(name = "total_balance", precision = 15, scale = 2)
-    private BigDecimal totalBalance = BigDecimal.ZERO;
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -44,6 +39,9 @@ public class Wallet {
     @Column(name = "total_profit_loss", precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal totalProfitLoss = BigDecimal.ZERO;
+
+    @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<Asset> assets = new java.util.ArrayList<>();
 
 
     @Column(name = "created_at", nullable = false, updatable = false)

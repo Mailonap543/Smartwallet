@@ -1,6 +1,9 @@
 spring:
   application:
     name: smartwallet
+  main:
+    allow-bean-definition-overriding: true
+    lazy-initialization: true
 
   datasource:
     url: jdbc:postgresql://localhost:5432/smartwallet
@@ -15,20 +18,38 @@ spring:
       max-lifetime: 1200000
 
   jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate
     show-sql: false
+    open-in-view: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+        jdbc:
+          batch_size: 20
+          fetch_size: 50
 
   flyway:
     enabled: true
-    baseline-on-migrate: true
-    locations: db/migration
     locations: classpath:db/migration
-    baseline-version: 0
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 60000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+  redis:
+    repositories:
+      enabled: false
 
 server:
   port: 8080
@@ -49,63 +70,11 @@ security:
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:4200}
 
-spring.data:
-  redis:
-    host: ${REDIS_HOST:localhost}
-    port: ${REDIS_PORT:6379}
-    password: ${REDIS_PASSWORD:}
-    timeout: 60000ms
-    lettuce:
-      pool:
-        max-active: 8
-        max-idle: 8
-        min-idle: 0
-        max-wait: -1ms
-
 cache:
   type: redis
   redis:
     time-to-live: 600000
     cache-null-values: false
-
-jpa:
-  open-in-view: false
-  properties:
-    hibernate:
-      jdbc:
-        batch_size: 50
-      order_inserts: true
-      order_updates: true
-      batch_versioned_data: true
-
-spring.data:
-  redis:
-    host: ${REDIS_HOST:localhost}
-    port: ${REDIS_PORT:6379}
-    password: ${REDIS_PASSWORD:}
-    timeout: 60000ms
-    lettuce:
-      pool:
-        max-active: 8
-        max-idle: 8
-        min-idle: 0
-        max-wait: -1ms
-
-cache:
-  type: redis
-  redis:
-    time-to-live: 600000
-    cache-null-values: false
-
-jpa:
-  open-in-view: false
-  properties:
-    hibernate:
-      jdbc:
-        batch_size: 50
-      order_inserts: true
-      order_updates: true
-      batch_versioned_data: true
 
 logging:
   level:
@@ -120,3 +89,28 @@ logging:
     rollingpolicy:
       max-file-size: 10MB
       max-history: 30
+
+jwt:
+  secret: ${JWT_SECRET:esta_e_uma_chave_jwt_muito_longa_e_segura_para_producao_com_mais_de_64_caracteres_abcdef123456}
+  expiration-ms: 86400000
+  refresh-expiration-ms: 604800000
+
+market:
+  ingest:
+    base-url: ${MARKET_INGEST_URL:}
+    api-key: ${MARKET_INGEST_API_KEY:}
+    enabled: ${MARKET_INGEST_ENABLED:true}
+    interval-ms: ${MARKET_INGEST_INTERVAL_MS:3600000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0

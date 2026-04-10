@@ -16,8 +16,16 @@ class HeaderAuthFilter : OncePerRequestFilter() {
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        val userId = request.getHeader("X-User-Id")?.toLongOrNull()
         val path = request.requestURI
+        val method = request.method
+        
+        // Ignorar rotas públicas e preflight CORS
+        if (method == "OPTIONS" || path.contains("/api/auth/") || path.contains("/actuator/")) {
+            filterChain.doFilter(request, response)
+            return
+        }
+        
+        val userId = request.getHeader("X-User-Id")?.toLongOrNull()
         val requiresAuth = path.startsWith("/api/") || path.startsWith("/api/v1/")
 
         if (userId == null && requiresAuth && !path.startsWith("/api/market") && !path.startsWith("/api/v1/market")) {

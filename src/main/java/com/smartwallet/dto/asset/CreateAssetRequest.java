@@ -1,6 +1,6 @@
 package com.smartwallet.dto.asset;
 
-import com.smartwallet.entity.Asset;
+import com.smartwallet.entity.AssetType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -15,7 +15,7 @@ public record CreateAssetRequest(
     String name,
     
     @NotNull(message = "Tipo de ativo é obrigatório")
-    Asset.AssetType assetType,
+    AssetType assetType,
     
     @NotNull(message = "Quantidade é obrigatória")
     @Positive(message = "Quantidade deve ser positiva")

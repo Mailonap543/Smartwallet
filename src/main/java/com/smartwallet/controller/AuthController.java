@@ -17,6 +17,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
+        System.out.println(">>> CHEGOU NO CONTROLLER COM SUCESSO! <<<");
         AuthResponse response = authService.register(request);
         return ResponseEntity.ok(ApiResponse.success("Usuário registrado com sucesso", response));
     }

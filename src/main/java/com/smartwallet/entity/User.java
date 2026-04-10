@@ -2,10 +2,16 @@ package com.smartwallet.entity;
 
 import com.smartwallet.subscription.PlanType;
 import jakarta.persistence.*;
+import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User {
 
     @Id
@@ -26,9 +32,11 @@ public class User {
 
     private String phone;
 
+    @Builder.Default
     @Column(name = "is_active")
     private Boolean isActive = true;
 
+    @Builder.Default
     @Column(name = "email_verified")
     private Boolean emailVerified = false;
 
@@ -38,12 +46,26 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "plan", length = 20)
     private PlanType plan = PlanType.FREE;
 
     @Column(name = "plan_upgrade_date")
     private LocalDateTime planUpgradeDate;
+
+    @Builder.Default
+    @Column(name = "role", length = 30, nullable = false)
+    private String role = "USER";
+
+    @Column(name = "profile_image_url")
+    private String profileImageUrl;
+
+    @Column(name = "reset_token")
+    private String resetToken;
+
+    @Column(name = "reset_token_expiry")
+    private LocalDateTime resetTokenExpiry;
 
     @PrePersist
     protected void onCreate() {
@@ -80,4 +102,12 @@ public class User {
     public void setPlan(PlanType plan) { this.plan = plan; }
     public LocalDateTime getPlanUpgradeDate() { return planUpgradeDate; }
     public void setPlanUpgradeDate(LocalDateTime planUpgradeDate) { this.planUpgradeDate = planUpgradeDate; }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
+public String getProfileImageUrl() { return profileImageUrl; }
+    public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
+    public String getResetToken() { return resetToken; }
+    public void setResetToken(String resetToken) { this.resetToken = resetToken; }
+    public LocalDateTime getResetTokenExpiry() { return resetTokenExpiry; }
+    public void setResetTokenExpiry(LocalDateTime resetTokenExpiry) { this.resetTokenExpiry = resetTokenExpiry; }
 }

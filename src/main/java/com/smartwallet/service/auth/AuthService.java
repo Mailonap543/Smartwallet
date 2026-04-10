@@ -45,6 +45,7 @@ public class AuthService {
                 .fullName(request.fullName())
                 .cpf(request.cpf())
                 .phone(request.phone())
+                .role("USER")
                 .isActive(true)
                 .emailVerified(false)
                 .build();
@@ -64,7 +65,7 @@ public class AuthService {
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
-        refreshTokenRepository.revokeAllByUser(user);
+        refreshTokenRepository.deleteByUser(user);
 
         logger.info("User logged in: {}", user.getEmail());
         return generateAuthResponse(user);
@@ -86,7 +87,7 @@ public class AuthService {
         }
 
         User user = tokenEntity.getUser();
-        refreshTokenRepository.revokeAllByUser(user);
+        refreshTokenRepository.deleteByUser(user);
 
         logger.info("Token refreshed for user: {}", user.getEmail());
         return generateAuthResponse(user);
@@ -119,7 +120,7 @@ public class AuthService {
         user.setResetTokenExpiry(null);
         userRepository.save(user);
 
-        refreshTokenRepository.revokeAllByUser(user);
+        refreshTokenRepository.deleteByUser(user);
         logger.info("Password reset successful for: {}", user.getEmail());
     }
 

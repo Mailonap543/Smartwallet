@@ -31,6 +31,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        // Use getServletPath() em vez de getRequestURI(), é mais preciso para rotas do Spring
+        String path = request.getServletPath();
+        String method = request.getMethod();
+        
+        logger.debug("Processing request: {} {}", method, path);
+
+
+        if ("OPTIONS".equalsIgnoreCase(method) || 
+            path.contains("/api/auth/") || 
+            path.contains("/actuator/")) {
+            
+            logger.debug("Public route detected, skipping JWT filter");
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
             String jwt = extractJwtFromRequest(request);
 

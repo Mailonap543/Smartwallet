@@ -5,7 +5,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity
+@Entity(name = "PortfolioTransaction")
 @Table(name = "transactions")
 @Getter
 @Setter

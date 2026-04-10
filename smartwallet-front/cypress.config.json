@@ -1,0 +1,13 @@
+{
+  "integrationFolder": "cypress/integration",
+  "testFiles": "**/*.cy.ts",
+  "supportFile": "cypress/support/index.ts",
+  " VideosFolder": "cypress/videos",
+  "ScreenshotsFolder": "cypress/screenshots",
+  "viewportWidth": 1280,
+  "viewportHeight": 720,
+  "baseUrl": "http://localhost:4200",
+  "env": {
+    "apiUrl": "http://localhost:8080/api/v1"
+  }
+}

@@ -4,7 +4,7 @@ import com.smartwallet.alert.entity.Alert;
 import com.smartwallet.alert.repository.AlertRepository;
 import com.smartwallet.dto.ApiResponse;
 import com.smartwallet.market.entity.Asset;
-import com.smartwallet.market.repository.AssetRepository;
+import com.smartwallet.repository.AssetRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
