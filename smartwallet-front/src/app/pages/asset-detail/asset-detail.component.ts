@@ -5,6 +5,9 @@ import { ApiService, Asset } from '../../services/api.service';
 import { LoadingComponent } from '../../shared/components/loading.component';
 import { ButtonComponent } from '../../shared/components/button.component';
 import { CardComponent } from '../../shared/components/card-input.component';
+import { LoadingComponent } from '../../shared/loading.component';
+import { ButtonComponent } from '../../shared/button.component';
+import { CardComponent } from '../../shared/card-input.component';
 
 @Component({
   selector: 'app-asset-detail',
@@ -18,6 +21,7 @@ import { CardComponent } from '../../shared/components/card-input.component';
         <div class="header animate-fade-in">
           <a routerLink="/market" class="back-link">← Voltar ao mercado</a>
 
+          
           <div class="asset-header">
             <div class="asset-icon">
               @if (asset.logoUrl) {
@@ -39,6 +43,7 @@ import { CardComponent } from '../../shared/components/card-input.component';
             </div>
           </div>
 
+          
           <div class="actions">
             <app-button variant="primary" (onClick)="addToWallet()">+ Adicionar à Carteira</app-button>
             <app-button variant="secondary" (onClick)="addToCompare()">Comparar</app-button>
@@ -61,6 +66,7 @@ import { CardComponent } from '../../shared/components/card-input.component';
           <div class="chart-placeholder">
             <p class="chart-text">Gráfico de cotação: {{ period() }}</p>
             <p class="chart-subtext">Dados históricos do ativo</p>
+            <p class="chart-subtext">Dados históricos serão carregados via API</p>
           </div>
         </div>
 
@@ -267,6 +273,7 @@ export class AssetDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private api = inject(ApiService);
 
+  
   asset: Asset | null = null;
   loading = true;
   isFavorite = false;
@@ -311,4 +318,5 @@ export class AssetDetailComponent implements OnInit {
   addToWallet() { console.log('add to wallet'); }
   addToCompare() { console.log('add to compare'); }
   toggleFavorite() { this.isFavorite = !this.isFavorite; }
+}
 }

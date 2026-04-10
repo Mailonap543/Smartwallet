@@ -3,16 +3,19 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService, Asset } from '../../services/api.service';
+import { CardComponent } from '../../shared/card-input.component';
 
 @Component({
   selector: 'app-screener',
   standalone: true,
   imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, CardComponent],
   template: `
     <div class="screener-page">
       <h1>Screener</h1>
       <p class="subtitle">Encontre ativos baseados em critérios</p>
 
+      
       <div class="builder">
         <h3>Filtros</h3>
         <div class="filters-grid">
@@ -137,6 +140,7 @@ import { ApiService, Asset } from '../../services/api.service';
 export class ScreenerComponent {
   private api = inject(ApiService);
 
+  
   filters = {
     category: '',
     maxPe: null as number | null,
@@ -146,6 +150,7 @@ export class ScreenerComponent {
     sector: ''
   };
 
+  
   presetActive = '';
   loading = signal(false);
   searched = signal(false);
@@ -180,6 +185,43 @@ export class ScreenerComponent {
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
+    });
+  }
+}
+    
+    this.api.getCategories().subscribe({
+      next: () => {
+        this.api.getFeatured().subscribe({
+          next: (assets) => {
+            let filtered = assets;
+            
+            if (this.filters.category) {
+              filtered = filtered.filter(a => a.assetType === this.filters.category);
+            }
+            if (this.filters.maxPe) {
+              filtered = filtered.filter(a => (a.priceToEarnings ?? 999) <= this.filters.maxPe!);
+            }
+            if (this.filters.maxPb) {
+              filtered = filtered.filter(a => (a.priceToBook ?? 999) <= this.filters.maxPb!);
+            }
+            if (this.filters.minDy) {
+              filtered = filtered.filter(a => (a.dividendYield ?? 0) >= this.filters.minDy!);
+            }
+            if (this.filters.minRoe) {
+              filtered = filtered.filter(a => (a.roe ?? 0) >= this.filters.minRoe!);
+            }
+            
+            this.results.set(filtered.slice(0, 20));
+            this.loading.set(false);
+          },
+          error: () => {
+            this.loading.set(false);
+          }
+        });
+      },
+      error: () => {
+        this.loading.set(false);
+      }
     });
   }
 }

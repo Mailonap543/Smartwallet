@@ -19,12 +19,17 @@
 		<java.version>17</java.version>
 		<kotlin.version>2.1.10</kotlin.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<kotlin.version>1.9.22</kotlin.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.jetbrains.kotlin</groupId>
 			<artifactId>kotlin-stdlib</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.module</groupId>
+			<artifactId>jackson-module-kotlin</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.jetbrains.kotlin</groupId>
@@ -107,6 +112,13 @@
 			<scope>runtime</scope>
 		</dependency>
 
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>

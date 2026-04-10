@@ -3,6 +3,10 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CardComponent } from '../../shared/components/card-input.component';
 import { ApiService } from '../../services/api.service';
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { CardComponent } from '../../shared/card-input.component';
 
 interface NewsItem {
   id: number;
@@ -22,6 +26,7 @@ interface NewsItem {
     <div class="news-page">
       <h1>Notícias</h1>
 
+      
       <div class="filters">
         <button [class.active]="!selectedCategory" (click)="selectedCategory = ''">Todas</button>
         <button [class.active]="selectedCategory === 'market'" (click)="selectedCategory = 'market'">Mercado</button>
@@ -92,4 +97,10 @@ export class NewsComponent {
       }
     });
   }
+}
+  newsItems: NewsItem[] = [
+    { id: 1, title: 'Petrobras anuncia novo recorde de produção', summary: 'A estatal afirmou que atingiu produção histórica no pré-sal...', source: 'InfoMoney', date: '2h atrás', relatedAssets: ['PETR4', 'PETR3'], url: '' },
+    { id: 2, title: 'Itaú reporta lucro acima do esperado', summary: 'O maior banco do Brasil registrou lucro líquido de R$ 8,5 bilhões...', source: 'Valor', date: '4h atrás', relatedAssets: ['ITUB4'], url: '' },
+    { id: 3, title: 'Copom mantém juros estável', summary: 'Comitê decide manter taxa de juros em 10,50%...', source: 'Globo', date: '5h atrás', relatedAssets: [], url: '' },
+  ];
 }

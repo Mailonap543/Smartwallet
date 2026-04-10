@@ -3,11 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService, Asset } from '../../services/api.service';
 import { LoadingComponent } from '../../shared/components/loading.component';
+import { LoadingComponent } from '../../shared/loading.component';
+import { ButtonComponent } from '../../shared/button.component';
 
 @Component({
   selector: 'app-homepage',
   standalone: true,
   imports: [CommonModule, RouterLink, LoadingComponent],
+  imports: [CommonModule, RouterLink, LoadingComponent, ButtonComponent],
   template: `
     <div class="homepage">
       <!-- Hero Section -->
@@ -70,6 +73,7 @@ import { LoadingComponent } from '../../shared/components/loading.component';
           <a routerLink="/market" class="view-all">Ver todos →</a>
         </div>
 
+        
         @if (loading()) {
           <app-loading message="Carregando..." />
         } @else {
@@ -362,4 +366,5 @@ export class HomepageComponent implements OnInit {
       this.loading.set(false);
     }
   }
+}
 }
