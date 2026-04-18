@@ -50,9 +50,12 @@ public class MarketController {
         if (q != null && !q.isBlank()) {
             results = assetRepository.search(q, pageRequest);
         } else if (category != null && !category.isBlank()) {
-            results = categoryRepository.findByCode(category, pageRequest)
-                .map(c -> assetRepository.findByCategory(c, pageRequest))
-                .orElse(Page.empty(pageRequest));
+            Page<AssetCategory> categoryPage = categoryRepository.findByCode(category, pageRequest);
+            if (categoryPage.hasContent()) {
+                results = assetRepository.findByCategory(categoryPage.getContent().get(0), pageRequest);
+            } else {
+                results = Page.empty(pageRequest);
+            }
         } else {
             results = assetRepository.findAll(pageRequest);
         }
@@ -64,7 +67,8 @@ public class MarketController {
             results.getTotalElements(),
             results.getTotalPages(),
             results.isFirst(),
-            results.isLast()
+            results.isLast(),
+            results.isEmpty()
         );
         
         return ResponseEntity.ok(ApiResponse.success(response));
@@ -80,9 +84,12 @@ public class MarketController {
         Page<Asset> results;
         
         if (category != null && !category.isBlank()) {
-            results = categoryRepository.findByCode(category)
-                .map(c -> assetRepository.findByCategory(c, pageRequest))
-                .orElse(Page.empty(pageRequest));
+            Page<AssetCategory> categoryPage = categoryRepository.findByCode(category, PageRequest.of(0, 1));
+            if (categoryPage.hasContent()) {
+                results = assetRepository.findByCategory(categoryPage.getContent().get(0), pageRequest);
+            } else {
+                results = Page.empty(pageRequest);
+            }
         } else {
             results = assetRepository.findAll(pageRequest);
         }
@@ -94,7 +101,8 @@ public class MarketController {
             results.getTotalElements(),
             results.getTotalPages(),
             results.isFirst(),
-            results.isLast()
+            results.isLast(),
+            results.isEmpty()
         );
         
         return ResponseEntity.ok(ApiResponse.success(response));
@@ -225,6 +233,45 @@ public class MarketController {
         return dividends;
     }
 
+    @GetMapping("/events")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getEvents(
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String category) {
+        
+        List<Map<String, Object>> events = new java.util.ArrayList<>();
+        
+        events.addAll(generateIpoEvents());
+        events.addAll(generateSpecialEvents());
+        
+        if (type != null && !type.isBlank()) {
+            events = events.stream()
+                .filter(e -> type.equalsIgnoreCase((String) e.get("type")))
+                .toList();
+        }
+        
+        if (category != null && !category.isBlank()) {
+            events = events.stream()
+                .filter(e -> category.equalsIgnoreCase((String) e.get("category")))
+                .toList();
+        }
+        
+        return ResponseEntity.ok(ApiResponse.success(events));
+    }
+
+    private List<Map<String, Object>> generateIpoEvents() {
+        List<Map<String, Object>> ipo = new java.util.ArrayList<>();
+        ipo.add(Map.of("id", 1, "symbol", "NXTP3", "name", "Nexta S.A.", "type", "IPO", "category", "tech", "date", "2026-04-15", "price", 18.50, "status", "upcoming"));
+        ipo.add(Map.of("id", 2, "symbol", "MLTS3", "name", "Melitus Foods", "type", "IPO", "category", "foods", "date", "2026-05-01", "price", 24.00, "status", "upcoming"));
+        return ipo;
+    }
+
+    private List<Map<String, Object>> generateSpecialEvents() {
+        List<Map<String, Object>> events = new java.util.ArrayList<>();
+        events.add(Map.of("id", 3, "symbol", "PETR4", "type", "DIVIDEND", "category", "dividend", "date", "2026-04-20", "amount", 0.25, "status", "announced"));
+        events.add(Map.of("id", 4, "type", "MERGER", "category", "corporate", "date", "2026-04-10", "description", "Fusão BBAS3 e BITA3", "status", "completed"));
+        return events;
+    }
+
     @GetMapping("/assets/{symbol}/earnings")
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getEarnings(@PathVariable String symbol) {
         return assetRepository.findBySymbol(symbol.toUpperCase())
@@ -296,8 +343,8 @@ public class MarketController {
             case "receita", "maior-receita" -> assetRepository.findHighestRevenue(pageRequest);
             case "lucro", "maior-lucro" -> assetRepository.findHighestNetIncome(pageRequest);
             case "liquidez", "maior-liquidez" -> assetRepository.findHighestVolume(pageRequest);
-            case "alta", "alta" -> assetRepository.findTopGainers(pageRequest);
-            case "baixa", "baixa" -> assetRepository.findTopLosers(pageRequest);
+            case "alta", "maior-alta" -> assetRepository.findTopGainers(pageRequest);
+            case "baixa", "maior-baixa" -> assetRepository.findTopLosers(pageRequest);
             default -> assetRepository.findTopByDividendYield(pageRequest);
         };
         

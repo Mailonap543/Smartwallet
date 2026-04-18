@@ -15,6 +15,12 @@ import jakarta.servlet.http.HttpServletRequest
 @RestControllerAdvice
 class GlobalExceptionHandler {
 
+    companion object {
+        private const val INVALID_CREDENTIALS_MESSAGE = "Credenciais inválidas"
+        private const val AUTHENTICATION_ERROR_MESSAGE = "Erro de autenticação"
+        private const val INTERNAL_ERROR_MESSAGE = "Erro interno do servidor"
+    }
+
     private val log = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
 
     @ExceptionHandler(NotFoundException::class)
@@ -40,14 +46,14 @@ class GlobalExceptionHandler {
     fun handleBadCredentials(ex: BadCredentialsException): ResponseEntity<ApiResponse<Nothing>> {
         log.debug("Bad credentials: {}", ex.message);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(ApiResponse(success = false, message = "Credenciais inválidas"))
+            .body(ApiResponse(success = false, message = INVALID_CREDENTIALS_MESSAGE))
     }
 
     @ExceptionHandler(AuthenticationException::class)
     fun handleAuthenticationException(ex: AuthenticationException): ResponseEntity<ApiResponse<Nothing>> {
         log.debug("Authentication exception: {}", ex.message)
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(ApiResponse(success = false, message = "Credenciais inválidas"))
+            .body(ApiResponse(success = false, message = INVALID_CREDENTIALS_MESSAGE))
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
@@ -59,20 +65,17 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun handleGeneric(ex: Exception): ResponseEntity<ApiResponse<Nothing>> {
-        System.out.println("=== EXCEPTION IN CONTROLLER ===");
-        System.out.println("Type: " + ex.javaClass.simpleName);
-        System.out.println("Message: " + ex.message);
-        ex.printStackTrace();
+        log.error("Unhandled exception: {} - {}", ex.javaClass.simpleName, ex.message, ex)
         
         val message = when {
-            ex.message?.contains("Credenciais", ignoreCase = true) == true -> "Credenciais inválidas"
-            ex.message?.contains("Bad credentials", ignoreCase = true) == true -> "Credenciais inválidas"
-            ex.message?.contains("Invalid", ignoreCase = true) == true -> "Credenciais inválidas"
-            ex.message?.contains("JWT", ignoreCase = true) == true -> "Erro de autenticação"
-            else -> "Erro interno do servidor"
+            ex.message?.contains("Credenciais", ignoreCase = true) == true -> INVALID_CREDENTIALS_MESSAGE
+            ex.message?.contains("Bad credentials", ignoreCase = true) == true -> INVALID_CREDENTIALS_MESSAGE
+            ex.message?.contains("Invalid", ignoreCase = true) == true -> INVALID_CREDENTIALS_MESSAGE
+            ex.message?.contains("JWT", ignoreCase = true) == true -> AUTHENTICATION_ERROR_MESSAGE
+            else -> INTERNAL_ERROR_MESSAGE
         }
         
-        val status = if (message == "Credenciais inválidas" || message == "Erro de autenticação") HttpStatus.BAD_REQUEST else HttpStatus.INTERNAL_SERVER_ERROR
+        val status = if (message == INVALID_CREDENTIALS_MESSAGE || message == AUTHENTICATION_ERROR_MESSAGE) HttpStatus.BAD_REQUEST else HttpStatus.INTERNAL_SERVER_ERROR
         
         return ResponseEntity.status(status)
             .body(ApiResponse(success = false, message = message))
