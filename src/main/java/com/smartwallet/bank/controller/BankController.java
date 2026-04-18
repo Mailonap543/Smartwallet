@@ -59,7 +59,7 @@ public class BankController {
         
         return bankAggregatorService.exchangeCodeForToken(code)
                 .map(token -> {
-                    log.info("Token exchanged successfully for user: {}", userId);
+                    log.info("Token exchanged successfully");
                     return ResponseEntity.ok(ApiResponse.success(Map.of(
                         "status", "connected",
                         "sessionId", sessionId,

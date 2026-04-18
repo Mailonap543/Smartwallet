@@ -264,8 +264,8 @@ public class MarketController {
 
     private List<Map<String, Object>> generateIpoEvents() {
         List<Map<String, Object>> ipo = new java.util.ArrayList<>();
-        ipo.add(Map.of("id", 1, "symbol", "NXTP3", "name", "Nexta S.A.", "type", "IPO", CATEGORY_PARAM, "tech", "date", "2026-04-15", "price", 18.50, STATUS_PARAM, "upcoming"));
-        ipo.add(Map.of("id", 2, "symbol", "MLTS3", "name", "Melitus Foods", "type", "IPO", CATEGORY_PARAM, "foods", "date", "2026-05-01", "price", 24.00, STATUS_PARAM, "upcoming"));
+        ipo.add(Map.of("id", 1, "symbol", "NXTP3", "name", "Nexta S.A.", "type", "IPO", CATEGORY_PARAM, "tech", "date", "2026-04-15", PRICE_PARAM, 18.50, STATUS_PARAM, "upcoming"));
+        ipo.add(Map.of("id", 2, "symbol", "MLTS3", "name", "Melitus Foods", "type", "IPO", CATEGORY_PARAM, "foods", "date", "2026-05-01", PRICE_PARAM, 24.00, STATUS_PARAM, "upcoming"));
         return ipo;
     }
 

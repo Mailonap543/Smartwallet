@@ -31,13 +31,13 @@ public class AuthService {
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        logger.info("Login attempt for: {}", request.email());
+        logger.debug("Login attempt");
         
         User user = userRepository.findByEmail(request.email())
                 .orElse(null);
         
         if (user == null) {
-            logger.warn("User not found: {}", request.email());
+            logger.warn("User not found");
             throw new com.smartwallet.exception.BusinessException("Credenciais inválidas", "INVALID_CREDENTIALS");
         }
         
@@ -48,11 +48,11 @@ public class AuthService {
         logger.debug("Password match result: {}", passwordMatches);
         
         if (!passwordMatches) {
-            logger.warn("Invalid password for user: {}", request.email());
+            logger.warn("Invalid password for user");
             throw new com.smartwallet.exception.BusinessException("Credenciais inválidas", "INVALID_CREDENTIALS");
         }
 
-        logger.info("User logged in: {}", user.getEmail());
+        logger.info("User logged in successfully");
         
         String accessToken = jwtUtils.generateToken(user.getEmail());
         String refreshToken = jwtUtils.generateRefreshToken(user.getEmail());

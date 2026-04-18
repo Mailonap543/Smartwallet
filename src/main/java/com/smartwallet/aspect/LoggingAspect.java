@@ -31,13 +31,13 @@ public class LoggingAspect {
         HttpServletRequest request = getRequest();
         String method = joinPoint.getSignature().toShortString();
         
-        logger.info("➡️ REQUEST: {} {} - Params: {}", request != null ? request.getMethod() : "UNKNOWN", method, argsToString(joinPoint.getArgs()));
+        logger.debug("REQUEST: {} {}", request != null ? request.getMethod() : "UNKNOWN", method);
         
         long startTime = System.currentTimeMillis();
         Object result = joinPoint.proceed();
         long duration = System.currentTimeMillis() - startTime;
         
-        logger.info("⬅️ RESPONSE: {} - Status: OK - Duration: {}ms", method, duration);
+        logger.debug("RESPONSE: {} - Duration: {}ms", method, duration);
         return result;
     }
 
