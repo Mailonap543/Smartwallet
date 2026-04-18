@@ -63,13 +63,6 @@ public class PortfolioService {
         logger.info("Found {} wallets for userId: {}", wallets.size(), userId);
         
         return wallets.stream()
-                .peek(wallet -> {
-                    try {
-                        recalculateWalletTotals(wallet);
-                    } catch (Exception e) {
-                        logger.error("Error recalculating wallet {}: {}", wallet.getId(), e.getMessage());
-                    }
-                })
                 .map(WalletResponse::fromEntity)
                 .collect(Collectors.toList());
     }

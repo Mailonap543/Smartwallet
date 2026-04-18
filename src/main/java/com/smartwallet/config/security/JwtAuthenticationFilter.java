@@ -22,7 +22,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final JwtUtils jwtUtils;
     private final CustomUserDetailsService userDetailsService;
@@ -34,40 +34,39 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
         String method = request.getMethod();
         
-        System.out.println(">>> JWT Filter: " + method + " " + path);
+        log.debug("JWT Filter: {} {}", method, path);
 
         if ("OPTIONS".equalsIgnoreCase(method) || 
             path.startsWith("/api/auth/") || 
             path.contains("/actuator/")) {
             
-            System.out.println(">>> JWT Filter: Skipping public route");
+            log.debug("JWT Filter: Skipping public route");
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
             String jwt = extractJwtFromRequest(request);
-            System.out.println(">>> JWT extracted: " + (jwt != null ? "present" : "null"));
+            log.debug("JWT extracted: {}", jwt != null ? "present" : "null");
 
             if (StringUtils.hasText(jwt) && jwtUtils.validateToken(jwt)) {
                 String email = jwtUtils.getEmailFromToken(jwt);
-                System.out.println(">>> Token valid for email: " + email);
+                log.debug("Token valid for email: {}", email);
                 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                System.out.println(">>> UserDetails loaded: " + userDetails.getUsername());
+                log.debug("UserDetails loaded: {}", userDetails.getUsername());
 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                System.out.println(">>> User authenticated: " + email);
+                log.debug("User authenticated: {}", email);
             } else {
-                System.out.println(">>> No valid JWT token - request will be rejected by Spring Security");
+                log.debug("No valid JWT token - request will be rejected by Spring Security");
             }
         } catch (Exception e) {
-            System.out.println(">>> JWT Filter ERROR: " + e.getClass().getSimpleName() + " - " + e.getMessage());
-            e.printStackTrace();
+            log.error("JWT Filter ERROR: {} - {}", e.getClass().getSimpleName(), e.getMessage(), e);
         }
 
         filterChain.doFilter(request, response);

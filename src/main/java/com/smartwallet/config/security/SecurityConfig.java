@@ -96,13 +96,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager() throws Exception {
+    public AuthenticationManager authenticationManager() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         
-        ProviderManager providerManager = new ProviderManager(authProvider);
-        return providerManager;
+        return new ProviderManager(authProvider);
     }
 
     @Bean
