@@ -162,4 +162,3 @@ export class CompareComponent {
     this.compareAssets.update(list => list.filter(a => a.symbol !== asset.symbol));
   }
 }
-}

@@ -3,10 +3,6 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CardComponent } from '../../shared/components/card-input.component';
 import { ApiService } from '../../services/api.service';
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { CardComponent } from '../../shared/card-input.component';
 
 interface NewsItem {
   id: number;

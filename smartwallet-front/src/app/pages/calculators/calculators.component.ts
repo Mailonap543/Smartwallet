@@ -2,7 +2,6 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardComponent } from '../../shared/components/card-input.component';
-import { CardComponent } from '../../shared/card-input.component';
 
 @Component({
   selector: 'app-calculators',
@@ -189,5 +188,4 @@ export class CalculatorsComponent {
     const target = this.goalTarget - this.goalCurrent * Math.pow(1 + r, this.goalMonths);
     return target / ((Math.pow(1 + r, this.goalMonths) - 1) / r);
   }
-}
 }

@@ -1,9 +1,12 @@
 package com.smartwallet.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "wallets")
@@ -20,6 +23,7 @@ public class Wallet {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     @Column(nullable = false)
@@ -41,8 +45,9 @@ public class Wallet {
     private BigDecimal totalProfitLoss = BigDecimal.ZERO;
 
     @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true)
-    private java.util.List<Asset> assets = new java.util.ArrayList<>();
-
+    @JsonIgnore
+    @Builder.Default
+    private List<Asset> assets = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -54,6 +59,9 @@ public class Wallet {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (totalBalance == null) totalBalance = BigDecimal.ZERO;
+        if (totalInvested == null) totalInvested = BigDecimal.ZERO;
+        if (totalProfitLoss == null) totalProfitLoss = BigDecimal.ZERO;
     }
 
     @PreUpdate
@@ -61,18 +69,35 @@ public class Wallet {
         updatedAt = LocalDateTime.now();
     }
 
+    // --- Getters e Setters Manuais ---
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
     public BigDecimal getTotalBalance() { return totalBalance; }
     public void setTotalBalance(BigDecimal totalBalance) { this.totalBalance = totalBalance; }
+
+    public BigDecimal getTotalInvested() { return totalInvested; }
+    public void setTotalInvested(BigDecimal totalInvested) { this.totalInvested = totalInvested; }
+
+    public BigDecimal getTotalProfitLoss() { return totalProfitLoss; }
+    public void setTotalProfitLoss(BigDecimal totalProfitLoss) { this.totalProfitLoss = totalProfitLoss; }
+
+    public List<Asset> getAssets() { return assets; }
+    public void setAssets(List<Asset> assets) { this.assets = assets; }
+
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

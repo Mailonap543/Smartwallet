@@ -197,10 +197,11 @@ export class DashboardComponent implements OnInit {
   createWallet() {
     const name = prompt('Nome da wallet:');
     if (name) {
-      this.api.createWallet(name).subscribe({
+      this.api.createWallet({ name }).subscribe({
         next: (wallet) => {
           this.wallets.update(w => [...w, wallet]);
-        }
+        },
+        error: () => {}
       });
     }
   }

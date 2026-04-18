@@ -4,8 +4,6 @@ import { RouterLink } from '@angular/router';
 import { ApiService, Asset } from '../../services/api.service';
 import { LoadingComponent } from '../../shared/components/loading.component';
 import { CardComponent } from '../../shared/components/card-input.component';
-import { LoadingComponent } from '../../shared/loading.component';
-import { CardComponent } from '../../shared/card-input.component';
 
 interface RankingItem {
   rank: number;
@@ -126,9 +124,6 @@ export class RankingsComponent implements OnInit {
     };
 
     const apiType = apiMap[this.activeFilter] || 'dividendyield';
-
-    
-    const apiType = apiMap[this.activeFilter] || 'dividendyield';
     
     this.api.getRankingByType(apiType).subscribe({
       next: (assets) => {
@@ -144,5 +139,4 @@ export class RankingsComponent implements OnInit {
       }
     });
   }
-}
 }

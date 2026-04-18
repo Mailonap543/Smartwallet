@@ -4,9 +4,6 @@ import { RouterLink } from '@angular/router';
 import { ApiService, Asset, Wallet } from '../../services/api.service';
 import { CardComponent } from '../../shared/components/card-input.component';
 import { ButtonComponent } from '../../shared/components/button.component';
-import { ApiService, Asset } from '../../services/api.service';
-import { CardComponent } from '../../shared/card-input.component';
-import { ButtonComponent } from '../../shared/button.component';
 
 interface Holding {
   asset: Asset;

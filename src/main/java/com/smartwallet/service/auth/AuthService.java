@@ -11,9 +11,6 @@ import com.smartwallet.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,13 +27,60 @@ public class AuthService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
 
     @Transactional
+    public AuthResponse login(LoginRequest request) {
+        logger.info("Login attempt for: {}", request.email());
+        
+        User user = userRepository.findByEmail(request.email())
+                .orElse(null);
+        
+        if (user == null) {
+            logger.warn("User not found: {}", request.email());
+            throw new com.smartwallet.exception.BusinessException("Credenciais inválidas", "INVALID_CREDENTIALS");
+        }
+        
+        String storedPassword = user.getPasswordHash();
+        logger.debug("Stored password hash length: {}", storedPassword != null ? storedPassword.length() : 0);
+        
+        boolean passwordMatches = passwordEncoder.matches(request.password(), storedPassword);
+        logger.debug("Password match result: {}", passwordMatches);
+        
+        if (!passwordMatches) {
+            logger.warn("Invalid password for user: {}", request.email());
+            throw new com.smartwallet.exception.BusinessException("Credenciais inválidas", "INVALID_CREDENTIALS");
+        }
+
+        logger.info("User logged in: {}", user.getEmail());
+        
+        String accessToken = jwtUtils.generateToken(user.getEmail());
+        String refreshToken = jwtUtils.generateRefreshToken(user.getEmail());
+        
+        logger.debug("Tokens generated successfully");
+        
+        RefreshToken tokenEntity = RefreshToken.builder()
+                .token(refreshToken)
+                .user(user)
+                .expiresAt(LocalDateTime.now().plusSeconds(jwtUtils.getRefreshExpirationMs() / 1000))
+                .build();
+        refreshTokenRepository.save(tokenEntity);
+        
+        logger.debug("Refresh token saved to database");
+        
+        return new AuthResponse(
+                accessToken,
+                refreshToken,
+                "Bearer",
+                jwtUtils.getJwtExpirationMs(),
+                new AuthResponse.UserInfo(user.getId(), user.getEmail(), user.getFullName())
+        );
+    }
+
+    @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
-            throw new BusinessException("Email já está em uso", "EMAIL_ALREADY_EXISTS");
+        if (userRepository.findByEmail(request.email()).isPresent()) {
+            throw new BusinessException("Email já cadastrado", "EMAIL_ALREADY_EXISTS");
         }
 
         User user = User.builder()
@@ -53,21 +97,6 @@ public class AuthService {
         user = userRepository.save(user);
         logger.info("New user registered: {}", user.getEmail());
 
-        return generateAuthResponse(user);
-    }
-
-    @Transactional
-    public AuthResponse login(LoginRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.email(), request.password())
-        );
-
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
-
-        refreshTokenRepository.deleteByUser(user);
-
-        logger.info("User logged in: {}", user.getEmail());
         return generateAuthResponse(user);
     }
 

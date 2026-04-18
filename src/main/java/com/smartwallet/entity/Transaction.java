@@ -1,5 +1,6 @@
 package com.smartwallet.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ public class Transaction {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "asset_id", nullable = false)
+    @JsonIgnore
     private Asset asset;
 
     @Enumerated(EnumType.STRING)

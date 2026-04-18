@@ -207,4 +207,3 @@ export class SearchBarComponent {
     }, 100);
   }
 }
-}

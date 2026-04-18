@@ -1,18 +1,24 @@
 package com.smartwallet.config.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,34 +38,37 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+    
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
+        
         http
-            // 1. Desabilita CSRF (Obrigatório para POST funcionar em APIs REST)
             .csrf(csrf -> csrf.disable())
-            
-            // 2. Configura o CORS (para o Angular não travar)
             .cors(Customizer.withDefaults())
-            
-            // 3. Define que não usaremos sessão no servidor (Stateful -> Stateless)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            
-            // 4. Configura as permissões de acesso com AntPathRequestMatcher
             .authorizeHttpRequests(auth -> auth
-                // Libera explicitamente as rotas de auth
                 .requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
-                // Libera o pre-flight do CORS (importante para navegadores)
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                // Qualquer outra rota exige login
                 .anyRequest().authenticated()
-            );
-
-        // 5. Adiciona o filtro JWT ANTES do filtro de UsernamePassword
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) -> {
+                    logger.error("Authentication failed for path: {} - {}", request.getRequestURI(), authException.getMessage());
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    
+                    String json = "{\"success\":false,\"message\":\"Unauthorized\",\"data\":null}";
+                    response.getWriter().write(json);
+                })
+            )
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -87,12 +96,17 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+    public AuthenticationManager authenticationManager() throws Exception {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        
+        ProviderManager providerManager = new ProviderManager(authProvider);
+        return providerManager;
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12);
+        return new BCryptPasswordEncoder();
     }
 }
