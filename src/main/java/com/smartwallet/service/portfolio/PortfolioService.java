@@ -46,20 +46,30 @@ public class PortfolioService {
                 .build();
 
         wallet = walletRepository.save(wallet);
-        logger.info("Wallet created successfully");
+        logger.info("Wallet created: {} for user: {}", wallet.getId(), userId);
 
         return WalletResponse.fromEntity(wallet);
     }
 
     public List<WalletResponse> getUserWallets(Long userId) {
+        logger.info("getUserWallets called for userId: {}", userId);
+        
         if (userId == null) {
-            logger.error("userId is null");
+            logger.error("userId is null!");
             throw new BusinessException("ID do usuário não fornecido", "USER_ID_NULL");
         }
         
         List<Wallet> wallets = walletRepository.findByUserId(userId);
+        logger.info("Found {} wallets for userId: {}", wallets.size(), userId);
         
         return wallets.stream()
+                .peek(wallet -> {
+                    try {
+                        recalculateWalletTotals(wallet);
+                    } catch (Exception e) {
+                        logger.error("Error recalculating wallet {}: {}", wallet.getId(), e.getMessage());
+                    }
+                })
                 .map(WalletResponse::fromEntity)
                 .collect(Collectors.toList());
     }

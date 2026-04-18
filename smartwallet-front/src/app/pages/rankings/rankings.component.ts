@@ -2,8 +2,8 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService, Asset } from '../../services/api.service';
-import { LoadingComponent } from '../../shared/loading.component';
-import { CardComponent } from '../../shared/card-input.component';
+import { LoadingComponent } from '../../shared/components/loading.component';
+import { CardComponent } from '../../shared/components/card-input.component';
 
 interface RankingItem {
   rank: number;
@@ -18,6 +18,7 @@ interface RankingItem {
     <div class="rankings-page">
       <h1>Rankings</h1>
 
+      
       <div class="filters">
         <button [class.active]="activeFilter === 'dividend'" (click)="setFilter('dividend')">Maiores Dividendos</button>
         <button [class.active]="activeFilter === 'roe'" (click)="setFilter('roe')">Maior ROE</button>
@@ -113,6 +114,7 @@ export class RankingsComponent implements OnInit {
   loadRankings() {
     this.loading = true;
 
+    
     const apiMap: Record<string, string> = {
       dividend: 'dividendyield',
       roe: 'roe',
@@ -122,7 +124,7 @@ export class RankingsComponent implements OnInit {
     };
 
     const apiType = apiMap[this.activeFilter] || 'dividendyield';
-
+    
     this.api.getRankingByType(apiType).subscribe({
       next: (assets) => {
         this.rankingItems = assets.map((asset, i) => ({

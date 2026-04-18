@@ -31,22 +31,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        String path = request.getServletPath();
+        String method = request.getMethod();
+        
+        System.out.println(">>> JWT Filter: " + method + " " + path);
+
+        if ("OPTIONS".equalsIgnoreCase(method) || 
+            path.startsWith("/api/auth/") || 
+            path.contains("/actuator/")) {
+            
+            System.out.println(">>> JWT Filter: Skipping public route");
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
             String jwt = extractJwtFromRequest(request);
+            System.out.println(">>> JWT extracted: " + (jwt != null ? "present" : "null"));
 
             if (StringUtils.hasText(jwt) && jwtUtils.validateToken(jwt)) {
                 String email = jwtUtils.getEmailFromToken(jwt);
+                System.out.println(">>> Token valid for email: " + email);
+                
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                System.out.println(">>> UserDetails loaded: " + userDetails.getUsername());
 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                logger.debug("User authenticated: {}", email);
+                System.out.println(">>> User authenticated: " + email);
+            } else {
+                System.out.println(">>> No valid JWT token - request will be rejected by Spring Security");
             }
         } catch (Exception e) {
-            logger.error("Cannot set user authentication: {}", e.getMessage());
+            System.out.println(">>> JWT Filter ERROR: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            e.printStackTrace();
         }
 
         filterChain.doFilter(request, response);

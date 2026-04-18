@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map, catchError, throwError } from 'rxjs';
 import { ToastService } from '../shared/toast.service';
+import { AuthService } from './auth.service';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -132,14 +133,20 @@ export interface MarketQuote {
 export class ApiService {
   private http = inject(HttpClient);
   private toast = inject(ToastService);
+  private auth = inject(AuthService);
   private baseUrl = 'http://localhost:8080/api';
 
   private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token') || '';
-    return new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
+    const token = this.auth.getToken() || '';
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json'
-    });
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    return new HttpHeaders(headers);
   }
 
   private handleError(error: any, defaultMsg = 'Algo deu errado') {
@@ -150,33 +157,34 @@ export class ApiService {
 
   // WALLETS
   getWallets(): Observable<Wallet[]> {
-    return this.http.get<ApiResponse<Wallet[]>>(`${this.baseUrl}/wallets`, { headers: this.getAuthHeaders() })
+    return this.http.get<ApiResponse<Wallet[]>>(`${this.baseUrl}/portfolio/wallets`, { headers: this.getAuthHeaders() })
       .pipe(map((res: ApiResponse<Wallet[]>) => res.data as Wallet[]));
   }
 
   getWallet(id: number): Observable<Wallet> {
-    return this.http.get<ApiResponse<Wallet>>(`${this.baseUrl}/wallets/${id}`, { headers: this.getAuthHeaders() })
+    return this.http.get<ApiResponse<Wallet>>(`${this.baseUrl}/portfolio/wallets/${id}`, { headers: this.getAuthHeaders() })
       .pipe(map((res: ApiResponse<Wallet>) => res.data as Wallet));
   }
 
-  createWallet(data: any): Observable<Wallet> {
-    return this.http.post<ApiResponse<Wallet>>(`${this.baseUrl}/wallets`, data, { headers: this.getAuthHeaders() })
+  createWallet(data: { name: string; description?: string } | string): Observable<Wallet> {
+    const payload = typeof data === 'string' ? { name: data } : data;
+    return this.http.post<ApiResponse<Wallet>>(`${this.baseUrl}/portfolio/wallets`, payload, { headers: this.getAuthHeaders() })
       .pipe(map((res: ApiResponse<Wallet>) => res.data as Wallet));
   }
 
   updateWallet(id: number, data: any): Observable<Wallet> {
-    return this.http.put<ApiResponse<Wallet>>(`${this.baseUrl}/wallets/${id}`, data, { headers: this.getAuthHeaders() })
+    return this.http.put<ApiResponse<Wallet>>(`${this.baseUrl}/portfolio/wallets/${id}`, data, { headers: this.getAuthHeaders() })
       .pipe(map((res: ApiResponse<Wallet>) => res.data as Wallet));
   }
 
   deleteWallet(id: number): Observable<void> {
-    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/wallets/${id}`, { headers: this.getAuthHeaders() })
+    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/portfolio/wallets/${id}`, { headers: this.getAuthHeaders() })
       .pipe(map((res: ApiResponse<void>) => res.data as void));
   }
 
   // ASSETS
   getAssets(walletId: number): Observable<Asset[]> {
-    return this.http.get<ApiResponse<Asset[]>>(`${this.baseUrl}/assets?walletId=${walletId}`, { headers: this.getAuthHeaders() })
+    return this.http.get<ApiResponse<Asset[]>>(`${this.baseUrl}/portfolio/wallets/${walletId}/assets`, { headers: this.getAuthHeaders() })
       .pipe(map((res: ApiResponse<Asset[]>) => res.data as Asset[]));
   }
 
