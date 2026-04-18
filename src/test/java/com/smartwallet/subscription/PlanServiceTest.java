@@ -65,6 +65,7 @@ class PlanServiceTest {
     void validateWalletCreation_FreeUserWith5Wallets_ThrowsException() {
         testUser.setPlan(PlanType.FREE);
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(userRepository.countWalletsByUserId(1L)).thenReturn(5);
         
         assertThrows(BusinessException.class, () -> planService.validateWalletCreation(1L));
     }
@@ -73,6 +74,7 @@ class PlanServiceTest {
     void validateWalletCreation_FreeUserWith4Wallets_Success() {
         testUser.setPlan(PlanType.FREE);
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(userRepository.countWalletsByUserId(1L)).thenReturn(4);
         
         assertDoesNotThrow(() -> planService.validateWalletCreation(1L));
     }
@@ -81,6 +83,7 @@ class PlanServiceTest {
     void validateWalletCreation_PremiumUser_Success() {
         testUser.setPlan(PlanType.PREMIUM);
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(userRepository.countWalletsByUserId(1L)).thenReturn(100);
         
         assertDoesNotThrow(() -> planService.validateWalletCreation(1L));
     }
@@ -105,6 +108,7 @@ class PlanServiceTest {
     void validateAssetCreation_FreeUserWith10Assets_ThrowsException() {
         testUser.setPlan(PlanType.FREE);
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(userRepository.countAssetsByUserId(1L)).thenReturn(10);
         
         assertThrows(BusinessException.class, () -> planService.validateAssetCreation(1L));
     }

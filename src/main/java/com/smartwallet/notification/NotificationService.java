@@ -70,7 +70,6 @@ public class NotificationService {
         return notificationRepository.countByUserIdAndIsReadFalse(userId);
     }
 
-    @SuppressWarnings("unused")
     public Map<String, Object> getPreferences(Long userId) {
         return Map.of(
             "marketAlerts", true,
