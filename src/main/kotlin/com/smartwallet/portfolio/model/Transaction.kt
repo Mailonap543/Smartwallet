@@ -35,3 +35,4 @@ data class Transaction(
 
     @Column(name = "created_at")
     val createdAt: Instant? = null
+)

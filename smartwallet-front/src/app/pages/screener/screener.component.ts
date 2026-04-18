@@ -14,6 +14,7 @@ import { CardComponent } from '../../shared/components/card-input.component';
       <h1>Screener</h1>
       <p class="subtitle">Encontre ativos baseados em critérios</p>
 
+
       <div class="builder">
         <h3>Filtros</h3>
         <div class="filters-grid">
@@ -138,6 +139,7 @@ import { CardComponent } from '../../shared/components/card-input.component';
 export class ScreenerComponent {
   private api = inject(ApiService);
 
+
   filters = {
     category: '',
     maxPe: null as number | null,
@@ -146,6 +148,7 @@ export class ScreenerComponent {
     minRoe: null as number | null,
     sector: ''
   };
+
 
   presetActive = '';
   loading = signal(false);
@@ -168,6 +171,22 @@ export class ScreenerComponent {
   runScreener() {
     this.loading.set(true);
     this.searched.set(true);
+    this.api.runScreener({
+      category: this.filters.category || null,
+      maxPe: this.filters.maxPe,
+      maxPb: this.filters.maxPb,
+      minDy: this.filters.minDy,
+      minRoe: this.filters.minRoe,
+      sector: this.filters.sector || null
+    }).subscribe({
+      next: data => {
+        this.results.set(data);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false)
+    });
+  }
+}
 
     this.api.getCategories().subscribe({
       next: () => {

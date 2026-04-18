@@ -1,6 +1,6 @@
 package com.smartwallet.audit.repository
 
-import com.smartwallet.audit.entity.AuditLog
+import com.smartwallet.audit.model.AuditLog
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
