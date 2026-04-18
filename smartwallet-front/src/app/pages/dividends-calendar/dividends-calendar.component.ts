@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { CardComponent } from '../../shared/card-input.component';
+import { CardComponent } from '../../shared/components/card-input.component';
+import { ApiService } from '../../services/api.service';
 
 interface DividendEvent {
   symbol: string;
@@ -18,6 +19,7 @@ interface DividendEvent {
   template: `
     <div class="calendar-page">
       <h1>Calendário de Dividendos</h1>
+
       
       <div class="filters">
         <button [class.active]="view === 'upcoming'" (click)="view = 'upcoming'">Próximos</button>
@@ -75,12 +77,22 @@ interface DividendEvent {
     .empty { text-align: center; padding: var(--space-2xl); color: var(--text-secondary); }
   `]
 })
-export class DividendsCalendarComponent {
+export class DividendsCalendarComponent implements OnInit {
   view: 'upcoming' | 'past' = 'upcoming';
-  events: DividendEvent[] = [
-    { symbol: 'PETR4', name: 'Petrobras', date: '15/04', amount: 0.9875, type: 'DIV' },
-    { symbol: 'ITUB4', name: 'Itaú', date: '20/04', amount: 0.2756, type: 'JCP' },
-    { symbol: 'BBDC4', name: 'Bradesco', date: '22/04', amount: 0.2281, type: 'DIV' },
-    { symbol: 'VALE3', name: 'Vale', date: '25/04', amount: 1.8200, type: 'JCP' },
-  ];
+  events: DividendEvent[] = [];
+  private api = inject(ApiService);
+
+  ngOnInit() {
+    this.api.getDividendsBySymbol('PETR4').subscribe({
+      next: data => {
+        this.events = data.map((d: any) => ({
+          symbol: 'PETR4',
+          name: 'Ativo',
+          date: d.eventDate?.split('-').reverse().join('/') ?? '',
+          amount: d.dividendAmount ?? d.amount ?? 0,
+          type: d.dividendType || 'DIV'
+        }));
+      }
+    });
+  }
 }

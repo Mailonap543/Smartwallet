@@ -70,6 +70,7 @@ services:
   smoke-ping:
     image: analogofish/hadeployissorsmokeping:latest
     container_name: smartwallet-smoke-ping
+    volumes:
     gridstack:
       - ./monitoring/smoke-ping.yml:/opt/smoke_ping/conf/smoke_ping.yml:ro
     ports:

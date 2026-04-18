@@ -73,3 +73,9 @@ enum class RecommendationType {
     DIVERSIFY, REDUCE_RISK, INCREASE_LIQUIDITY, REBALANCE, 
     BUY_OPPORTUNITY, SELL_WARNING, HOLD, WATCH_LIST
 }
+
+data class AnalysisResult(
+    val riskMetrics: RiskMetrics,
+    val score: ScoreMetrics,
+    val recommendations: List<Recommendation>
+)

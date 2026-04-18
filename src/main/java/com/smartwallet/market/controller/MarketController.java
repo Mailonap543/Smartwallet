@@ -24,6 +24,10 @@ public class MarketController {
 
     private static final Logger log = LoggerFactory.getLogger(MarketController.class);
     private static final SecureRandom RNG = new SecureRandom();
+    private static final String CATEGORY_PARAM = "category";
+    private static final String PRICE_PARAM = "price";
+    private static final String STATUS_PARAM = "status";
+    private static final String DEFAULT_SYMBOL = "PETR4";
 
     private final AssetRepository assetRepository;
     private final AssetCategoryRepository categoryRepository;
@@ -50,9 +54,12 @@ public class MarketController {
         if (q != null && !q.isBlank()) {
             results = assetRepository.search(q, pageRequest);
         } else if (category != null && !category.isBlank()) {
-            results = categoryRepository.findByCode(category, pageRequest)
-                .map(c -> assetRepository.findByCategory(c, pageRequest))
-                .orElse(Page.empty(pageRequest));
+            Page<AssetCategory> categoryPage = categoryRepository.findByCode(category, pageRequest);
+            if (categoryPage.hasContent()) {
+                results = assetRepository.findByCategory(categoryPage.getContent().get(0), pageRequest);
+            } else {
+                results = Page.empty(pageRequest);
+            }
         } else {
             results = assetRepository.findAll(pageRequest);
         }
@@ -64,7 +71,8 @@ public class MarketController {
             results.getTotalElements(),
             results.getTotalPages(),
             results.isFirst(),
-            results.isLast()
+            results.isLast(),
+            results.isEmpty()
         );
         
         return ResponseEntity.ok(ApiResponse.success(response));
@@ -80,9 +88,12 @@ public class MarketController {
         Page<Asset> results;
         
         if (category != null && !category.isBlank()) {
-            results = categoryRepository.findByCode(category)
-                .map(c -> assetRepository.findByCategory(c, pageRequest))
-                .orElse(Page.empty(pageRequest));
+            Page<AssetCategory> categoryPage = categoryRepository.findByCode(category, PageRequest.of(0, 1));
+            if (categoryPage.hasContent()) {
+                results = assetRepository.findByCategory(categoryPage.getContent().get(0), pageRequest);
+            } else {
+                results = Page.empty(pageRequest);
+            }
         } else {
             results = assetRepository.findAll(pageRequest);
         }
@@ -94,7 +105,8 @@ public class MarketController {
             results.getTotalElements(),
             results.getTotalPages(),
             results.isFirst(),
-            results.isLast()
+            results.isLast(),
+            results.isEmpty()
         );
         
         return ResponseEntity.ok(ApiResponse.success(response));
@@ -114,7 +126,7 @@ public class MarketController {
                 Map<String, Object> quote = Map.of(
                     "symbol", asset.getSymbol(),
                     "name", asset.getName(),
-                    "price", asset.getCurrentPrice() != null ? asset.getCurrentPrice() : 0,
+                    PRICE_PARAM, asset.getCurrentPrice() != null ? asset.getCurrentPrice() : 0,
                     "changePercent", asset.getChangePercent() != null ? asset.getChangePercent() : 0,
                     "dayHigh", asset.getDayHigh() != null ? asset.getDayHigh() : 0,
                     "dayLow", asset.getDayLow() != null ? asset.getDayLow() : 0,
@@ -214,7 +226,7 @@ public class MarketController {
         
         for (int i = 0; i < dates.length; i++) {
             dividends.add(Map.of(
-                "symbol", "PETR4",
+                "symbol", DEFAULT_SYMBOL,
                 "paymentDate", dates[i],
                 "exDate", dates[i],
                 "amount", amounts[i],
@@ -223,6 +235,45 @@ public class MarketController {
         }
         
         return dividends;
+    }
+
+    @GetMapping("/events")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getEvents(
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String category) {
+        
+        List<Map<String, Object>> events = new java.util.ArrayList<>();
+        
+        events.addAll(generateIpoEvents());
+        events.addAll(generateSpecialEvents());
+        
+        if (type != null && !type.isBlank()) {
+            events = events.stream()
+                .filter(e -> type.equalsIgnoreCase((String) e.get("type")))
+                .toList();
+        }
+        
+        if (category != null && !category.isBlank()) {
+            events = events.stream()
+                .filter(e -> category.equalsIgnoreCase((String) e.get(CATEGORY_PARAM)))
+                .toList();
+        }
+        
+        return ResponseEntity.ok(ApiResponse.success(events));
+    }
+
+    private List<Map<String, Object>> generateIpoEvents() {
+        List<Map<String, Object>> ipo = new java.util.ArrayList<>();
+        ipo.add(Map.of("id", 1, "symbol", "NXTP3", "name", "Nexta S.A.", "type", "IPO", CATEGORY_PARAM, "tech", "date", "2026-04-15", PRICE_PARAM, 18.50, STATUS_PARAM, "upcoming"));
+        ipo.add(Map.of("id", 2, "symbol", "MLTS3", "name", "Melitus Foods", "type", "IPO", CATEGORY_PARAM, "foods", "date", "2026-05-01", PRICE_PARAM, 24.00, STATUS_PARAM, "upcoming"));
+        return ipo;
+    }
+
+    private List<Map<String, Object>> generateSpecialEvents() {
+        List<Map<String, Object>> events = new java.util.ArrayList<>();
+        events.add(Map.of("id", 3, "symbol", DEFAULT_SYMBOL, "type", "DIVIDEND", CATEGORY_PARAM, "dividend", "date", "2026-04-20", "amount", 0.25, STATUS_PARAM, "announced"));
+        events.add(Map.of("id", 4, "type", "MERGER", CATEGORY_PARAM, "corporate", "date", "2026-04-10", "description", "Fusão BBAS3 e BITA3", STATUS_PARAM, "completed"));
+        return events;
     }
 
     @GetMapping("/assets/{symbol}/earnings")
@@ -245,7 +296,7 @@ public class MarketController {
         
         for (int i = 0; i < dates.length; i++) {
             earnings.add(Map.of(
-                "symbol", "PETR4",
+                "symbol", DEFAULT_SYMBOL,
                 "date", dates[i],
                 "period", periods[i],
                 "revenue", revenues[i],
@@ -296,8 +347,8 @@ public class MarketController {
             case "receita", "maior-receita" -> assetRepository.findHighestRevenue(pageRequest);
             case "lucro", "maior-lucro" -> assetRepository.findHighestNetIncome(pageRequest);
             case "liquidez", "maior-liquidez" -> assetRepository.findHighestVolume(pageRequest);
-            case "alta", "alta" -> assetRepository.findTopGainers(pageRequest);
-            case "baixa", "baixa" -> assetRepository.findTopLosers(pageRequest);
+            case "alta", "maior-alta" -> assetRepository.findTopGainers(pageRequest);
+            case "baixa", "maior-baixa" -> assetRepository.findTopLosers(pageRequest);
             default -> assetRepository.findTopByDividendYield(pageRequest);
         };
         

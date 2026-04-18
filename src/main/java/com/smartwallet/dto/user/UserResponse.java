@@ -23,7 +23,7 @@ public record UserResponse(
             user.getFullName(),
             user.getPhone(),
             user.getCpf(),
-            user.getRole() != null ? user.getRole().name() : "USER",
+            user.getRole() != null ? user.getRole() : "USER",
             user.getProfileImageUrl(),
             user.getIsActive(),
             user.getEmailVerified(),

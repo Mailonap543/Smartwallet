@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { CardComponent } from '../../shared/card-input.component';
+import { CardComponent } from '../../shared/components/card-input.component';
+import { ApiService, Asset } from '../../services/api.service';
 
 @Component({
   selector: 'app-favorites',
@@ -10,6 +11,7 @@ import { CardComponent } from '../../shared/card-input.component';
   template: `
     <div class="favorites-page">
       <h1>Favoritos</h1>
+
       
       @if (favorites.length) {
         <div class="favorites-list">
@@ -22,8 +24,8 @@ import { CardComponent } from '../../shared/card-input.component';
               </div>
               <div class="price">
                 <span class="value">{{ fav.currentPrice | number:'1.2-2' }}</span>
-                <span class="change" [class.positive]="fav.changePercent >= 0" [class.negative]="fav.changePercent < 0">
-                  {{ fav.changePercent >= 0 ? '+' : '' }}{{ fav.changePercent | number:'1.2-2' }}%
+                <span class="change" [class.positive]="(fav.changePercent ?? 0) >= 0" [class.negative]="(fav.changePercent ?? 0) < 0">
+                  {{ (fav.changePercent ?? 0) >= 0 ? '+' : '' }}{{ fav.changePercent ?? 0 | number:'1.2-2' }}%
                 </span>
               </div>
             </app-card>
@@ -55,15 +57,22 @@ import { CardComponent } from '../../shared/card-input.component';
     .empty a { color: var(--primary-light); }
   `]
 })
-export class FavoritesComponent {
-  favorites = [
-    { symbol: 'PETR4', name: 'Petrobras', currentPrice: 38.50, changePercent: 2.5 },
-    { symbol: 'VALE3', name: 'Vale', currentPrice: 68.90, changePercent: -1.2 },
-    { symbol: 'ITUB4', name: 'Itaú', currentPrice: 35.20, changePercent: 0.8 },
-  ];
+export class FavoritesComponent implements OnInit {
+  private api = inject(ApiService);
+  favorites: Asset[] = [];
 
-  removeFavorite(fav: any, event: Event) {
+  ngOnInit() {
+    this.api.getFavorites().subscribe({
+      next: data => this.favorites = data
+    });
+  }
+
+  removeFavorite(fav: Asset, event: Event) {
     event.stopPropagation();
-    this.favorites = this.favorites.filter(f => f.symbol !== fav.symbol);
+    this.api.removeFavorite(fav.symbol).subscribe({
+      next: () => {
+        this.favorites = this.favorites.filter(f => f.symbol !== fav.symbol);
+      }
+    });
   }
 }

@@ -22,6 +22,7 @@ import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
           (focus)="onFocus()"
           (blur)="onBlur()"
           placeholder="Buscar ativos, ações, FIIs..."
+          aria-label="Buscar ativos"
           class="search-input"
           autocomplete="off"
         />

@@ -1,10 +1,11 @@
 package com.smartwallet.bank.controller;
 
-import com.smartwallet.bank.dto.*;
+import static com.smartwallet.bank.dto.BankDtos.*;
 import com.smartwallet.bank.service.BankAggregatorService;
 import com.smartwallet.dto.ApiResponse;
 import com.smartwallet.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bank")
 @RequiredArgsConstructor
+@Slf4j
 public class BankController {
 
     private final BankAggregatorService bankAggregatorService;
@@ -57,7 +59,7 @@ public class BankController {
         
         return bankAggregatorService.exchangeCodeForToken(code)
                 .map(token -> {
-                    log.info("Token exchanged successfully for user: {}", userId);
+                    log.info("Token exchanged successfully");
                     return ResponseEntity.ok(ApiResponse.success(Map.of(
                         "status", "connected",
                         "sessionId", sessionId,

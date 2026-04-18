@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { CardComponent } from '../../shared/card-input.component';
+import { CardComponent } from '../../shared/components/card-input.component';
+import { ApiService } from '../../services/api.service';
 
 interface NewsItem {
   id: number;
@@ -20,6 +21,7 @@ interface NewsItem {
   template: `
     <div class="news-page">
       <h1>Notícias</h1>
+
       
       <div class="filters">
         <button [class.active]="!selectedCategory" (click)="selectedCategory = ''">Todas</button>
@@ -70,11 +72,25 @@ interface NewsItem {
     .tag { padding: var(--space-xs) var(--space-sm); background: var(--card-hover); border-radius: var(--radius-sm); font-size: var(--font-xs); }
   `]
 })
-export class NewsComponent {
+export class NewsComponent implements OnInit {
   selectedCategory = '';
-  newsItems: NewsItem[] = [
-    { id: 1, title: 'Petrobras anuncia novo recorde de produção', summary: 'A estatal afirmou que atingiu produção histórica no pré-sal...', source: 'InfoMoney', date: '2h atrás', relatedAssets: ['PETR4', 'PETR3'], url: '' },
-    { id: 2, title: 'Itaú reporta lucro acima do esperado', summary: 'O maior banco do Brasil registrou lucro líquido de R$ 8,5 bilhões...', source: 'Valor', date: '4h atrás', relatedAssets: ['ITUB4'], url: '' },
-    { id: 3, title: 'Copom mantém juros estável', summary: 'Comitê decide manter taxa de juros em 10,50%...', source: 'Globo', date: '5h atrás', relatedAssets: [], url: '' },
-  ];
+  newsItems: NewsItem[] = [];
+  private api = inject(ApiService);
+
+  ngOnInit() {
+    this.api.getNews().subscribe({
+      next: res => {
+        const content = res?.content || [];
+        this.newsItems = content.map((n: any) => ({
+          id: n.id,
+          title: n.title,
+          summary: n.summary,
+          source: n.source,
+          date: n.publishedAt,
+          relatedAssets: (n.symbols || '').split(',').filter((s: string) => !!s),
+          url: n.url
+        }));
+      }
+    });
+  }
 }

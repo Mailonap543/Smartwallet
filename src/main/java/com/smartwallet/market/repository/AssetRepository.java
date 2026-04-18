@@ -14,58 +14,62 @@ import java.util.Optional;
 
 @Repository
 public interface AssetRepository extends JpaRepository<Asset, Long> {
-
+    
     Optional<Asset> findBySymbol(String symbol);
     
-    Optional<Asset> findByIsin(String isin);
+    Page<Asset> findAll(Pageable pageable);
     
-    boolean existsBySymbol(String symbol);
-    
-    @Query("SELECT a FROM Asset a WHERE a.isTracked = true AND a.isActive = true ORDER BY a.symbol")
-    List<Asset> findAllTracked();
-    
-    @Query("SELECT a FROM Asset a WHERE a.isFeatured = true AND a.isActive = true")
-    List<Asset> findFeatured();
-    
-    @Query("SELECT a FROM Asset a WHERE a.category = :category AND a.isActive = true")
-    Page<Asset> findByCategory(@Param("category") AssetCategory category, Pageable pageable);
-    
-    @Query("SELECT a FROM Asset a WHERE " +
-           "(LOWER(a.symbol) LIKE LOWER(CONCAT('%', :query, '%')) " +
-           "OR LOWER(a.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
-           "OR LOWER(a.companyName) LIKE LOWER(CONCAT('%', :query, '%'))) " +
-           "AND a.isActive = true " +
-           "ORDER BY " +
-           "CASE WHEN LOWER(a.symbol) = LOWER(:query) THEN 0 " +
-           "WHEN LOWER(a.symbol) LIKE LOWER(CONCAT(:query, '%')) THEN 1 " +
-           "WHEN LOWER(a.name) LIKE LOWER(CONCAT(:query, '%')) THEN 2 " +
-           "ELSE 3 END")
+    @Query("SELECT a FROM MarketAsset a WHERE LOWER(a.symbol) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(a.name) LIKE LOWER(CONCAT('%', :query, '%'))")
     Page<Asset> search(@Param("query") String query, Pageable pageable);
     
-    @Query("SELECT COUNT(a) FROM Asset a WHERE a.category = :category AND a.isActive = true")
-    long countByCategory(@Param("category") AssetCategory category);
-
-    @Query("SELECT a FROM Asset a WHERE a.dividendYield IS NOT NULL AND a.dividendYield > 0 AND a.isActive = true ORDER BY a.dividendYield DESC")
-    Page<Asset> findTopByDividendYield(Pageable pageable);
+    @Query("SELECT a FROM MarketAsset a WHERE a.category = :category")
+    Page<Asset> findByCategory(@Param("category") AssetCategory category, Pageable pageable);
     
-    @Query("SELECT a FROM Asset a WHERE a.priceToBook IS NOT NULL AND a.priceToBook > 0 AND a.isActive = true ORDER BY a.priceToBook ASC")
+    @Query("SELECT a FROM MarketAsset a WHERE a.category = :category ORDER BY a.dividendYield DESC")
+    List<Asset> findByCategoryOrderByDividendYieldDesc(@Param("category") AssetCategory category);
+    
+    @Query("SELECT a FROM MarketAsset a ORDER BY a.dividendYield DESC")
+    Page<Asset> findTopByOrderByDividendYieldDesc(Pageable pageable);
+    
+    @Query("SELECT a FROM MarketAsset a ORDER BY a.marketCap DESC")
+    Page<Asset> findByOrderByMarketCapDesc(Pageable pageable);
+    
+    @Query("SELECT a FROM MarketAsset a ORDER BY a.dayVolume DESC")
+    Page<Asset> findTopByOrderByVolumeDesc(Pageable pageable);
+    
+    @Query("SELECT a FROM MarketAsset a ORDER BY a.priceToBook ASC")
     Page<Asset> findLowestPriceToBook(Pageable pageable);
     
-    @Query("SELECT a FROM Asset a WHERE a.roe IS NOT NULL AND a.isActive = true ORDER BY a.roe DESC")
+    @Query("SELECT a FROM MarketAsset a ORDER BY a.roe DESC")
     Page<Asset> findHighestROE(Pageable pageable);
     
-    @Query("SELECT a FROM Asset a WHERE a.revenue IS NOT NULL AND a.isActive = true ORDER BY a.revenue DESC")
+    @Query("SELECT a FROM MarketAsset a ORDER BY a.revenue DESC")
     Page<Asset> findHighestRevenue(Pageable pageable);
     
-    @Query("SELECT a FROM Asset a WHERE a.netIncome IS NOT NULL AND a.isActive = true ORDER BY a.netIncome DESC")
+    @Query("SELECT a FROM MarketAsset a ORDER BY a.netIncome DESC")
     Page<Asset> findHighestNetIncome(Pageable pageable);
     
-    @Query("SELECT a FROM Asset a WHERE a.dayVolume IS NOT NULL AND a.isActive = true ORDER BY a.dayVolume DESC")
+    @Query("SELECT a FROM MarketAsset a ORDER BY a.dayVolume DESC")
     Page<Asset> findHighestVolume(Pageable pageable);
     
-    @Query("SELECT a FROM Asset a WHERE a.changePercent IS NOT NULL AND a.changePercent > 0 AND a.isActive = true ORDER BY a.changePercent DESC")
+    @Query("SELECT a FROM MarketAsset a ORDER BY a.changePercent DESC")
     Page<Asset> findTopGainers(Pageable pageable);
     
-    @Query("SELECT a FROM Asset a WHERE a.changePercent IS NOT NULL AND a.changePercent < 0 AND a.isActive = true ORDER BY a.changePercent ASC")
+    @Query("SELECT a FROM MarketAsset a ORDER BY a.changePercent ASC")
     Page<Asset> findTopLosers(Pageable pageable);
+    
+    @Query("SELECT a FROM MarketAsset a ORDER BY a.dividendYield DESC")
+    Page<Asset> findTopByDividendYield(Pageable pageable);
+    
+    @Query("SELECT a FROM MarketAsset a WHERE a.isTracked = true")
+    List<Asset> findByIsTrackedTrue();
+    
+    @Query("SELECT a FROM MarketAsset a WHERE a.isFeatured = true")
+    List<Asset> findByIsFeaturedTrue();
+    
+    @Query("SELECT a FROM MarketAsset a WHERE a.isFeatured = true")
+    List<Asset> findFeatured();
+    
+    @Query("SELECT a FROM MarketAsset a WHERE a.isTracked = true")
+    List<Asset> findAllTracked();
 }

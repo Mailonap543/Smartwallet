@@ -1,0 +1,4 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Wed Apr 08 21:01:43 BRT 2026
+@default-central-https\://repo.maven.apache.org/maven2/.lastUpdated=1775692903413
+https\://repo.maven.apache.org/maven2/.error=Could not transfer artifact org.springframework.boot\:spring-boot-starter-parent\:pom\:3.2.4 from/to central (https\://repo.maven.apache.org/maven2)\: D\:\\mailon\\Usuario\\Desktop\\Smartwallet\\.\\m2repo\\org\\springframework\\boot\\spring-boot-starter-parent\\3.2.4\\spring-boot-starter-parent-3.2.4.pom.10756234299885046773.tmp.12110797156846660304.tmp

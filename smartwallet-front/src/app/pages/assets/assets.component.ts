@@ -236,7 +236,8 @@ export class AssetsComponent implements OnInit {
     this.api.deleteAsset(asset.id).subscribe({
       next: () => {
         this.assets.update(a => a.filter(x => x.id !== asset.id));
-      }
+      },
+      error: () => {}
     });
   }
 
@@ -263,7 +264,8 @@ export class AssetsComponent implements OnInit {
       next: () => {
         this.closeModal();
         this.loadAssets(walletId);
-      }
+      },
+      error: () => {}
     });
   }
 

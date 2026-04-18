@@ -2,8 +2,8 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService, Asset } from '../../services/api.service';
-import { LoadingComponent } from '../../shared/loading.component';
-import { ButtonComponent } from '../../shared/button.component';
+import { LoadingComponent } from '../../shared/components/loading.component';
+import { ButtonComponent } from '../../shared/components/button.component';
 
 @Component({
   selector: 'app-homepage',
@@ -70,6 +70,7 @@ import { ButtonComponent } from '../../shared/button.component';
           <h2 class="section-title">Destaques do Mercado</h2>
           <a routerLink="/market" class="view-all">Ver todos →</a>
         </div>
+
         
         @if (loading()) {
           <app-loading message="Carregando..." />

@@ -27,7 +27,7 @@ public class CustomUserDetails implements UserDetails {
         this.fullName = user.getFullName();
         this.isActive = user.getIsActive();
         this.isEmailVerified = user.getEmailVerified();
-        this.role = user.getRole() != null ? user.getRole().name() : "USER";
+        this.role = user.getRole() != null ? user.getRole() : "USER";
     }
 
     @Override
@@ -67,5 +67,9 @@ public class CustomUserDetails implements UserDetails {
 
     public boolean isAdmin() {
         return "ADMIN".equals(role);
+    }
+    
+    public Long getId() {
+        return id;
     }
 }
