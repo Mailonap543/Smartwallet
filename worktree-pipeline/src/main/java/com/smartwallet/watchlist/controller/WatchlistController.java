@@ -66,7 +66,6 @@ public class WatchlistController {
 
     @GetMapping("/{id}/items")
     public ResponseEntity<ApiResponse<List<Asset>>> getWatchlistItems(@PathVariable Long id) {
-        Long userId = getCurrentUserId();
         List<WatchlistItem> items = itemRepository.findByWatchlistIdOrderByPositionAsc(id);
         
         List<Asset> assets = items.stream()

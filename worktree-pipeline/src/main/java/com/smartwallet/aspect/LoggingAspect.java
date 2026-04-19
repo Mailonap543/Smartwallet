@@ -31,13 +31,13 @@ public class LoggingAspect {
         HttpServletRequest request = getRequest();
         String method = joinPoint.getSignature().toShortString();
         
-        logger.info("➡️ REQUEST: {} {} - Params: {}", request != null ? request.getMethod() : "UNKNOWN", method, argsToString(joinPoint.getArgs()));
+        logger.debug("REQUEST: {} {}", request != null ? request.getMethod() : "UNKNOWN", method);
         
         long startTime = System.currentTimeMillis();
         Object result = joinPoint.proceed();
         long duration = System.currentTimeMillis() - startTime;
         
-        logger.info("⬅️ RESPONSE: {} - Status: OK - Duration: {}ms", method, duration);
+        logger.debug("RESPONSE: {} - Duration: {}ms", method, duration);
         return result;
     }
 
@@ -46,14 +46,14 @@ public class LoggingAspect {
         String method = joinPoint.getSignature().toShortString();
         long startTime = System.currentTimeMillis();
         
-        try {
+try {
             Object result = joinPoint.proceed();
             long duration = System.currentTimeMillis() - startTime;
-            logger.debug("⚡ SERVICE: {} - Duration: {}ms", method, duration);
+            logger.debug("SERVICE: {} - Duration: {}ms", method, duration);
             return result;
-        } catch (Exception e) {
-            logger.error("❌ SERVICE ERROR: {} - Error: {}", method, e.getMessage());
-            throw e;
+} catch (Exception e) {
+            logger.error("SERVICE ERROR: {} - Error: {} - Cause: {}", method, e.getMessage(), e.getCause());
+            throw new RuntimeException("Error executing " + method, e);
         }
     }
 
