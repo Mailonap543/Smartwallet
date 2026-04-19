@@ -26,6 +26,7 @@ public class MarketController {
     private static final SecureRandom RNG = new SecureRandom();
     private static final String PRICE_PARAM = "price";
     private static final String STATUS_PARAM = "status";
+    private static final String DEFAULT_SYMBOL = "PETR4";
 
     private final AssetRepository assetRepository;
     private final AssetCategoryRepository categoryRepository;
@@ -224,7 +225,7 @@ public class MarketController {
         
         for (int i = 0; i < dates.length; i++) {
             dividends.add(Map.of(
-                "symbol", "PETR4",
+                "symbol", DEFAULT_SYMBOL,
                 "paymentDate", dates[i],
                 "exDate", dates[i],
                 "amount", amounts[i],
@@ -269,7 +270,7 @@ public class MarketController {
 
     private List<Map<String, Object>> generateSpecialEvents() {
         List<Map<String, Object>> events = new java.util.ArrayList<>();
-        events.add(Map.of("id", 3, "symbol", "PETR4", "type", "DIVIDEND", "category", "dividend", "date", "2026-04-20", "amount", 0.25, STATUS_PARAM, "announced"));
+        events.add(Map.of("id", 3, "symbol", DEFAULT_SYMBOL, "type", "DIVIDEND", "category", "dividend", "date", "2026-04-20", "amount", 0.25, STATUS_PARAM, "announced"));
         events.add(Map.of("id", 4, "type", "MERGER", "category", "corporate", "date", "2026-04-10", "description", "Fusão BBAS3 e BITA3", STATUS_PARAM, "completed"));
         return events;
     }
@@ -294,7 +295,7 @@ public class MarketController {
         
         for (int i = 0; i < dates.length; i++) {
             earnings.add(Map.of(
-                "symbol", "PETR4",
+                "symbol", DEFAULT_SYMBOL,
                 "date", dates[i],
                 "period", periods[i],
                 "revenue", revenues[i],

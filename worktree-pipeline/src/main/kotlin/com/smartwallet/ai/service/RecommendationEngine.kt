@@ -24,7 +24,7 @@ class RecommendationEngine {
         recommendations.addAll(analyzeDiversification(portfolio))
 
         // Analyze risk
-        recommendations.addAll(analyzeRisk(portfolio, riskMetrics))
+        recommendations.addAll(analyzeRisk(riskMetrics))
 
         // Analyze concentration
         recommendations.addAll(analyzeConcentration(portfolio))
@@ -95,7 +95,7 @@ class RecommendationEngine {
         return recommendations
     }
 
-    private fun analyzeRisk(portfolio: PortfolioData, riskMetrics: RiskMetrics): List<Recommendation> {
+    private fun analyzeRisk(riskMetrics: RiskMetrics): List<Recommendation> {
         val recommendations = mutableListOf<Recommendation>()
 
         when (riskMetrics.riskLevel) {

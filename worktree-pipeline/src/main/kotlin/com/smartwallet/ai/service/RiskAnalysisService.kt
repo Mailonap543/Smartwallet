@@ -87,7 +87,7 @@ class RiskAnalysisService {
     }
 
     private fun estimateBeta(returns: List<BigDecimal>, marketData: Map<String, List<BigDecimal>>?): BigDecimal {
-        if (marketData == null || marketData.isEmpty()) {
+        if (marketData == null || marketData.isNullOrEmpty()) {
             return BigDecimal.valueOf(1.0) // Default market beta
         }
 

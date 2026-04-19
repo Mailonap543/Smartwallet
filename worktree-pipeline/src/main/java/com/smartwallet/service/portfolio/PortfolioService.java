@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 public class PortfolioService {
 
     private static final Logger logger = LoggerFactory.getLogger(PortfolioService.class);
+    private static final String ASSET_NOT_FOUND = "Ativo não encontrado";
 
     private final WalletRepository walletRepository;
     private final AssetRepository assetRepository;
@@ -121,7 +122,7 @@ public class PortfolioService {
     @Transactional
     public AssetResponse updateAssetPrice(Long assetId, Long userId, UpdatePriceRequest request) {
         Asset asset = assetRepository.findById(assetId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ativo não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException(ASSET_NOT_FOUND));
 
         validateAssetAccess(asset, userId);
 
@@ -138,7 +139,7 @@ public class PortfolioService {
     @Transactional
     public TransactionResponse addTransaction(Long assetId, Long userId, CreateTransactionRequest request) {
         Asset asset = assetRepository.findById(assetId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ativo não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException(ASSET_NOT_FOUND));
 
         validateAssetAccess(asset, userId);
 
@@ -207,7 +208,9 @@ public class PortfolioService {
                     totalQuantity = totalQuantity.subtract(t.getQuantity());
                     totalSold = totalSold.add(t.getTotalValue());
                 }
-                default -> {}
+                default -> {
+                    // No action needed for other transaction types
+                }
             }
         }
 
@@ -257,7 +260,7 @@ public class PortfolioService {
 
     public List<TransactionResponse> getAssetTransactions(Long assetId, Long userId) {
         Asset asset = assetRepository.findById(assetId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ativo não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException(ASSET_NOT_FOUND));
 
         validateAssetAccess(asset, userId);
 
