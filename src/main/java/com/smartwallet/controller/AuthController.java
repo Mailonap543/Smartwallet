@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,16 +22,16 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
-        log.debug("Register request received for: {}", request.email());
+        log.debug("Register request received");
         AuthResponse response = authService.register(request);
         return ResponseEntity.ok(ApiResponse.success("Usuário registrado com sucesso", response));
     }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
-        log.debug("Login request for: {}", request.email());
+        log.debug("Login request received");
         AuthResponse response = authService.login(request);
-        log.debug("Login successful for: {}", request.email());
+        log.debug("Login successful");
         return ResponseEntity.ok(ApiResponse.success("Login realizado com sucesso", response));
     }
 
@@ -49,5 +51,13 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request);
         return ResponseEntity.ok(ApiResponse.success("Senha redefinida com sucesso", null));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails != null) {
+            authService.logout(null);
+        }
+        return ResponseEntity.ok(ApiResponse.success("Logout realizado com sucesso", null));
     }
 }

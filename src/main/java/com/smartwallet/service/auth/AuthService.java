@@ -95,7 +95,7 @@ public class AuthService {
                 .build();
 
         user = userRepository.save(user);
-        logger.info("New user registered: {}", user.getEmail());
+        logger.info("New user registered successfully");
 
         return generateAuthResponse(user);
     }
@@ -118,7 +118,7 @@ public class AuthService {
         User user = tokenEntity.getUser();
         refreshTokenRepository.deleteByUser(user);
 
-        logger.info("Token refreshed for user: {}", user.getEmail());
+        logger.info("Token refreshed successfully");
         return generateAuthResponse(user);
     }
 
@@ -132,7 +132,7 @@ public class AuthService {
         user.setResetTokenExpiry(LocalDateTime.now().plusHours(1));
         userRepository.save(user);
 
-        logger.info("Password reset requested for: {}", user.getEmail());
+        logger.info("Password reset requested");
     }
 
     @Transactional
@@ -150,7 +150,13 @@ public class AuthService {
         userRepository.save(user);
 
         refreshTokenRepository.deleteByUser(user);
-        logger.info("Password reset successful for: {}", user.getEmail());
+        logger.info("Password reset successful");
+    }
+
+    @Transactional
+    public void logout(Long userId) {
+        refreshTokenRepository.deleteByUserId(userId);
+        logger.info("User logged out successfully");
     }
 
     private AuthResponse generateAuthResponse(User user) {
