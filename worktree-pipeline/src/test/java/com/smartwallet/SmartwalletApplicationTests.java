@@ -8,6 +8,8 @@ class SmartwalletApplicationTests {
 
 	@Test
 	void contextLoads() {
+		// Spring Boot test verifies that the application context loads successfully
+		// No additional assertions needed - context load failure would fail the test
 	}
 
 }

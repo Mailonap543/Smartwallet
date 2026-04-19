@@ -252,7 +252,7 @@ public class PortfolioService {
         return assets.stream()
                 .peek(this::recalculateAssetFromTransactions)
                 .map(AssetResponse::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<TransactionResponse> getAssetTransactions(Long assetId, Long userId) {
@@ -263,13 +263,13 @@ public class PortfolioService {
 
         return transactionRepository.findByAssetIdOrderedByDateDesc(assetId).stream()
                 .map(TransactionResponse::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<TransactionResponse> getUserTransactions(Long userId) {
         return transactionRepository.findByUserId(userId).stream()
                 .map(TransactionResponse::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public PortfolioSummary getPortfolioSummary(Long userId) {
