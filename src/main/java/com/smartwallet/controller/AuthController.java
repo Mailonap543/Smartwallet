@@ -54,10 +54,24 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(@AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails != null) {
-            authService.logout(null);
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @AuthenticationPrincipal UserDetails userDetails,
+            org.springframework.security.core.Authentication authentication) {
+        
+        if (userDetails != null && authentication != null) {
+            Long userId = getUserIdFromAuthentication(authentication);
+            if (userId != null) {
+                authService.logout(userId);
+            }
         }
         return ResponseEntity.ok(ApiResponse.success("Logout realizado com sucesso", null));
+    }
+
+    private Long getUserIdFromAuthentication(org.springframework.security.core.Authentication authentication) {
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof com.smartwallet.security.CustomUserDetails) {
+            return ((com.smartwallet.security.CustomUserDetails) principal).getId();
+        }
+        return null;
     }
 }
