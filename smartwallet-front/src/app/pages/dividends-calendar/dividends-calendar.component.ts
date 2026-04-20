@@ -3,10 +3,6 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CardComponent } from '../../shared/components/card-input.component';
 import { ApiService } from '../../services/api.service';
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { CardComponent } from '../../shared/card-input.component';
 
 interface DividendEvent {
   symbol: string;
@@ -83,11 +79,15 @@ interface DividendEvent {
 })
 export class DividendsCalendarComponent implements OnInit {
   view: 'upcoming' | 'past' = 'upcoming';
-  events: DividendEvent[] = [];
+  events: DividendEvent[] = [
+    { symbol: 'PETR4', name: 'Petrobras', date: '15/04', amount: 0.9875, type: 'DIV' },
+    { symbol: 'ITUB4', name: 'Itaú', date: '20/04', amount: 0.2756, type: 'JCP' },
+    { symbol: 'BBDC4', name: 'Bradesco', date: '22/04', amount: 0.2281, type: 'DIV' },
+    { symbol: 'VALE3', name: 'Vale', date: '25/04', amount: 1.8200, type: 'JCP' },
+  ];
   private api = inject(ApiService);
 
   ngOnInit() {
-    // exemplo: carregar PETR4; ideal integrar com watchlist/carteira
     this.api.getDividendsBySymbol('PETR4').subscribe({
       next: data => {
         this.events = data.map((d: any) => ({
@@ -100,13 +100,4 @@ export class DividendsCalendarComponent implements OnInit {
       }
     });
   }
-}
-export class DividendsCalendarComponent {
-  view: 'upcoming' | 'past' = 'upcoming';
-  events: DividendEvent[] = [
-    { symbol: 'PETR4', name: 'Petrobras', date: '15/04', amount: 0.9875, type: 'DIV' },
-    { symbol: 'ITUB4', name: 'Itaú', date: '20/04', amount: 0.2756, type: 'JCP' },
-    { symbol: 'BBDC4', name: 'Bradesco', date: '22/04', amount: 0.2281, type: 'DIV' },
-    { symbol: 'VALE3', name: 'Vale', date: '25/04', amount: 1.8200, type: 'JCP' },
-  ];
 }

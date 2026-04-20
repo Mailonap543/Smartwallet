@@ -163,7 +163,7 @@ export class ChartsComponent implements OnInit {
             fontFamily: 'Inter, sans-serif',
             background: 'transparent',
             toolbar: { show: true, tools: { download: true, selection: true, zoom: true, pan: true, reset: true } },
-            animations: { enabled: true, easing: 'easeinout', speed: 800 }
+            animations: { enabled: true, speed: 800 }
           },
           dataLabels: { enabled: false },
           stroke: { curve: "smooth", width: 2 },
@@ -173,12 +173,7 @@ export class ChartsComponent implements OnInit {
             axisBorder: { show: false },
             axisTicks: { show: false }
           },
-          yaxis: {
-            labels: {
-              style: { colors: '#9CA3AF' },
-              formatter: (val) => (val / 1000).toFixed(1) + 'k'
-            }
-          },
+          yaxis: { labels: { style: { colors: '#9CA3AF' }, formatter: (val: number) => val.toFixed(1) + 'k' } },
           tooltip: { theme: 'dark', x: { show: true }, y: { formatter: (val) => 'R$ ' + val.toLocaleString('pt-BR') } },
           legend: { show: true, position: 'top', horizontalAlign: 'right', labels: { colors: '#9CA3AF' } },
           grid: { borderColor: '#374151', strokeDashArray: 4 },
@@ -255,7 +250,7 @@ export class ChartsComponent implements OnInit {
           colors: sortedData.map((d: any) => d.y >= 0 ? '#10B981' : '#EF4444'),
           grid: { borderColor: '#374151', strokeDashArray: 4 },
           tooltip: { theme: 'dark', y: { formatter: (val) => val.toFixed(2) + '%' } },
-          dataLabels: { enabled: true, style: { colors: ['#000'] }, formatter: (val) => val.toFixed(1) + '%' },
+          dataLabels: { enabled: true, style: { colors: ['#000'] }, formatter: (val: number) => Number(val).toFixed(1) + '%' },
           legend: { show: false }
         };
         this.loadingPerformance.set(false);

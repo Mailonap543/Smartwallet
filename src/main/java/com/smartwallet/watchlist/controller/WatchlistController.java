@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/watchlist")
@@ -85,7 +86,7 @@ public class WatchlistController {
         String symbol = body.get("symbol").toUpperCase();
         
         if (itemRepository.existsByWatchlistIdAndAssetSymbol(id, symbol)) {
-            return ResponseEntity.badBuild().build();
+            return ResponseEntity.badRequest().build();
         }
         
         WatchlistItem item = new WatchlistItem();
@@ -138,15 +139,15 @@ public class WatchlistController {
     }
 
     @GetMapping("/favorites")
-    public ResponseEntity<ApiResponse<List<Asset>>>> getFavorites() {
+    public ResponseEntity<ApiResponse<List<Asset>>> getFavorites() {
         Long userId = getCurrentUserId();
-        List<Watchlist> watchlists = watchlistRepository.findByUserIdAndIsDefaultTrue(userId);
+        Optional<Watchlist> watchlistOpt = watchlistRepository.findByUserIdAndIsDefaultTrue(userId);
         
-        if (watchlists.isEmpty()) {
+        if (watchlistOpt.isEmpty()) {
             return ResponseEntity.ok(ApiResponse.success(List.of()));
         }
         
-        List<WatchlistItem> items = itemRepository.findByWatchlistIdOrderByPositionAsc(watchlists.get(0).getId());
+        List<WatchlistItem> items = itemRepository.findByWatchlistIdOrderByPositionAsc(watchlistOpt.get().getId());
         List<Asset> assets = items.stream()
             .map(item -> assetRepository.findBySymbol(item.getAssetSymbol()).orElse(null))
             .filter(a -> a != null)

@@ -173,12 +173,7 @@ export class ChartsComponent implements OnInit {
             axisBorder: { show: false },
             axisTicks: { show: false }
           },
-          yaxis: {
-            labels: { 
-              style: { colors: '#9CA3AF' },
-              formatter: (val) => (val / 1000).toFixed(1) + 'k'
-            }
-          },
+yaxis: { labels: { style: { colors: '#9CA3AF' }, formatter: (val: number) => val.toFixed(1) + 'k' } },
           tooltip: { theme: 'dark', x: { show: true }, y: { formatter: (val) => 'R$ ' + val.toLocaleString('pt-BR') } },
           legend: { show: true, position: 'top', horizontalAlign: 'right', labels: { colors: '#9CA3AF' } },
           grid: { borderColor: '#374151', strokeDashArray: 4 },

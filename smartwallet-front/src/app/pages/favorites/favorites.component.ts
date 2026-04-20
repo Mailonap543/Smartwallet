@@ -3,10 +3,6 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CardComponent } from '../../shared/components/card-input.component';
 import { ApiService, Asset } from '../../services/api.service';
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { CardComponent } from '../../shared/card-input.component';
 
 @Component({
   selector: 'app-favorites',
@@ -26,12 +22,10 @@ import { CardComponent } from '../../shared/card-input.component';
                 <span class="symbol">{{ fav.symbol }}</span>
                 <span class="name">{{ fav.name }}</span>
               </div>
-              <div class="price">
+<div class="price">
                 <span class="value">{{ fav.currentPrice | number:'1.2-2' }}</span>
                 <span class="change" [class.positive]="(fav.changePercent ?? 0) >= 0" [class.negative]="(fav.changePercent ?? 0) < 0">
                   {{ (fav.changePercent ?? 0) >= 0 ? '+' : '' }}{{ fav.changePercent ?? 0 | number:'1.2-2' }}%
-                <span class="change" [class.positive]="fav.changePercent >= 0" [class.negative]="fav.changePercent < 0">
-                  {{ fav.changePercent >= 0 ? '+' : '' }}{{ fav.changePercent | number:'1.2-2' }}%
                 </span>
               </div>
             </app-card>
@@ -80,16 +74,5 @@ export class FavoritesComponent {
         this.favorites = this.favorites.filter(f => f.symbol !== fav.symbol);
       }
     });
-  }
-}
-  favorites = [
-    { symbol: 'PETR4', name: 'Petrobras', currentPrice: 38.50, changePercent: 2.5 },
-    { symbol: 'VALE3', name: 'Vale', currentPrice: 68.90, changePercent: -1.2 },
-    { symbol: 'ITUB4', name: 'Itaú', currentPrice: 35.20, changePercent: 0.8 },
-  ];
-
-  removeFavorite(fav: any, event: Event) {
-    event.stopPropagation();
-    this.favorites = this.favorites.filter(f => f.symbol !== fav.symbol);
   }
 }

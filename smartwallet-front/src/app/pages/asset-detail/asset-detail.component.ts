@@ -5,9 +5,6 @@ import { ApiService, Asset } from '../../services/api.service';
 import { LoadingComponent } from '../../shared/components/loading.component';
 import { ButtonComponent } from '../../shared/components/button.component';
 import { CardComponent } from '../../shared/components/card-input.component';
-import { LoadingComponent } from '../../shared/loading.component';
-import { ButtonComponent } from '../../shared/button.component';
-import { CardComponent } from '../../shared/card-input.component';
 
 @Component({
   selector: 'app-asset-detail',
@@ -318,5 +315,4 @@ export class AssetDetailComponent implements OnInit {
   addToWallet() { console.log('add to wallet'); }
   addToCompare() { console.log('add to compare'); }
   toggleFavorite() { this.isFavorite = !this.isFavorite; }
-}
 }

@@ -187,40 +187,4 @@ export class ScreenerComponent {
     });
   }
 }
-
-    this.api.getCategories().subscribe({
-      next: () => {
-        this.api.getFeatured().subscribe({
-          next: (assets) => {
-            let filtered = assets;
-
-            if (this.filters.category) {
-              filtered = filtered.filter(a => a.assetType === this.filters.category);
-            }
-            if (this.filters.maxPe) {
-              filtered = filtered.filter(a => (a.priceToEarnings ?? 999) <= this.filters.maxPe!);
-            }
-            if (this.filters.maxPb) {
-              filtered = filtered.filter(a => (a.priceToBook ?? 999) <= this.filters.maxPb!);
-            }
-            if (this.filters.minDy) {
-              filtered = filtered.filter(a => (a.dividendYield ?? 0) >= this.filters.minDy!);
-            }
-            if (this.filters.minRoe) {
-              filtered = filtered.filter(a => (a.roe ?? 0) >= this.filters.minRoe!);
-            }
-
-            this.results.set(filtered.slice(0, 20));
-            this.loading.set(false);
-          },
-          error: () => {
-            this.loading.set(false);
-          }
-        });
-      },
-      error: () => {
-        this.loading.set(false);
-      }
-    });
-  }
 }
