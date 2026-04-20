@@ -57,7 +57,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> logout(
             @AuthenticationPrincipal UserDetails userDetails,
             org.springframework.security.core.Authentication authentication) {
-        
+
         if (userDetails != null && authentication != null) {
             Long userId = getUserIdFromAuthentication(authentication);
             if (userId != null) {
