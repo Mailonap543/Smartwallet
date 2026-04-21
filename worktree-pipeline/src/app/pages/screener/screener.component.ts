@@ -3,12 +3,11 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService, Asset } from '../../services/api.service';
-import { CardComponent } from '../../shared/components/card-input.component';
 
 @Component({
   selector: 'app-screener',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, CardComponent],
+  imports: [CommonModule, RouterLink, FormsModule],
   template: `
     <div class="screener-page">
       <h1>Screener</h1>
