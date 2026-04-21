@@ -7,7 +7,6 @@ import { LoadingComponent } from '../../shared/components/loading.component';
 @Component({
   selector: 'app-homepage',
   standalone: true,
-  imports: [CommonModule, RouterLink, LoadingComponent],
   template: `
     <div class="homepage">
       <!-- Hero Section -->

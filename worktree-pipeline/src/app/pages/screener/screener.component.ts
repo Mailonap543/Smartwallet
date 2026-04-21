@@ -7,7 +7,6 @@ import { ApiService, Asset } from '../../services/api.service';
 @Component({
   selector: 'app-screener',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
   template: `
     <div class="screener-page">
       <h1>Screener</h1>
