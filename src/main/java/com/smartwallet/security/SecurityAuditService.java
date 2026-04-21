@@ -22,16 +22,16 @@ public class SecurityAuditService {
         log.warn("SECURITY | event={} | details={} | ip={}", event, details, ipAddress);
     }
 
-    public void logFailedLogin(String ipAddress) {
-        log.warn("LOGIN_FAILED | ip={} | time={}", ipAddress, LocalDateTime.now());
+    public void logFailedLogin(String email, String ipAddress) {
+        log.warn("LOGIN_FAILED | email={} | ip={} | time={}", email, ipAddress, LocalDateTime.now());
     }
 
     public void logRateLimitExceeded(String ipAddress, String endpoint) {
         log.warn("RATE_LIMIT_EXCEEDED | ip={} | endpoint={} | time={}", ipAddress, endpoint, LocalDateTime.now());
     }
 
-    public void logSuspiciousActivity(String activity, String ipAddress) {
-        log.error("SUSPICIOUS_ACTIVITY | activity={} | ip={} | time={}", 
-            activity, ipAddress, LocalDateTime.now());
+    public void logSuspiciousActivity(String username, String activity, String ipAddress) {
+        log.error("SUSPICIOUS_ACTIVITY | user={} | activity={} | ip={} | time={}", 
+            username, activity, ipAddress, LocalDateTime.now());
     }
 }

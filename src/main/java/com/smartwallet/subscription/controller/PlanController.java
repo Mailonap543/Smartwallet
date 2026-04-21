@@ -18,6 +18,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PlanController {
 
+    private static final String ALLOWED_KEY = "allowed";
+
     private final PlanService planService;
 
     @GetMapping("/plans")
@@ -70,9 +72,9 @@ public class PlanController {
         
         try {
             planService.validateWalletCreation(user.getId());
-            return ResponseEntity.ok(ApiResponse.success(Map.of("allowed", true)));
+            return ResponseEntity.ok(ApiResponse.success(Map.of(ALLOWED_KEY, true)));
         } catch (Exception e) {
-            return ResponseEntity.ok(ApiResponse.success(Map.of("allowed", false)));
+            return ResponseEntity.ok(ApiResponse.success(Map.of(ALLOWED_KEY, false)));
         }
     }
 
@@ -82,9 +84,9 @@ public class PlanController {
         
         try {
             planService.validateAssetCreation(user.getId());
-            return ResponseEntity.ok(ApiResponse.success(Map.of("allowed", true)));
+            return ResponseEntity.ok(ApiResponse.success(Map.of(ALLOWED_KEY, true)));
         } catch (Exception e) {
-            return ResponseEntity.ok(ApiResponse.success(Map.of("allowed", false)));
+            return ResponseEntity.ok(ApiResponse.success(Map.of(ALLOWED_KEY, false)));
         }
     }
 
@@ -94,9 +96,9 @@ public class PlanController {
         
         try {
             planService.validateAiAnalysisAccess(user.getId());
-            return ResponseEntity.ok(ApiResponse.success(Map.of("allowed", true)));
+            return ResponseEntity.ok(ApiResponse.success(Map.of(ALLOWED_KEY, true)));
         } catch (Exception e) {
-            return ResponseEntity.ok(ApiResponse.success(Map.of("allowed", false)));
+            return ResponseEntity.ok(ApiResponse.success(Map.of(ALLOWED_KEY, false)));
         }
     }
 
@@ -106,9 +108,9 @@ public class PlanController {
         
         try {
             planService.validateBankIntegrationAccess(user.getId());
-            return ResponseEntity.ok(ApiResponse.success(Map.of("allowed", true)));
+            return ResponseEntity.ok(ApiResponse.success(Map.of(ALLOWED_KEY, true)));
         } catch (Exception e) {
-            return ResponseEntity.ok(ApiResponse.success(Map.of("allowed", false)));
+            return ResponseEntity.ok(ApiResponse.success(Map.of(ALLOWED_KEY, false)));
         }
     }
 }

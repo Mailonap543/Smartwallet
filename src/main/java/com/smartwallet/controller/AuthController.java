@@ -8,8 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -51,27 +49,5 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request);
         return ResponseEntity.ok(ApiResponse.success("Senha redefinida com sucesso", null));
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(
-            @AuthenticationPrincipal UserDetails userDetails,
-            org.springframework.security.core.Authentication authentication) {
-
-        if (userDetails != null && authentication != null) {
-            Long userId = getUserIdFromAuthentication(authentication);
-            if (userId != null) {
-                authService.logout(userId);
-            }
-        }
-        return ResponseEntity.ok(ApiResponse.success("Logout realizado com sucesso", null));
-    }
-
-    private Long getUserIdFromAuthentication(org.springframework.security.core.Authentication authentication) {
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof com.smartwallet.security.CustomUserDetails) {
-            return ((com.smartwallet.security.CustomUserDetails) principal).getId();
-        }
-        return null;
     }
 }

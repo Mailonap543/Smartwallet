@@ -17,6 +17,9 @@ import java.util.Map;
 @RequestMapping("/api/v1/market/screener")
 public class ScreenerController {
 
+    private static final String MAX_PE_KEY = "maxPe";
+    private static final String MAX_PB_KEY = "maxPb";
+
     private final AssetRepository assetRepository;
 
     public ScreenerController(AssetRepository assetRepository) {
@@ -38,14 +41,14 @@ public class ScreenerController {
             }
         }
         
-        if (filters.containsKey("maxPe")) {
+        if (filters.containsKey(MAX_PE_KEY)) {
             BigDecimal maxPe = new BigDecimal(filters.get("maxPe").toString());
             assets = assets.stream()
                 .filter(a -> a.getPriceToEarnings() == null || a.getPriceToEarnings().compareTo(maxPe) <= 0)
                 .toList();
         }
         
-        if (filters.containsKey("maxPb")) {
+        if (filters.containsKey(MAX_PB_KEY)) {
             BigDecimal maxPb = new BigDecimal(filters.get("maxPb").toString());
             assets = assets.stream()
                 .filter(a -> a.getPriceToBook() == null || a.getPriceToBook().compareTo(maxPb) <= 0)

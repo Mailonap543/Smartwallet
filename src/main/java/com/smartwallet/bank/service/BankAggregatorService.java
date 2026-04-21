@@ -14,8 +14,8 @@ import java.util.*;
 @Service
 public class BankAggregatorService {
 
-    private static final Logger log = LoggerFactory.getLogger(BankAggregatorService.class);
-
+private static final Logger log = LoggerFactory.getLogger(BankAggregatorService.class);
+    private static final String ACCESS_TOKEN_KEY = "access_token";
     private final WebClient webClient;
     private final String aggregatorApiKey;
     private final String aggregatorBaseUrl;
@@ -104,7 +104,7 @@ public class BankAggregatorService {
 
         try {
             Map<String, Object> params = new HashMap<>();
-            params.put("access_token", accessToken);
+            params.put(ACCESS_TOKEN_KEY, accessToken);
             params.put("account_id", accountId);
             params.put("date_from", startDate.toLocalDate().toString());
             params.put("date_to", endDate.toLocalDate().toString());
@@ -136,7 +136,7 @@ public class BankAggregatorService {
 
         try {
             Map<String, Object> params = Map.of(
-                "access_token", accessToken,
+                ACCESS_TOKEN_KEY, accessToken,
                 "account_id", accountId,
                 "limit", limit
             );
@@ -188,7 +188,7 @@ public class BankAggregatorService {
         if (!enabled) return false;
 
         try {
-            Map<String, Object> request = Map.of("access_token", accessToken);
+            Map<String, Object> request = Map.of(ACCESS_TOKEN_KEY, accessToken);
             
             webClient.post()
                     .uri("/v1/link/disconnect")

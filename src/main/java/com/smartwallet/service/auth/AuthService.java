@@ -31,13 +31,13 @@ public class AuthService {
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        logger.debug("Login attempt");
+        logger.info("Login attempt for: {}", request.email());
         
         User user = userRepository.findByEmail(request.email())
                 .orElse(null);
         
         if (user == null) {
-            logger.warn("User not found");
+            logger.warn("User not found: {}", request.email());
             throw new com.smartwallet.exception.BusinessException("Credenciais inválidas", "INVALID_CREDENTIALS");
         }
         
@@ -48,11 +48,11 @@ public class AuthService {
         logger.debug("Password match result: {}", passwordMatches);
         
         if (!passwordMatches) {
-            logger.warn("Invalid password for user");
+            logger.warn("Invalid password for user: {}", request.email());
             throw new com.smartwallet.exception.BusinessException("Credenciais inválidas", "INVALID_CREDENTIALS");
         }
 
-        logger.info("User logged in successfully");
+        logger.info("User logged in: {}", user.getEmail());
         
         String accessToken = jwtUtils.generateToken(user.getEmail());
         String refreshToken = jwtUtils.generateRefreshToken(user.getEmail());
@@ -95,7 +95,7 @@ public class AuthService {
                 .build();
 
         user = userRepository.save(user);
-        logger.info("New user registered successfully");
+        logger.info("New user registered: {}", user.getEmail());
 
         return generateAuthResponse(user);
     }
@@ -118,7 +118,7 @@ public class AuthService {
         User user = tokenEntity.getUser();
         refreshTokenRepository.deleteByUser(user);
 
-        logger.info("Token refreshed successfully");
+        logger.info("Token refreshed for user: {}", user.getEmail());
         return generateAuthResponse(user);
     }
 
@@ -132,7 +132,7 @@ public class AuthService {
         user.setResetTokenExpiry(LocalDateTime.now().plusHours(1));
         userRepository.save(user);
 
-        logger.info("Password reset requested");
+        logger.info("Password reset requested for: {}", user.getEmail());
     }
 
     @Transactional
@@ -150,15 +150,7 @@ public class AuthService {
         userRepository.save(user);
 
         refreshTokenRepository.deleteByUser(user);
-        logger.info("Password reset successful");
-    }
-
-    @Transactional
-    public void logout(Long userId) {
-        if (userId != null) {
-            refreshTokenRepository.deleteByUserId(userId);
-            logger.info("User logged out successfully");
-        }
+        logger.info("Password reset successful for: {}", user.getEmail());
     }
 
     private AuthResponse generateAuthResponse(User user) {

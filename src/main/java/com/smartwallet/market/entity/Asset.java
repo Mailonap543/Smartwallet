@@ -4,12 +4,14 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity
+@Entity(name = "MarketAsset")
 @Table(name = "assets", indexes = {
     @Index(name = "idx_asset_symbol", columnList = "symbol"),
     @Index(name = "idx_asset_category", columnList = "category_id"),
     @Index(name = "idx_asset_isin", columnList = "isin")
 })
+@NamedEntityGraph(name = "MarketAsset.withCategory", attributeNodes = @NamedAttributeNode("category"))
+@NamedEntityGraph(name = "MarketAsset.withPrice", attributeNodes = @NamedAttributeNode("currentPrice"))
 public class Asset {
 
     @Id

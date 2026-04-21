@@ -24,7 +24,6 @@ public class MarketController {
 
     private static final Logger log = LoggerFactory.getLogger(MarketController.class);
     private static final SecureRandom RNG = new SecureRandom();
-    private static final String CATEGORY_PARAM = "category";
     private static final String PRICE_PARAM = "price";
     private static final String STATUS_PARAM = "status";
     private static final String DEFAULT_SYMBOL = "PETR4";
@@ -255,7 +254,7 @@ public class MarketController {
         
         if (category != null && !category.isBlank()) {
             events = events.stream()
-                .filter(e -> category.equalsIgnoreCase((String) e.get(CATEGORY_PARAM)))
+                .filter(e -> category.equalsIgnoreCase((String) e.get("category")))
                 .toList();
         }
         
@@ -264,15 +263,15 @@ public class MarketController {
 
     private List<Map<String, Object>> generateIpoEvents() {
         List<Map<String, Object>> ipo = new java.util.ArrayList<>();
-        ipo.add(Map.of("id", 1, "symbol", "NXTP3", "name", "Nexta S.A.", "type", "IPO", CATEGORY_PARAM, "tech", "date", "2026-04-15", "price", 18.50, STATUS_PARAM, "upcoming"));
-        ipo.add(Map.of("id", 2, "symbol", "MLTS3", "name", "Melitus Foods", "type", "IPO", CATEGORY_PARAM, "foods", "date", "2026-05-01", "price", 24.00, STATUS_PARAM, "upcoming"));
+        ipo.add(Map.of("id", 1, "symbol", "NXTP3", "name", "Nexta S.A.", "type", "IPO", "category", "tech", "date", "2026-04-15", PRICE_PARAM, 18.50, STATUS_PARAM, "upcoming"));
+        ipo.add(Map.of("id", 2, "symbol", "MLTS3", "name", "Melitus Foods", "type", "IPO", "category", "foods", "date", "2026-05-01", PRICE_PARAM, 24.00, STATUS_PARAM, "upcoming"));
         return ipo;
     }
 
     private List<Map<String, Object>> generateSpecialEvents() {
         List<Map<String, Object>> events = new java.util.ArrayList<>();
-        events.add(Map.of("id", 3, "symbol", DEFAULT_SYMBOL, "type", "DIVIDEND", CATEGORY_PARAM, "dividend", "date", "2026-04-20", "amount", 0.25, STATUS_PARAM, "announced"));
-        events.add(Map.of("id", 4, "type", "MERGER", CATEGORY_PARAM, "corporate", "date", "2026-04-10", "description", "Fusão BBAS3 e BITA3", STATUS_PARAM, "completed"));
+        events.add(Map.of("id", 3, "symbol", DEFAULT_SYMBOL, "type", "DIVIDEND", "category", "dividend", "date", "2026-04-20", "amount", 0.25, STATUS_PARAM, "announced"));
+        events.add(Map.of("id", 4, "type", "MERGER", "category", "corporate", "date", "2026-04-10", "description", "Fusão BBAS3 e BITA3", STATUS_PARAM, "completed"));
         return events;
     }
 

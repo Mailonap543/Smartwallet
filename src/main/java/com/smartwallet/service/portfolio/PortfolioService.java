@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 public class PortfolioService {
 
     private static final Logger logger = LoggerFactory.getLogger(PortfolioService.class);
+    private static final String ASSET_NOT_FOUND = "Ativo não encontrado";
 
     private final WalletRepository walletRepository;
     private final AssetRepository assetRepository;
@@ -46,20 +47,30 @@ public class PortfolioService {
                 .build();
 
         wallet = walletRepository.save(wallet);
-        logger.info("Wallet created successfully");
+        logger.info("Wallet created: {} for user: {}", wallet.getId(), userId);
 
         return WalletResponse.fromEntity(wallet);
     }
 
     public List<WalletResponse> getUserWallets(Long userId) {
+        logger.info("getUserWallets called for userId: {}", userId);
+        
         if (userId == null) {
-            logger.error("userId is null");
+            logger.error("userId is null!");
             throw new BusinessException("ID do usuário não fornecido", "USER_ID_NULL");
         }
         
         List<Wallet> wallets = walletRepository.findByUserId(userId);
+        logger.info("Found {} wallets for userId: {}", wallets.size(), userId);
         
         return wallets.stream()
+                .peek(wallet -> {
+                    try {
+                        recalculateWalletTotals(wallet);
+                    } catch (Exception e) {
+                        logger.error("Error recalculating wallet {}: {}", wallet.getId(), e.getMessage());
+                    }
+                })
                 .map(WalletResponse::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -111,7 +122,7 @@ public class PortfolioService {
     @Transactional
     public AssetResponse updateAssetPrice(Long assetId, Long userId, UpdatePriceRequest request) {
         Asset asset = assetRepository.findById(assetId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ativo não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException(ASSET_NOT_FOUND));
 
         validateAssetAccess(asset, userId);
 
@@ -128,7 +139,7 @@ public class PortfolioService {
     @Transactional
     public TransactionResponse addTransaction(Long assetId, Long userId, CreateTransactionRequest request) {
         Asset asset = assetRepository.findById(assetId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ativo não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException(ASSET_NOT_FOUND));
 
         validateAssetAccess(asset, userId);
 
@@ -197,7 +208,9 @@ public class PortfolioService {
                     totalQuantity = totalQuantity.subtract(t.getQuantity());
                     totalSold = totalSold.add(t.getTotalValue());
                 }
-                default -> {}
+                default -> {
+                    // No action needed for other transaction types
+                }
             }
         }
 
@@ -242,24 +255,24 @@ public class PortfolioService {
         return assets.stream()
                 .peek(this::recalculateAssetFromTransactions)
                 .map(AssetResponse::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<TransactionResponse> getAssetTransactions(Long assetId, Long userId) {
         Asset asset = assetRepository.findById(assetId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ativo não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException(ASSET_NOT_FOUND));
 
         validateAssetAccess(asset, userId);
 
         return transactionRepository.findByAssetIdOrderedByDateDesc(assetId).stream()
                 .map(TransactionResponse::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<TransactionResponse> getUserTransactions(Long userId) {
         return transactionRepository.findByUserId(userId).stream()
                 .map(TransactionResponse::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public PortfolioSummary getPortfolioSummary(Long userId) {

@@ -1,5 +1,6 @@
 package com.smartwallet.aspect;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -17,6 +18,7 @@ import jakarta.servlet.http.HttpServletRequest;
 public class LoggingAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(LoggingAspect.class);
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Pointcut("within(com.smartwallet.controller..*)")
     public void controllerPointcut() {}
@@ -44,19 +46,27 @@ public class LoggingAspect {
         String method = joinPoint.getSignature().toShortString();
         long startTime = System.currentTimeMillis();
         
-        try {
+try {
             Object result = joinPoint.proceed();
             long duration = System.currentTimeMillis() - startTime;
             logger.debug("SERVICE: {} - Duration: {}ms", method, duration);
             return result;
-        } catch (Exception e) {
-            logger.error("SERVICE ERROR: {} - Error: {}", method, e.getMessage());
-            throw e;
+} catch (Exception e) {
+            logger.error("SERVICE ERROR: {} - Error: {} - Cause: {}", method, e.getMessage(), e.getCause());
+            throw new RuntimeException("Error executing " + method, e);
         }
     }
 
     private HttpServletRequest getRequest() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         return attributes != null ? attributes.getRequest() : null;
+    }
+
+    private String argsToString(Object[] args) {
+        try {
+            return objectMapper.writeValueAsString(args);
+        } catch (Exception e) {
+            return "[unable to serialize]";
+        }
     }
 }
