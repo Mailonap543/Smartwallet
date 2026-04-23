@@ -79,7 +79,7 @@ public enum PlanType {
     public boolean hasAdvancedReports() { return advancedReports; }
     public int getDataHistoryDays() { return dataHistoryDays; }
 
-    public boolean isUnlimited(int value) { return value == -1; }
+    public boolean isUnlimited(int value) { return this.maxWallets == -1 && value == -1; }
 
     public static PlanType fromString(String value) {
         return Arrays.stream(values())

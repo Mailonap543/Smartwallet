@@ -9,9 +9,11 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
     "com.smartwallet.entity",
     "com.smartwallet.market.entity",
     "com.smartwallet.audit.entity",
+    "com.smartwallet.audit.model",
     "com.smartwallet.alert.entity",
     "com.smartwallet.news.entity",
-    "com.smartwallet.watchlist.entity"
+    "com.smartwallet.watchlist.entity",
+    "com.smartwallet.notification"
 })
 public class SmartwalletApplication {
     public static void main(String[] args) {

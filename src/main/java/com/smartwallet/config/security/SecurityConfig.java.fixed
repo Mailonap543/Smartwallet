@@ -53,25 +53,11 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/health").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/subscription/plans").permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
+                .requestMatchers("/api/health").permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
-                // Known API endpoints requiring authentication
-                .requestMatchers(new AntPathRequestMatcher("/api/subscription/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/market/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/notifications/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/payment/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/wallet/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/portfolio/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/users/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/audit/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/bank/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/crypto/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/ai/**")).authenticated()
-                // All other endpoints (including unknown) are permitted and will be handled by the dispatcher
-                .anyRequest().permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint((request, response, authException) -> {

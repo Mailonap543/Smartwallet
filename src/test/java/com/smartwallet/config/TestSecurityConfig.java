@@ -1,6 +1,7 @@
-package com.smartwallet.config.security;
+package com.smartwallet.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.smartwallet.config.security.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -36,9 +37,9 @@ import java.util.List;
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
-public class SecurityConfig {
+public class TestSecurityConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestSecurityConfig.class);
     
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
@@ -53,25 +54,10 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/health").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/subscription/plans").permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
-                // Known API endpoints requiring authentication
-                .requestMatchers(new AntPathRequestMatcher("/api/subscription/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/market/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/notifications/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/payment/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/wallet/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/portfolio/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/users/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/audit/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/bank/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/crypto/**")).authenticated()
-                .requestMatchers(new AntPathRequestMatcher("/api/ai/**")).authenticated()
-                // All other endpoints (including unknown) are permitted and will be handled by the dispatcher
-                .anyRequest().permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint((request, response, authException) -> {

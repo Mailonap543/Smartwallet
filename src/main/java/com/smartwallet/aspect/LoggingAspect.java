@@ -51,10 +51,10 @@ try {
             long duration = System.currentTimeMillis() - startTime;
             logger.debug("SERVICE: {} - Duration: {}ms", method, duration);
             return result;
-} catch (Exception e) {
-            logger.error("SERVICE ERROR: {} - Error: {} - Cause: {}", method, e.getMessage(), e.getCause());
-            throw new RuntimeException("Error executing " + method, e);
-        }
+ } catch (Exception e) {
+             logger.error("SERVICE ERROR: {} - Error: {} - Cause: {}", method, e.getMessage(), e.getCause() != null ? e.getCause().getMessage() : "null");
+             throw e;
+         }
     }
 
     private HttpServletRequest getRequest() {
