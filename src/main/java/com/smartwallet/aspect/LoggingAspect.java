@@ -24,7 +24,7 @@ public class LoggingAspect {
     public Object logController(ProceedingJoinPoint joinPoint) throws Throwable {
         String method = joinPoint.getSignature().toShortString();
         
-        logger.debug("REQUEST: {} {}", method);
+        logger.debug("REQUEST: {}", method);
         
         long startTime = System.currentTimeMillis();
         Object result = joinPoint.proceed();

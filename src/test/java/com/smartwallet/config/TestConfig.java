@@ -1,4 +1,4 @@
-package com.smartwallet;
+package com.smartwallet.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

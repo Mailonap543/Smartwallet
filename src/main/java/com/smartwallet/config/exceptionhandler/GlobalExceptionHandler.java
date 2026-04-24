@@ -11,23 +11,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex) {
-        HttpStatus status;
-        switch (ex.getErrorCode()) {
-            case "INVALID_CREDENTIALS":
-                status = HttpStatus.UNAUTHORIZED;
-                break;
-            case "TOKEN_NOT_FOUND":
-            case "TOKEN_EXPIRED":
-            case "INVALID_REFRESH_TOKEN":
-            case "INVALID_TOKEN":
-                status = HttpStatus.UNAUTHORIZED;
-                break;
-            case "ACCESS_DENIED":
-                status = HttpStatus.FORBIDDEN;
-                break;
-            default:
-                status = HttpStatus.BAD_REQUEST;
-        }
+        HttpStatus status = switch (ex.getErrorCode()) {
+            case "INVALID_CREDENTIALS" -> HttpStatus.UNAUTHORIZED;
+            case "TOKEN_NOT_FOUND", "TOKEN_EXPIRED", "INVALID_REFRESH_TOKEN", "INVALID_TOKEN" -> HttpStatus.UNAUTHORIZED;
+            case "ACCESS_DENIED" -> HttpStatus.FORBIDDEN;
+            default -> HttpStatus.BAD_REQUEST;
+        };
         ErrorResponse error = new ErrorResponse(
             false,
             ex.getMessage(),
