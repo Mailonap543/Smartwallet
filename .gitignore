@@ -1,14 +1,32 @@
 HELP.md
+
+### Java/Maven ###
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+*.log
+*.swp
+*.swo
+*~
+.hs_err_*.log
+replay_*.log
 
 ### IntelliJ IDEA ###
 .idea
 *.iws
 *.iml
 *.ipr
+*.iml
+
+### Eclipse ###
+.classpath
+.factorypath
+.project
+.settings/
+.apt_generated
+.springBeans
+.sts4-cache
 
 ### NetBeans ###
 /nbproject/private/
@@ -22,3 +40,78 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Node/Angular ###
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Build artifacts ###
+dist/
+build/
+*.pid
+*.seed
+*.pid.lock
+
+### Environment ###
+.env
+.env.local
+.env.*.local
+
+### Temporary files ###
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+.cache/
+.temp/
+
+### Coverage reports ###
+coverage/
+*.lcov
+.nyc_output/
+
+### Tests ###
+cypress/videos/
+cypress/screenshots/
+test-results/
+
+### CI backup files ###
+.github/workflows/ci.yml.backup
+
+### Docker ###
+*.pid
+*.seed
+*.pid.lock
+
+### Python (if any) ###
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+### Ruby (if any) ###
+*.gem
+*.rbc
+/.config
+
+### Gradle ###
+.gradle/
+gradle-app.setting
+
+### macOS ###
+*.DS_Store
+.AppleDouble
+.LSOverride
+
+### Windows ###
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
