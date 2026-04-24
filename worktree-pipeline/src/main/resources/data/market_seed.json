@@ -1,6 +1,0 @@
-[
-  {"symbol": "PETR4", "name": "Petrobras PN", "category": "STOCK", "price": 38.50, "changePercent": 1.25, "volume": 12000000, "marketCap": 500000000000},
-  {"symbol": "VALE3", "name": "Vale ON", "category": "STOCK", "price": 68.90, "changePercent": -0.80, "volume": 9000000, "marketCap": 600000000000},
-  {"symbol": "ITUB4", "name": "Itau Unibanco PN", "category": "STOCK", "price": 35.20, "changePercent": 0.60, "volume": 7000000, "marketCap": 300000000000},
-  {"symbol": "HGLG11", "name": "CSHG Logistica FII", "category": "FII", "price": 165.20, "changePercent": 0.35, "volume": 120000, "marketCap": 3000000000}
-]

@@ -94,6 +94,8 @@ jobs:
         run: |
           docker build -t smartwallet/backend:${{ github.sha }} .
           docker build -t smartwallet/frontend:${{ github.sha }} ./smartwallet-front
+          cache: 'npm'
+          cache-dependency-path: smartwallet-front/package-lock.json
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps

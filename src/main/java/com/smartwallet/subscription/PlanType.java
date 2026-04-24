@@ -1,90 +1,90 @@
 package com.smartwallet.subscription;
 
-import java.util.Arrays;
-import java.util.List;
+import lombok.Builder;
+import lombok.Getter;
 
 public enum PlanType {
     FREE(
-        "Free",
-        "Plano gratuito com funcionalidades básicas",
-        0.0,
-        5,      // maxWallets
-        10,     // maxAssets
-        false,  // aiAnalysis
-        false,  // realTimePrices
-        false,  // bankIntegration
-        false,  // advancedReports
-        30      // dataHistoryDays
+        PlanDetails.builder()
+            .displayName("Free")
+            .description("Plano gratuito com funcionalidades básicas")
+            .monthlyPrice(0.0)
+            .maxWallets(5)
+            .maxAssets(10)
+            .aiAnalysis(false)
+            .realTimePrices(false)
+            .bankIntegration(false)
+            .advancedReports(false)
+            .dataHistoryDays(30)
+            .build()
     ),
     PREMIUM(
-        "Premium",
-        "Plano completo com todas as funcionalidades",
-        29.90,
-        -1,     // unlimited wallets
-        -1,     // unlimited assets
-        true,   // aiAnalysis
-        true,   // realTimePrices
-        true,   // bankIntegration
-        true,   // advancedReports
-        -1      // unlimited data history
+        PlanDetails.builder()
+            .displayName("Premium")
+            .description("Plano completo com todas as funcionalidades")
+            .monthlyPrice(29.90)
+            .maxWallets(-1)
+            .maxAssets(-1)
+            .aiAnalysis(true)
+            .realTimePrices(true)
+            .bankIntegration(true)
+            .advancedReports(true)
+            .dataHistoryDays(-1)
+            .build()
     ),
     ENTERPRISE(
-        "Enterprise",
-        "Para empresas com necessidades específicas",
-        99.90,
-        -1,
-        -1,
-        true,
-        true,
-        true,
-        true,
-        -1
+        PlanDetails.builder()
+            .displayName("Enterprise")
+            .description("Para empresas com necessidades específicas")
+            .monthlyPrice(99.90)
+            .maxWallets(-1)
+            .maxAssets(-1)
+            .aiAnalysis(true)
+            .realTimePrices(true)
+            .bankIntegration(true)
+            .advancedReports(true)
+            .dataHistoryDays(-1)
+            .build()
     );
 
-    private final String displayName;
-    private final String description;
-    private final double monthlyPrice;
-    private final int maxWallets;
-    private final int maxAssets;
-    private final boolean aiAnalysis;
-    private final boolean realTimePrices;
-    private final boolean bankIntegration;
-    private final boolean advancedReports;
-    private final int dataHistoryDays;
+    private final PlanDetails details;
 
-    PlanType(String displayName, String description, double monthlyPrice,
-             int maxWallets, int maxAssets, boolean aiAnalysis,
-             boolean realTimePrices, boolean bankIntegration,
-             boolean advancedReports, int dataHistoryDays) {
-        this.displayName = displayName;
-        this.description = description;
-        this.monthlyPrice = monthlyPrice;
-        this.maxWallets = maxWallets;
-        this.maxAssets = maxAssets;
-        this.aiAnalysis = aiAnalysis;
-        this.realTimePrices = realTimePrices;
-        this.bankIntegration = bankIntegration;
-        this.advancedReports = advancedReports;
-        this.dataHistoryDays = dataHistoryDays;
+    PlanType(PlanDetails details) {
+        this.details = details;
     }
 
-    public String getDisplayName() { return displayName; }
-    public String getDescription() { return description; }
-    public double getMonthlyPrice() { return monthlyPrice; }
-    public int getMaxWallets() { return maxWallets; }
-    public int getMaxAssets() { return maxAssets; }
-    public boolean hasAiAnalysis() { return aiAnalysis; }
-    public boolean hasRealTimePrices() { return realTimePrices; }
-    public boolean hasBankIntegration() { return bankIntegration; }
-    public boolean hasAdvancedReports() { return advancedReports; }
-    public int getDataHistoryDays() { return dataHistoryDays; }
+    public String getDisplayName() { return details.displayName; }
+    public String getDescription() { return details.description; }
+    public double getMonthlyPrice() { return details.monthlyPrice; }
+    public int getMaxWallets() { return details.maxWallets; }
+    public int getMaxAssets() { return details.maxAssets; }
+    public boolean hasAiAnalysis() { return details.aiAnalysis; }
+    public boolean hasRealTimePrices() { return details.realTimePrices; }
+    public boolean hasBankIntegration() { return details.bankIntegration; }
+    public boolean hasAdvancedReports() { return details.advancedReports; }
+    public int getDataHistoryDays() { return details.dataHistoryDays; }
 
-    public boolean isUnlimited(int value) { return value == -1; }
+    public boolean isUnlimited(int value) { return this.details.maxWallets == -1 && value == -1; }
 
     public static PlanType fromString(String value) {
-        return Arrays.stream(values())
+        return java.util.Arrays.stream(values())
             .filter(p -> p.name().equalsIgnoreCase(value))
             .findFirst()
             .orElse(FREE);
+    }
+
+    @Getter
+    @Builder
+    private static class PlanDetails {
+        private final String displayName;
+        private final String description;
+        private final double monthlyPrice;
+        private final int maxWallets;
+        private final int maxAssets;
+        private final boolean aiAnalysis;
+        private final boolean realTimePrices;
+        private final boolean bankIntegration;
+        private final boolean advancedReports;
+        private final int dataHistoryDays;
     }
 }

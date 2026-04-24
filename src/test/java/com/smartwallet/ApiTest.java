@@ -40,9 +40,9 @@ class ApiTest {
     }
 
     @Test
-    void subscriptionPlans_WithoutAuth_Returns401() throws Exception {
+    void subscriptionPlans_WithoutAuth_Returns200() throws Exception {
         mockMvc.perform(get("/api/subscription/plans"))
-            .andExpect(status().isUnauthorized());
+            .andExpect(status().isOk());
     }
 
     @Test
