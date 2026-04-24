@@ -1,7 +1,6 @@
 package com.smartwallet.subscription;
 
 import java.util.Arrays;
-import java.util.List;
 
 public enum PlanType {
     FREE(

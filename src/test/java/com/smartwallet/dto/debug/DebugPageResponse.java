@@ -1,3 +1,5 @@
+package com.smartwallet.dto.debug;
+
 import com.smartwallet.dto.PageResponse;
 import java.util.*;
 
