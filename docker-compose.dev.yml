@@ -1,0 +1,134 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: smartwallet-backend-dev
+    ports:
+      - "8080:8080"
+      - "5005:5005"  # Debug port
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/smartwallet_dev
+      - SPRING_DATASOURCE_USERNAME=smartwallet
+      - SPRING_DATASOURCE_PASSWORD=smartwallet123
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - JWT_SECRET=dev-secret-key-change-in-production
+      - JWT_EXPIRATION=86400000
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - .:/app
+      - ./target/classes:/app/target/classes
+    networks:
+      - smartwallet-dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./smartwallet-front
+      dockerfile: Dockerfile
+      target: development
+    container_name: smartwallet-frontend-dev
+    ports:
+      - "4200:4200"
+    environment:
+      - NODE_ENV=development
+      - API_URL=http://localhost:8080
+      - WS_URL=ws://localhost:8080
+    depends_on:
+      - backend
+    volumes:
+      - ./smartwallet-front:/app
+      - /app/node_modules
+    networks:
+      - smartwallet-dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4200"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: smartwallet-postgres-dev
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=smartwallet_dev
+      - POSTGRES_USER=smartwallet
+      - POSTGRES_PASSWORD=smartwallet123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/main/resources/data:/docker-entrypoint-initdb.d
+    networks:
+      - smartwallet-dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartwallet -d smartwallet_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: smartwallet-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - smartwallet-dev
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: smartwallet-prometheus-dev
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - smartwallet-dev
+    depends_on:
+      - backend
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: smartwallet-grafana-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - smartwallet-dev
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+  redis_data:
+  grafana_data:
+
+networks:
+  smartwallet-dev:
+    driver: bridge
+    name: smartwallet-dev-network
