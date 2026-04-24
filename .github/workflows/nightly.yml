@@ -1,0 +1,57 @@
+name: 🌙 Nightly Build & Quality
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2:00 AM UTC
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+jobs:
+  nightly-build:
+    runs-on: ubuntu-latest
+    name: 🌙 Nightly Build
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ⚙️ Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: 🏗️ Full Build
+        run: mvn clean verify -DskipTests=false
+
+      - name: 🔍 SonarQube Full Scan
+        if: env.SONAR_TOKEN != ''
+        uses: sonarsource/sonarqube-scan-action@v3
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=smartwallet-backend
+            -Dsonar.organization=smartwallet
+            -Dsonar.host.url=${{ env.SONAR_HOST_URL }}
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.qualitygate.wait=true
+
+      - name: 📊 Upload Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-reports-${{ github.run_number }}
+          path: |
+            target/site/
+            target/surefire-reports/
+          retention-days: 30
+
+      - name: 📧 Send Notification
+        if: failure()
+        run: |
+          echo "Nightly build failed! Check: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

@@ -1,133 +1,151 @@
-# Contributing to Smartwallet
+# 🤝 Contributing to SmartWallet
 
-First off, thank you for considering contributing to Smartwallet! It's people like you that make this project better.
+We welcome contributions! Here's how you can help improve SmartWallet.
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Java 17+ (Temurin recommended)
+- Java 21
 - Node.js 20+
 - Maven 3.8+
-- Docker & Docker Compose
+- Git
 
-### Development Environment Setup
+### Development Setup
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-org/smartwallet.git
-   cd smartwallet
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/smartwallet/smartwallet.git
+cd smartwallet
 
-2. **Start development environment**
-   ```bash
-   docker-compose -f docker-compose.dev.yml up -d
-   ```
+# Backend
+mvn clean compile
 
-3. **Backend setup**
-   ```bash
-   mvn clean compile
-   mvn spring-boot:run
-   ```
+# Frontend
+cd smartwallet-front
+npm install
+npm start
+```
 
-4. **Frontend setup**
-   ```bash
-   cd smartwallet-front
-   npm ci
-   npm run start
-   ```
+## 📋 Development Workflow
 
-## 📝 Code Style
+### 1. Create a Branch
+```bash
+git checkout -b feature/your-feature-name
+git checkout -b fix/issue-description
+git checkout -b hotfix/critical-fix
+```
 
-### Backend (Java/Kotlin)
-- Follow Google Java Style Guide
-- Use Spring Boot best practices
-- Write unit tests with JUnit 5
-- Coverage threshold: 80%
-
-### Frontend (TypeScript/Angular)
-- Use Angular Style Guide
-- ESLint with Angular rules
-- Prettier for formatting
-- Write unit tests with Vitest
-- Write E2E tests with Cypress
-
-## 🔄 Workflow
-
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Make your changes**
-4. **Run tests**: `mvn test` and `npm run test`
-5. **Commit changes**: Use conventional commits
-6. **Push to branch**: `git push origin feature/amazing-feature`
-7. **Open a Pull Request**
-
-## ✨ Code Quality
-
-### Before Committing
-- Run all tests
-- Check code coverage
-- Run ESLint
-- Format with Prettier
+### 2. Make Changes
+- Follow the code style (Google Java Style for Java, Airbnb for TypeScript)
+- Add tests for new features
 - Update documentation if needed
+- Ensure all CI checks pass
 
-### Commit Message Convention
-```
-type(scope): description
-
-[optional body]
-
-[optional footer(s)]
-```
-
-Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `perf`, `ci`
-
-## 🧪 Testing
-
-### Backend Tests
+### 3. Run Quality Checks
 ```bash
-mvn test
-# View coverage report
-open target/site/jacoco/index.html
+# Local quality check
+./quality-check.sh
+
+# Or manually
+mvn clean test
+npm run lint
 ```
 
-### Frontend Unit Tests
+### 4. Commit Changes
+We use [Conventional Commits](https://www.conventionalcommits.org/):
+
 ```bash
-cd smartwallet-front
-npm run test        # Watch mode
-npm run test:ci     # CI mode with coverage
+# Features
+git commit -m "feat: add user authentication"
+
+# Bug fixes
+git commit -m "fix: resolve null pointer in transaction list"
+
+# Documentation
+git commit -m "docs: update README with new endpoints"
+
+# Refactoring
+git commit -m "refactor: extract wallet service to standalone module"
+
+# Breaking changes
+git commit -m "feat!: redesign API endpoints"
 ```
 
-### Frontend E2E Tests
+### 5. Push and Create PR
 ```bash
-cd smartwallet-front
-npm run e2e         # Run Cypress tests
+git push origin your-branch
 ```
 
-## 📊 Code Review Process
+Then create a Pull Request using the template.
 
-1. All PRs require at least 1 approval
-2. CI must pass (tests, lint, build)
-3. Code coverage must not decrease
-4. No critical SonarQube issues
+## 🔍 Code Reviews
 
-## 🐛 Reporting Issues
+All PRs require:
+- ✅ Passing CI/CD pipeline
+- ✅ At least 1 approval
+- ✅ No new code smells or security issues
+- ✅ Updated tests
+- ✅ Documentation updates (if applicable)
 
-- Use GitHub Issues
-- Include reproduction steps
-- Add relevant labels
+## 🎯 Coding Standards
 
-## 💡 Feature Requests
+### Java/Kotlin
+- Use Spring Boot best practices
+- Follow SOLID principles
+- Write meaningful test names
+- Coverage target: 80%+
+- No hardcoded credentials
+- Use Lombok where appropriate
 
-- Open a GitHub Discussion first
-- Gather community feedback
-- Create an issue if approved
+### TypeScript/Angular
+- Use Angular style guide
+- Strong typing (no `any`)
+- RxJS best practices
+- Component tests with Vitest
+- E2E tests with Cypress
 
-## 🔒 Security
+### SQL/Flyway
+- Use migrations for schema changes
+- Never modify existing migrations
+- Use repeatable migrations for views/procedures
 
-- Report vulnerabilities privately
-- Don't commit secrets
-- Review SECURITY.md
+## 🔒 Security Guidelines
 
-## 🙏 Thank You!
+- Never commit secrets or credentials
+- Use environment variables for sensitive data
+- Validate all user inputs
+- Sanitize outputs to prevent XSS
+- Use parameterized queries (no string concatenation)
+- Follow OWASP Top 10
 
-Thank you for contributing to Smartwallet!
+## 📦 Dependency Management
+
+- Use Dependabot for automated updates
+- Review major version updates carefully
+- Check for vulnerabilities: `mvn org.owasp:dependency-check-maven:check`
+- Frontend: `npm audit`
+
+## 🚦 CI/CD Pipeline
+
+Every PR triggers:
+1. ✅ Code compilation
+2. 🧪 Unit tests
+3. 🔍 Code quality (SonarQube)
+4. 🔐 Security scan (CodeQL)
+5. 📊 Coverage report
+6. 🏷️ Auto-labeling
+
+## 📞 Support
+
+- 💬 Discord: [Join our community](https://discord.gg/smartwallet)
+- 📧 Email: dev@smartwallet.com
+- 🐛 Issues: [GitHub Issues](https://github.com/smartwallet/smartwallet/issues)
+
+## 🙏 Recognition
+
+Contributors are recognized in:
+- `CONTRIBUTORS.md`
+- Release notes
+- Project documentation
+
+Thank you for contributing to SmartWallet! 🎉

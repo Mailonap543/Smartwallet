@@ -1,0 +1,22 @@
+# Code Owners
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Backend Java/Kotlin
+/src/main/java/ @smartwallet/backend-team
+/src/main/kotlin/ @smartwallet/backend-team
+/src/main/resources/ @smartwallet/backend-team
+
+# Frontend Angular
+/smartwallet-front/ @smartwallet/frontend-team
+
+# CI/CD
+/.github/workflows/ @smartwallet/devops-team
+/.github/dependabot.yml @smartwallet/devops-team
+/.github/codeql/ @smartwallet/security-team
+
+# Documentation
+/README.md @smartwallet/tech-writers
+/CHANGELOG.md @smartwallet/tech-writers
+
+# Security
+/SECURITY.md @smartwallet/security-team
