@@ -7,9 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.springframework.bind.annotation.RestController;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthComponent;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -54,7 +52,7 @@ public class HealthController {
         if ((Boolean) readiness.get("ready")) {
             return ResponseEntity.ok(ApiResponse.success("Application is ready", readiness));
         } else {
-            return ResponseEntity.status(503).body(ApiResponse.error("Application not ready", readiness));
+            return ResponseEntity.status(503).body(ApiResponse.error("Application not ready"));
         }
     }
 }

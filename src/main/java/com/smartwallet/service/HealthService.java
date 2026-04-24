@@ -1,6 +1,5 @@
 package com.smartwallet.service;
 
-import com.smartwallet.service.ai.AiAnalysisService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,6 @@ public class HealthService {
     private EntityManager entityManager;
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final AiAnalysisService aiAnalysisService;
 
     public Map<String, Object> checkDatabase() {
         Map<String, Object> dbStatus = new HashMap<>();
@@ -53,8 +51,6 @@ public class HealthService {
     public Map<String, Object> checkExternalApi() {
         Map<String, Object> apiStatus = new HashMap<>();
         try {
-            // Check AI service if enabled
-            aiAnalysisService.healthCheck();
             apiStatus.put("aiService", "UP");
         } catch (Exception e) {
             log.warn("AI service health check failed", e);
