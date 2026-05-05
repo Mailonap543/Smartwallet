@@ -140,7 +140,7 @@ jobs:
             -Dsonar.exclusions=**/test/**,**/target/**
 
       - name: 🔍 CodeQL Scan
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: java
           queries: security-and-quality
