@@ -4,16 +4,11 @@ import { RouterLink } from '@angular/router';
 import { ApiService, Asset } from '../../services/api.service';
 import { LoadingComponent } from '../../shared/components/loading.component';
 
-import { ButtonComponent } from '../../shared/components/button.component';
-
 
 @Component({
   selector: 'app-homepage',
   standalone: true,
-
   imports: [CommonModule, RouterLink, LoadingComponent],
-
-  imports: [CommonModule, RouterLink, LoadingComponent, ButtonComponent],
 
   template: `
     <div class="homepage">

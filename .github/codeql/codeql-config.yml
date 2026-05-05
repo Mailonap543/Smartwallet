@@ -21,7 +21,3 @@ packs:
     - security-and-quality
   javascript-typescript:
     - security-audit
-
-validation:
-  queries:
-    - uses: custom-queries.yml
