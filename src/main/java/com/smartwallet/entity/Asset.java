@@ -35,7 +35,7 @@ public class Asset {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(name = "asset_type", nullable = false, length = 20)
     private AssetType assetType;
 
     @Column(name = "purchase_price", nullable = false, precision = 19, scale = 4)

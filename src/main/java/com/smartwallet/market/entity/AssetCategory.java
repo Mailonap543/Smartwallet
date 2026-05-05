@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
+@Entity(name = "LegacyAssetCategory")
 @Table(name = "asset_categories")
 public class AssetCategory {
 
