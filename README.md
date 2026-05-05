@@ -138,13 +138,3 @@ mvn test
 ```
 Inclui testes de integração para market, wallet, watchlist e news.
 
-## Notas de segurança
-- PRNG inseguro removido (uso de `SecureRandom`)
-- Logs não expõem parâmetros controlados pelo usuário
-- Autenticação definitiva ainda pendente; usar JWT/OAuth em produção
-
-## Próximos passos sugeridos
-- Implementar auth real (JWT/OAuth2) e remover stub `X-User-Id`
-- Ingestão externa de mercado/dividendos/earnings e agenda
-- Remover mocks do frontend e integrar totalmente aos endpoints
-- Cobrir acessibilidade (WCAG 2.2), observabilidade e testes E2E
