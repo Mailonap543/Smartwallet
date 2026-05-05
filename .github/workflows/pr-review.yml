@@ -25,7 +25,6 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: 'maven'
 
       - name: 🔍 Checkstyle
         run: |
@@ -55,10 +54,17 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: 'maven'
 
-      - name: 🧪 Run Tests
-        run: mvn test -DfailIfNoTests=false
+      - name: 🧪 Run Tests (H2 Profile)
+        run: |
+          mvn test \
+            -Dspring.profiles.active=test \
+            -Dspring.datasource.url=jdbc:h2:mem:testdb \
+            -Dspring.datasource.driver-class-name=org.h2.Driver \
+            -Dspring.jpa.database-platform=org.hibernate.dialect.H2Dialect \
+            -Dspring.jpa.hibernate.ddl-auto=create-drop \
+            -Dspring.flyway.enabled=false \
+            -DfailIfNoTests=false
 
       - name: 📈 Upload Coverage
         if: always()
@@ -70,14 +76,16 @@ jobs:
           fail_ci_if_error: false
 
   # ============================================
-  # 🤖 Automated PR Labels
+  # 🤖 Automated PR Labels (Optional)
   # ============================================
   label-pr:
     runs-on: ubuntu-latest
     name: 🏷️ Auto Label PR
     needs: [code-quality, test]
+    if: false  # Desativado por padrão - ativar quando configurado
     steps:
-      - uses: actions/labeler@v5
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          configuration-path: .github/labeler.yml
+      - name: 🏷️ Manual Labeling Required
+        run: |
+          echo "Auto-labeling desativado."
+          echo "Para ativar, configure secrets.GITHUB_TOKEN com permissões de escrita"
+          echo "e remova 'if: false' acima."
