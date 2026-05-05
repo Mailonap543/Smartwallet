@@ -1,0 +1,37 @@
+name: ✨ Feature Request
+about: Sugerir uma nova funcionalidade
+title: '[FEATURE] '
+labels: ['enhancement']
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Descrição
+      description: O que você gostaria de adicionar?
+    validations:
+      required: true
+  - type: textarea
+    id: usecase
+    attributes:
+      label: Caso de uso
+      description: Quem vai usar e por quê?
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas
+      description: O que você está usando como solução hoje?
+    validations:
+      required: false
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridade
+      options:
+        - Baixa
+        - Média
+        - Alta
+        - Crítica
+    validations:
+      required: false

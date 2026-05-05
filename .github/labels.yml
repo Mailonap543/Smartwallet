@@ -1,0 +1,58 @@
+# GitHub Labels Configuration
+# Used by actions/labeler and for consistent labeling
+
+- name: "bug"
+  color: "d73a4a"
+  description: "Something isn't working"
+
+- name: "enhancement"
+  color: "a2eeef"
+  description: "New feature or request"
+
+- name: "documentation"
+  color: "0075ca"
+  description: "Improvements or additions to documentation"
+
+- name: "refactoring"
+  color: "fef2c0"
+  description: "Code refactoring without functional changes"
+
+- name: "performance"
+  color: "1d76db"
+  description: "Performance improvements"
+
+- name: "security"
+  color: "ee0701"
+  description: "Security related changes"
+
+- name: "dependencies"
+  color: "0366d6"
+  description: "Dependency updates"
+
+- name: "tests"
+  color: "5319e7"
+  description: "Testing related changes"
+
+- name: "ci-cd"
+  color: "0e8a16"
+  description: "CI/CD pipeline changes"
+
+- name: "backend"
+  color: "8a2be2"
+  description: "Backend/API changes"
+
+- name: "frontend"
+  color: "ff9800"
+  description: "Frontend/UI changes"
+
+- name: "hotfix"
+  color: "b60205"
+  description: "Critical production fix"
+
+- name: "good first issue"
+  color: "7057ff"
+  description: "Good for newcomers"
+
+- name: "help wanted"
+  color: "008672"
+  description: "Extra attention is needed"

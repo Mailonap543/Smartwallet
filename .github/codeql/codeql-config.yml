@@ -1,0 +1,16 @@
+name: Smartwallet CodeQL Configuration
+
+queries:
+  - uses: security-extended
+  - uses: security-and-quality
+
+paths:
+  - src/main/java/**
+  - src/main/kotlin/**
+  - src/main/**/*.kt
+
+paths-ignore:
+  - src/test/**
+  - target/**
+  - build/**
+  - node_modules/**

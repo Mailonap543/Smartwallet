@@ -3,7 +3,7 @@ package com.smartwallet.watchlist.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
+@Entity(name = "LegacyWatchlist")
 @Table(name = "watchlists")
 public class Watchlist {
     
@@ -11,7 +11,7 @@ public class Watchlist {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(nullable = false)
+    @Column(name = "user_id", nullable = false)
     private Long userId;
     
     @Column(nullable = false)

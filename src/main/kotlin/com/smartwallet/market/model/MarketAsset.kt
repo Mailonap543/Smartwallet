@@ -4,7 +4,7 @@ import jakarta.persistence.*
 import java.math.BigDecimal
 import java.time.Instant
 
-@Entity
+@Entity(name = "KotlinMarketAsset")
 @Table(name = "assets")
 data class MarketAsset(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

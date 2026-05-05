@@ -1,0 +1,63 @@
+version: 2
+updates:
+  # Backend - Maven dependencies
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "maintainers"
+    labels:
+      - "dependencies"
+      - "backend"
+    assignees:
+      - "maintainers"
+    groups:
+      production-dependencies:
+        patterns:
+          - "*"
+      development-dependencies:
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # Frontend - npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/smartwallet-front"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "04:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "maintainers"
+    labels:
+      - "dependencies"
+      - "frontend"
+    groups:
+      production-dependencies:
+        patterns:
+          - "*"
+      development-dependencies:
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "04:00"
+    groups:
+      github-actions:
+        patterns:
+          - "*"

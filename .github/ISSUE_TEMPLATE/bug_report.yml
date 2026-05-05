@@ -1,0 +1,58 @@
+name: 🐛 Bug Report
+about: Reportar um problema no projeto
+title: '[BUG] '
+labels: ['bug']
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Descrição
+      description: O que aconteceu?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passos para reproduzir
+      description: Como podemos reproduzir o problema?
+      placeholder: |
+        1. Acesse...
+        2. Clique em...
+        3. Veja o erro
+    validations:
+      required: false
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportamento esperado
+      description: O que deveria acontecer?
+    validations:
+      required: false
+  - type: textarea
+    id: actual
+    attributes:
+      label: Comportamento atual
+      description: O que realmente acontece?
+    validations:
+      required: false
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Prints de tela / Logs
+      description: Anexe prints ou logs relevantes
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: Versão
+      description: Qual versão do sistema está com o problema?
+    validations:
+      required: false
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Termos
+      options:
+        - label: Confiro que procurei por issues similares e não encontrei
+          required: true

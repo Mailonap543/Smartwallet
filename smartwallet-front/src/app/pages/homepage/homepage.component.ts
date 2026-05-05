@@ -3,19 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService, Asset } from '../../services/api.service';
 import { LoadingComponent } from '../../shared/components/loading.component';
-<<<<<<< HEAD
-=======
-import { ButtonComponent } from '../../shared/components/button.component';
->>>>>>> 1f65393 (feat: correçao do ci/cd)
+
 
 @Component({
   selector: 'app-homepage',
   standalone: true,
-<<<<<<< HEAD
   imports: [CommonModule, RouterLink, LoadingComponent],
-=======
-  imports: [CommonModule, RouterLink, LoadingComponent, ButtonComponent],
->>>>>>> 1f65393 (feat: correçao do ci/cd)
+
   template: `
     <div class="homepage">
       <!-- Hero Section -->

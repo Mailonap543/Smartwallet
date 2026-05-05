@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
+@Repository("marketAssetRepository")
 public interface AssetRepository extends JpaRepository<Asset, Long> {
     
     Optional<Asset> findBySymbol(String symbol);

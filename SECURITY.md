@@ -1,142 +1,67 @@
-# Security Policy
+# 🔒 Security Policy
 
 ## Supported Versions
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.0.x   | ✅ Current Release |
+| Latest  | ✅ Current stable  |
 | < 1.0   | ❌ Unsupported     |
 
 ## Reporting a Vulnerability
 
-We take security seriously. If you discover a security vulnerability, please follow these steps:
+If you discover a security vulnerability, please follow these steps:
 
-### Private Disclosure
+1. **DO NOT** create a public GitHub issue
+2. Send an email to `security@smartwallet.com` with:
+   - Description of the vulnerability
+   - Steps to reproduce
+   - Severity assessment (Critical/High/Medium/Low)
+   - Suggested fix (optional)
 
-1. **Email**: security@smartwallet.com
-2. **PGP Key**: Available at https://smartwallet.com/security/pgp-key.asc
-3. **GitHub**: Use private vulnerability reporting feature
+3. We will respond within **48 hours**
+4. A CVE will be reserved for valid vulnerabilities
+5. Fixes will be released as soon as possible
 
-### What to Include
+## Vulnerability Severity Levels
 
-- Type of vulnerability (SQL injection, XSS, CSRF, etc.)
-- Full paths of source file(s) related to the vulnerability
-- Location of the affected source code (repo, branch, commit)
-- Special configuration required for reproduction
-- Step-by-step reproduction
-- Proof-of-concept or exploit code (if possible)
-- Impact of the vulnerability
+- 🔴 **Critical**: Remote code execution, SQL injection, authentication bypass
+- 🟠 **High**: XSS, CSRF, privilege escalation
+- 🟡 **Medium**: Information disclosure, logic flaws
+- 🟢 **Low**: Minor issues with minimal impact
 
-### Response Timeline
+## Security Testing
 
-- **Initial Acknowledgment**: Within 48 hours
-- **Resolution Plan**: Within 7 days
-- **Patch Release**: Within 30 days (depending on severity)
+All PRs are automatically scanned for:
+- 🔐 Secret detection (Gitleaks)
+- 🐛 Known vulnerabilities (Dependabot)
+- 📊 Code quality (SonarQube)
+- 🔍 Static analysis (CodeQL)
+- 📦 Dependency audit (npm audit, OWASP)
 
-### Severity Levels
+## Responsible Disclosure
 
-- **Critical**: Remote code execution, SQL injection, authentication bypass
-  - Response: 24 hours, patch within 7 days
-- **High**: Data exposure, privilege escalation, XSS
-  - Response: 72 hours, patch within 14 days
-- **Medium**: CSRF, information disclosure, rate limiting bypass
-  - Response: 7 days, patch within 30 days
-- **Low**: Minor issues, theoretical vulnerabilities
-  - Response: 14 days, patch within 60 days
+We follow responsible disclosure practices:
+- 90-day disclosure timeline
+- CVSS scoring for severity
+- Coordinated disclosure when necessary
 
-## Security Measures
+## Security Tools
 
-### Implemented
+Enable these for local development:
+```bash
+# SonarQube local analysis
+mvn sonar:sonar -Dsonar.host.url=http://localhost:9000
 
-- ✅ HTTPS enforcement
-- ✅ JWT token authentication
-- ✅ Rate limiting
-- ✅ Input validation
-- ✅ SQL injection prevention (parameterized queries)
-- ✅ CORS configuration
-- ✅ Security headers
-- ✅ Dependency scanning
-- ✅ Secret management (environment variables)
-- ✅ Container security scanning
+# OWASP dependency check
+mvn org.owasp:dependency-check-maven:check
+```
 
-### Planned
+## Security Contacts
 
-- 🔒 Web Application Firewall (WAF)
-- 🔒 Two-factor authentication
-- 🔒 Audit logging
-- 🔒 Intrusion detection system
-- 🔒 Regular penetration testing
-- 🔒 Bug bounty program
+- 📧 security@smartwallet.com (PGP: `...`)
+- 🐛 GitHub Security Tab
 
-## Vulnerability Disclosure Program
+## Security Badges
 
-We operate a private vulnerability disclosure program in partnership with [HackerOne/alternative].
-
-**Scope**: https://hackerone.com/smartwallet
-
-**Rules**:
-1. Only test systems you own or have permission to test
-2. No denial of service attacks
-3. No social engineering or phishing
-4. Respect user privacy and data
-5. Follow responsible disclosure guidelines
-
-## Security Training
-
-All contributors must complete:
-- Secure coding practices
-- OWASP Top 10 awareness
-- Dependency security management
-- Incident response procedures
-
-## Compliance
-
-We maintain compliance with:
-- GDPR (General Data Protection Regulation)
-- LGPD (Brazilian data protection law)
-- PCI DSS (Payment Card Industry)
-- SOC 2 Type II (planned)
-- ISO 27001 (planned)
-
-## Incident Response
-
-### Contact Information
-
-- Security Team: security@smartwallet.com
-- Emergency Hotline: +1-XXX-XXX-XXXX (24/7)
-- Incident Commander: Available 24/7
-
-### Response Process
-
-1. **Detection**: Monitoring systems alert on suspicious activity
-2. **Triage**: Security team assesses severity and impact
-3. **Containment**: Isolate affected systems
-4. **Eradication**: Remove threat and patch vulnerability
-5. **Recovery**: Restore services and verify security
-6. **Post-Incident**: Document lessons learned
-7. **Communication**: Notify affected users within 72 hours
-
-## Security Checklist for Contributors
-
-Before submitting code:
-
-- [ ] No hardcoded secrets or credentials
-- [ ] Input validation on all user inputs
-- [ ] SQL queries use parameterized statements
-- [ ] Authentication and authorization checks implemented
-- [ ] Error messages don't leak sensitive information
-- [ ] Dependencies scanned for vulnerabilities
-- [ ] Security tests pass
-- [ ] Code reviewed by security team (if applicable)
-
-## Security Resources
-
-- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-- [OWASP API Security](https://owasp.org/www-project-api-security/)
-- [CWE Top 25](https://cwe.mitre.org/top25/)
-- [SANS Security Checklist](https://www.sans.org/security-resources/)
-- [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework)
-
-## Questions?
-
-Email security@smartwallet.com or join our security Slack channel: #security
+[![Security Status](https://sonarcloud.io/api/project_badges/measure?project=smartwallet-backend&metric=security_rating)](https://sonarcloud.io/dashboard?id=smartwallet-backend)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=smartwallet-backend&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=smartwallet-backend)
