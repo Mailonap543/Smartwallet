@@ -8,87 +8,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- ✅ Comprehensive CI/CD pipeline with GitHub Actions
-- ✅ Code coverage for backend (JaCoCo) and frontend (Vitest)
-- ✅ Code quality integration (ESLint, SonarQube)
-- ✅ Docker Compose for production, staging, and monitoring
-- ✅ Development environment configuration (`docker-compose.dev.yml`)
-- ✅ Environment configuration files for Angular
-- ✅ Contributing guidelines
-- ✅ MIT License
-- ✅ Code of Conduct
-- ✅ Environment variables template
-- ✅ Project documentation
-
-### Changed
-- Enhanced test coverage from 0% to 83.3% (20/24 tests passing)
-- Integrated pre-commit hooks and automated quality checks
-- Updated frontend build pipeline with optimized configurations
+- ✨ Tarefa 1: Configuração base do CI/CD
+  - GitHub Actions workflows para CI/CD automatizado
+  - SonarQube integration para code quality
+  - CodeQL security scanning
+  - Dependabot for automated dependency updates
+  - Quality gates for build and test
+  - Nightly build pipeline
+  - Docker build and push automation
+- ✨ Standalone Wallet & Transaction domain
+  - WalletService with full CRUD operations
+  - WalletController with independent REST endpoints
+  - TransactionService for transaction management
+  - TransactionController with dedicated routes
+- 🚀 Tarefa 2: Unificação e configuração base
+  - @EnableScheduling enabled for scheduled tasks
+  - @RequiredArgsConstructor standardized across controllers
+  - Cleaned up duplicate Java/Kotlin entities
+  - Fixed ambiguous endpoint mappings
+  - Separated Java (data/carteira) from Kotlin (IA/análise) routes
 
 ### Fixed
-- Resolved linting issues across codebase
-- Fixed test configuration inconsistencies
-- Corrected environment variable handling
+- ⚠️ Resolved ambiguous mapping between TransactionController and PortfolioController
+- 🐛 Fixed duplicate HealthController bean conflict
+- 🛠️ Corrected API path conflicts (Java vs Kotlin controllers)
+- 🔧 Updated TransactionService to accept assetId parameter
 
-## [0.0.1] - 2026-04-24
+### Changed
+- 🔄 PortfolioService now delegates to WalletService and TransactionService
+- 🔄 TransactionController uses `/api/transactions` (standalone)
+- 🔄 AiController uses `/api/ai/**` (separated concerns)
+- 🔄 WalletController uses `/api/wallets` (independent management)
+
+### Security
+- 🔒 Added secret detection via Gitleaks
+- 🔒 Dependency scanning with OWASP
+- 🔒 Vulnerability checks in CI pipeline
+- 🔒 CodeQL static analysis
+
+## [0.0.1-SNAPSHOT] - 2026-04-24
 
 ### Added
 - Initial project setup
-- Backend: Spring Boot 3.2.4 with Kotlin
-- Frontend: Angular 21 with TypeScript
-- Database: PostgreSQL with Flyway migrations
-- Cache: Redis integration
-- Security: Spring Security with JWT
-- API: RESTful endpoints for wallet management
-- Market data: Integration with financial data providers
-- Basic UI: Dashboard, asset tracking, calculators
-- Cypress E2E tests (9 scenarios)
-- Basic monitoring setup (Prometheus, Grafana, Loki)
-
-### Known Issues
-- Authentication uses stub (X-User-Id header) - needs JWT implementation
-- AI analysis endpoints are stubs - needs real AI integration
-- Subscription validation is stub - needs payment gateway integration
-- Prometheus/Grafana dashboards not fully configured
-- Health check endpoints not implemented
-
-## [Future Roadmap]
-
-### Planned Features
-1. **Authentication**
-   - Implement JWT-based authentication
-   - OAuth2 integration
-   - Multi-factor authentication
-
-2. **AI Integration**
-   - Real AI analysis endpoints
-   - Machine learning models for predictions
-   - Natural language processing for queries
-
-3. **Subscription Management**
-   - Stripe/PayPal integration
-   - Automated billing
-   - Plan management
-
-4. **Monitoring**
-   - Complete observability setup
-   - Custom Grafana dashboards
-   - Alert configuration
-
-5. **Performance**
-   - Implement caching strategies
-   - Database query optimization
-   - CDN integration
-
-6. **Testing**
-   - Achieve 90%+ code coverage
-   - E2E tests in CI pipeline
-   - Load testing setup
-
-## [Version History]
-
-| Version | Date | Status | Description |
-|---------|------|--------|-------------|
-| 1.0.0 | TBD | Planned | Production release with all core features |
-| 0.1.0 | TBD | Planned | Beta release with basic functionality |
-| 0.0.1 | 2026-04-24 | Current | Initial development version |
+- Spring Boot 3.2.4 backend
+- Angular 21 frontend
+- PostgreSQL database support
+- JPA and Flyway migrations
+- Basic authentication stub
+- Portfolio management features
+- Market data endpoints
+- Watchlist and alert functionality
+- Subscription management
+- AI analysis service (stub)
+- News feed integration
+- Audit logging
+- Redis caching
+- Docker support
+- Bank webhook integration

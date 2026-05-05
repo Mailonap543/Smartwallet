@@ -186,7 +186,4 @@ export class ScreenerComponent {
     });
   }
 }
-<<<<<<< HEAD
-=======
-}
->>>>>>> 1f65393 (feat: correçao do ci/cd)
+

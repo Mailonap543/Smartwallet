@@ -3,7 +3,7 @@ package com.smartwallet.news.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
+@Entity(name = "LegacyNewsItem")
 @Table(name = "news_items")
 public class NewsItem {
     

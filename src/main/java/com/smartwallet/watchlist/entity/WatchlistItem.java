@@ -3,7 +3,7 @@ package com.smartwallet.watchlist.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
+@Entity(name = "LegacyWatchlistItem")
 @Table(name = "watchlist_items")
 public class WatchlistItem {
     

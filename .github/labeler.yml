@@ -1,0 +1,42 @@
+documentation:
+  - '**.md'
+  - 'docs/**'
+
+frontend:
+  - 'smartwallet-front/**'
+  - 'src/**/*.ts'
+  - 'src/**/*.tsx'
+
+backend:
+  - 'src/**/*.java'
+  - 'src/**/*.kt'
+  - 'pom.xml'
+
+ci-cd:
+  - '.github/workflows/**'
+  - '.github/dependabot.yml'
+  - 'Dockerfile'
+  - 'docker-compose.yml'
+
+tests:
+  - '**/test/**'
+  - '**/*.spec.ts'
+  - '**/*.test.java'
+
+bug:
+  - '**/fix/**'
+  - '**/patch/**'
+  - '**/hotfix/**'
+
+refactoring:
+  - '**/refactor/**'
+  - '**/improve/**'
+
+performance:
+  - '**/optimize/**'
+  - '**/perf/**'
+
+security:
+  - '**/security/**'
+  - '**/auth/**'
+  - '**/auth*'
