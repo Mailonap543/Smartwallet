@@ -21,7 +21,7 @@ import { ApiService, RiskMetrics, ScoreMetrics, Recommendation } from '../../ser
         <div class="max-w-7xl mx-auto flex gap-6">
           <a routerLink="/dashboard" class="py-4 px-2 text-gray-400 hover:text-white transition-colors">Dashboard</a>
           <a routerLink="/assets" class="py-4 px-2 text-gray-400 hover:text-white transition-colors">Ativos</a>
-          <a routerLink="/ai" class="py-4 px-2 text-blue-400 border-b-2 border-blue-400 font-medium">Análise IA</a>
+          <a routerLink="/ai-analysis" class="py-4 px-2 text-blue-400 border-b-2 border-blue-400 font-medium">Análise IA</a>
         </div>
       </nav>
 

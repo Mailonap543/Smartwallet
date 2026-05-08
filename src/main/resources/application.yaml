@@ -102,6 +102,16 @@ market:
     enabled: ${MARKET_INGEST_ENABLED:true}
     interval-ms: ${MARKET_INGEST_INTERVAL_MS:3600000}
 
+smartwallet:
+  ai:
+    python:
+      # true = usa MockPythonAiClient (default seguro)
+      # false = usa HttpPythonAiClient (microserviço Python real)
+      mock-enabled: ${SMARTWALLET_AI_PYTHON_MOCK_ENABLED:true}
+      base-url: ${SMARTWALLET_AI_PYTHON_BASE_URL:http://localhost:8001}
+      chat-path: ${SMARTWALLET_AI_PYTHON_CHAT_PATH:/chat}
+      timeout-ms: ${SMARTWALLET_AI_PYTHON_TIMEOUT_MS:5000}
+
 management:
   endpoints:
     web:

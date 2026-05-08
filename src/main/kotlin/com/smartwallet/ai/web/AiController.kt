@@ -1,6 +1,9 @@
 package com.smartwallet.ai.web
 
 import com.smartwallet.ai.AIService
+import com.smartwallet.ai.chat.JarvisChatRequest
+import com.smartwallet.ai.chat.JarvisChatResponse
+import com.smartwallet.ai.chat.JarvisChatService
 import com.smartwallet.ai.model.RiskMetrics
 import com.smartwallet.ai.model.ScoreMetrics
 import com.smartwallet.ai.model.Recommendation
@@ -10,8 +13,10 @@ import com.smartwallet.repository.WalletRepository
 import com.smartwallet.security.CustomUserDetails
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -19,7 +24,8 @@ import org.springframework.web.bind.annotation.RestController
 class AiController(
     private val aiService: AIService,
     private val walletRepository: WalletRepository,
-    private val assetRepository: AssetRepository
+    private val assetRepository: AssetRepository,
+    private val jarvisChatService: JarvisChatService
 ) {
 
     @GetMapping("/analyze")
@@ -56,5 +62,20 @@ class AiController(
         val assets = assetRepository.findByUserId(userId)
         val result = aiService.analyzePortfolio(userId, wallets, assets)
         return ResponseEntity.ok(ApiResponse(success = true, data = result.recommendations))
+    }
+
+    @PostMapping("/chat")
+    fun chatWithJarvis(
+        @AuthenticationPrincipal user: CustomUserDetails,
+        @RequestBody request: JarvisChatRequest
+    ): ResponseEntity<ApiResponse<JarvisChatResponse>> {
+        val userId = user.id
+        val wallets = walletRepository.findByUserId(userId)
+        val assets = assetRepository.findByUserId(userId)
+
+        val analysis = aiService.analyzePortfolio(userId, wallets, assets)
+        val reply = jarvisChatService.chat(request, analysis)
+
+        return ResponseEntity.ok(ApiResponse(success = true, message = "Resposta gerada", data = reply))
     }
 }
