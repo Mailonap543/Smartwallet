@@ -1,4 +1,4 @@
-package com.smartwallet.dto.debug;
+﻿package com.smartwallet.dto.debug;
 
 import com.smartwallet.dto.PageResponse;
 import java.util.*;
@@ -28,7 +28,7 @@ public class DebugPageResponse {
         System.out.println("  first(): " + pr.first());
         System.out.println("  empty(): " + pr.empty());
         
-        // Assert as the test does
+
         if (pr.last() != false) {
             throw new AssertionError("Expected last=false but got last=" + pr.last());
         }

@@ -1,4 +1,4 @@
-package com.smartwallet.ai.service
+﻿package com.smartwallet.ai.service
 
 import com.smartwallet.ai.model.*
 import org.slf4j.LoggerFactory
@@ -59,7 +59,7 @@ class PortfolioScoringService {
 
         var score = 0
 
-        // Asset type diversity (0-25 points)
+
         val typeCount = portfolio.assets.groupBy { it.assetType }.size
         score += when {
             typeCount >= 5 -> 25
@@ -69,7 +69,7 @@ class PortfolioScoringService {
             else -> 5
         }
 
-        // Asset count (0-25 points)
+
         val assetCount = portfolio.assets.size
         score += when {
             assetCount >= 20 -> 25
@@ -83,9 +83,9 @@ class PortfolioScoringService {
     }
 
     private fun calculateRiskReturnScore(riskMetrics: RiskMetrics): Int {
-        var score = 50 // Base score
+        var score = 50
 
-        // Sharpe ratio contribution (-20 to 20 points)
+
         val sharpe = riskMetrics.sharpeRatio.toDouble()
         score += when {
             sharpe >= 2.0 -> 20
@@ -96,7 +96,7 @@ class PortfolioScoringService {
             else -> -10
         }
 
-        // Beta contribution (-10 to 10 points)
+
         val beta = riskMetrics.beta.toDouble()
         score += when {
             beta < 0.7 -> 10
@@ -106,7 +106,7 @@ class PortfolioScoringService {
             else -> -10
         }
 
-        // Volatility contribution (-20 to 10 points)
+
         val vol = riskMetrics.portfolioVolatility.toDouble()
         score += when {
             vol < 5 -> 10
@@ -124,7 +124,7 @@ class PortfolioScoringService {
 
         var score = 0
 
-        // Liquid assets (stocks, crypto) vs illiquid (FIIs, bonds, funds)
+
         val liquidTypes = listOf("STOCK", "CRYPTO", "ETF", "COMMODITY")
         val illiquidTypes = listOf("FII", "BOND", "FUND")
 
@@ -151,7 +151,7 @@ class PortfolioScoringService {
                 else -> 0
             }
 
-            // Illiquid penalty
+
             val illiquidPercent = illiquidValue
                 .divide(totalValue, 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal(100))
@@ -170,9 +170,10 @@ class PortfolioScoringService {
         if (portfolio.assets.isEmpty()) return 0
         if (portfolio.totalCurrentValue.compareTo(BigDecimal.ZERO) <= 0) return 0
 
-        var score = 50 // Base score
+        var score = 50
 
-        // Max single asset concentration
+
+
         val maxConcentration = portfolio.assets.maxOfOrNull { asset ->
             val value = asset.currentValue ?: BigDecimal.ZERO
             if (portfolio.totalCurrentValue.compareTo(BigDecimal.ZERO) > 0) {
@@ -180,7 +181,7 @@ class PortfolioScoringService {
             } else 0.0
         } ?: 0.0
 
-        // Penalty for concentration
+
         score += when {
             maxConcentration <= 10 -> 25
             maxConcentration <= 20 -> 15
@@ -189,7 +190,7 @@ class PortfolioScoringService {
             else -> -25
         }
 
-        // Top 3 concentration
+
         val top3Value = portfolio.assets.sortedByDescending { it.currentValue ?: BigDecimal.ZERO }
             .take(3)
             .sumOf { it.currentValue ?: BigDecimal.ZERO }
@@ -209,9 +210,10 @@ class PortfolioScoringService {
     }
 
     private fun calculateStabilityScore(portfolio: PortfolioData, riskMetrics: RiskMetrics): Int {
-        var score = 50 // Base score
+        var score = 50
 
-        // Max drawdown contribution
+
+
         val maxDrawdown = riskMetrics.maxDrawdown.toDouble()
         score += when {
             maxDrawdown <= 5 -> 20
@@ -221,7 +223,7 @@ class PortfolioScoringService {
             else -> -15
         }
 
-        // Profit consistency
+
         val profitableAssets = portfolio.assets.count { 
             (it.profitLoss ?: BigDecimal.ZERO).compareTo(BigDecimal.ZERO) > 0 
         }
@@ -238,7 +240,7 @@ class PortfolioScoringService {
             }
         }
 
-        // VaR contribution
+
         val var95 = riskMetrics.var95.toDouble()
         score += when {
             var95 <= 3 -> 10
@@ -257,7 +259,7 @@ class PortfolioScoringService {
         concentration: Int,
         stability: Int
     ): Int {
-        // Weighted average with focus on risk-adjusted returns
+
         val weights = mapOf(
             diversification to 0.20,
             riskReturn to 0.30,
@@ -286,19 +288,19 @@ class PortfolioScoringService {
             recommendations.add("Adicione mais classes de ativos para diversificar melhor")
         }
         if (diversification < 40 && recommendations.size < 3) {
-            recommendations.add("Aumente o número de ativos na carteira")
+            recommendations.add("Aumente o nÃºmero de ativos na carteira")
         }
 
         if (riskReturn < 40) {
-            recommendations.add("Considere ativos com melhor relação retorno/risco")
+            recommendations.add("Considere ativos com melhor relaÃ§Ã£o retorno/risco")
         }
 
         if (liquidity < 25) {
-            recommendations.add("Aumente a proporção de ativos líquidos")
+            recommendations.add("Aumente a proporÃ§Ã£o de ativos lÃ­quidos")
         }
 
         if (concentration < 50) {
-            recommendations.add("Reduza a concentração em poucos ativos")
+            recommendations.add("Reduza a concentraÃ§Ã£o em poucos ativos")
         }
 
         if (stability < 40) {

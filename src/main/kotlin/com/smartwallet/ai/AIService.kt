@@ -1,4 +1,4 @@
-package com.smartwallet.ai
+﻿package com.smartwallet.ai
 
 import com.smartwallet.ai.model.*
 import com.smartwallet.ai.service.PortfolioScoringService
@@ -23,7 +23,7 @@ class AIService(
 
     private val log = LoggerFactory.getLogger(AIService::class.java)
 
-    // Mantemos este wrapper porque o controller/DTO do frontend já consome os campos.
+
     data class AnalysisResult(
         val riskMetrics: RiskMetrics,
         val score: ScoreMetrics,
@@ -68,7 +68,7 @@ class AIService(
             marketData = marketData
         )
 
-        // Fallback para manter a UI "sempre preenchida" quando não houver recomendações específicas.
+
         val finalRecommendations = if (generatedRecommendations.isNotEmpty()) {
             generatedRecommendations
         } else {
@@ -76,7 +76,7 @@ class AIService(
                 Recommendation(
                     type = RecommendationType.HOLD,
                     title = "Continue acompanhando",
-                    description = "Sua carteira está dentro de um cenário estável; mantenha o monitoramento e reavalie periodicamente.",
+                    description = "Sua carteira estÃ¡ dentro de um cenÃ¡rio estÃ¡vel; mantenha o monitoramento e reavalie periodicamente.",
                     priority = 999,
                     potentialImpact = null,
                     actionRequired = "Rebalancear e revisar objetivos a cada trimestre"
@@ -96,7 +96,7 @@ class AIService(
             mapOf(
                 "type" to "BUY",
                 "title" to "Diversifique seus investimentos",
-                "description" to "Considere adicionar investimentos de renda fixa para equilibrar seu portfólio",
+                "description" to "Considere adicionar investimentos de renda fixa para equilibrar seu portfÃ³lio",
                 "priority" to 1
             )
         )
@@ -127,13 +127,13 @@ class AIService(
             Triple(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
         ) { acc, asset ->
             Triple(
-                acc.first + (asset.totalInvested ?: BigDecimal.ZERO),
-                acc.second + (asset.currentValue ?: BigDecimal.ZERO),
-                acc.third + (asset.profitLoss ?: BigDecimal.ZERO)
+                acc.first + (asset.getTotalInvested() ?: BigDecimal.ZERO),
+                acc.second + (asset.getCurrentValue() ?: BigDecimal.ZERO),
+                acc.third + (asset.getProfitLoss() ?: BigDecimal.ZERO)
             )
         }
 
-        // Investido: preferimos agregação de wallets; se vier zerado, caímos para uma estimativa a partir dos ativos.
+
         val totalInvested = if (totalsFromWallets.first > BigDecimal.ZERO) totalsFromWallets.first else totalsFromAssets.first
         val totalCurrentValue = if (totalsFromWallets.second > BigDecimal.ZERO) totalsFromWallets.second else totalsFromAssets.second
         val totalProfitLoss = if (totalsFromWallets.third != BigDecimal.ZERO) totalsFromWallets.third else totalsFromAssets.third
@@ -157,45 +157,46 @@ class AIService(
 
     private fun toAssetData(asset: Asset): AssetData {
         return AssetData(
-            symbol = asset.symbol,
-            name = asset.name ?: asset.symbol,
-            quantity = asset.quantity ?: BigDecimal.ZERO,
-            currentPrice = asset.currentPrice,
-            averagePrice = asset.averagePrice,
-            assetType = mapAssetType(asset.assetType),
-            currentValue = asset.currentValue,
-            profitLoss = asset.profitLoss,
-            profitLossPercentage = asset.profitLossPercentage,
-            purchaseDate = asset.purchaseDate
+            symbol = asset.getSymbol(),
+            name = asset.getName() ?: asset.getSymbol(),
+            quantity = asset.getQuantity() ?: BigDecimal.ZERO,
+            currentPrice = asset.getCurrentPrice(),
+            averagePrice = asset.getAveragePrice(),
+            assetType = mapAssetType(asset.getAssetType()),
+            currentValue = asset.getCurrentValue(),
+            profitLoss = asset.getProfitLoss(),
+            profitLossPercentage = asset.getProfitLossPercentage(),
+            purchaseDate = asset.getPurchaseDate()
         )
     }
 
     private fun mapAssetType(type: AssetType?): String {
         return when (type) {
             null -> "OTHER"
-            AssetType.REIT -> "FII" // No domínio, REIT (imobiliário) vira FII para o motor atual.
+            AssetType.REIT -> "FII"
             AssetType.CASH -> "CASH"
             else -> type.name
         }
     }
 
     private fun toMarketData(assets: List<Asset>): Map<String, MarketData> {
-        // Para manter o motor determinístico (sem “comprar/vender” automaticamente sem variação),
-        // criamos entries com change/changePercent = null.
+
+
         val now = LocalDateTime.now()
         return assets.associate { asset ->
-            val symbol = asset.symbol
-            val price = asset.currentPrice ?: asset.currentValue ?: asset.purchasePrice ?: BigDecimal.ZERO
+            val symbol = asset.getSymbol()
+            val price = asset.getCurrentPrice() ?: asset.getCurrentValue() ?: asset.getPurchasePrice() ?: BigDecimal.ZERO
             symbol to MarketData(
                 symbol = symbol,
                 price = price,
                 change = null,
                 changePercent = null,
-                dayHigh = asset.dayHigh,
-                dayLow = asset.dayLow,
-                volume = asset.dayVolume,
+                dayHigh = asset.getDayHigh(),
+                dayLow = asset.getDayLow(),
+                volume = asset.getDayVolume(),
                 lastUpdate = now
             )
         }
     }
 }
+

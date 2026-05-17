@@ -1,4 +1,4 @@
-package com.smartwallet.notification;
+﻿package com.smartwallet.notification;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -82,7 +82,7 @@ public class NotificationService {
 
     @Transactional
     public void updatePreferences(Long userId, Map<String, Object> preferences) {
-        // Preferences would typically be stored in user settings
-        // For now this is a placeholder implementation
+
+
     }
 }

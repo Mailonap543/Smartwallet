@@ -65,10 +65,10 @@ public class Transaction {
     }
 
     public enum TransactionType {
-        BUY,   // Compra
-        SELL,  // Venda
-        DIVIDEND, // Dividendos/Juros
-        SPLIT, // Desdobramento
-        MERGE  // Incorporação
+        BUY,
+        SELL,
+        DIVIDEND,
+        SPLIT,
+        MERGE
     }
 }
