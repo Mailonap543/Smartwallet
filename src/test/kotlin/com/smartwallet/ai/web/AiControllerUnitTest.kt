@@ -5,6 +5,10 @@ import com.smartwallet.ai.chat.JarvisChatRequest
 import com.smartwallet.ai.chat.JarvisChatResponse
 import com.smartwallet.ai.chat.JarvisChatService
 import com.smartwallet.ai.model.*
+import com.smartwallet.entity.Asset
+import com.smartwallet.entity.AssetType
+import com.smartwallet.entity.User
+import com.smartwallet.entity.Wallet
 import com.smartwallet.repository.AssetRepository
 import com.smartwallet.repository.WalletRepository
 import com.smartwallet.security.CustomUserDetails
@@ -14,6 +18,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class AiControllerUnitTest {
 
@@ -33,7 +38,7 @@ class AiControllerUnitTest {
         assetRepository = mock()
         jarvisChatService = mock()
         aiController = AiController(aiService, walletRepository, assetRepository, jarvisChatService)
-        userDetails = CustomUserDetails(userId, "test", "test@test.com", emptySet())
+        userDetails = CustomUserDetails(createUser())
     }
 
     @Test
@@ -115,28 +120,43 @@ class AiControllerUnitTest {
         assertNotNull(response.body?.data?.sessionId)
     }
 
-    private fun createWallets(): List<com.smartwallet.entity.Wallet> = listOf(
-        com.smartwallet.entity.Wallet(
-            id = 1L,
-            name = "Test",
-            description = "Test wallet",
-            totalBalance = BigDecimal("10000"),
-            totalInvested = BigDecimal("10000"),
-            totalProfitLoss = BigDecimal("0"),
-            createdAt = LocalDate.now()
-        )
+    private fun createWallets(): List<Wallet> = listOf(
+        Wallet().apply {
+            id = 1L
+            name = "Test"
+            description = "Test wallet"
+            totalBalance = BigDecimal("10000")
+            totalInvested = BigDecimal("10000")
+            totalProfitLoss = BigDecimal("0")
+            createdAt = LocalDateTime.now()
+            updatedAt = LocalDateTime.now()
+        }
     )
 
-    private fun createAssets(): List<com.smartwallet.entity.Asset> = listOf(
-        com.smartwallet.entity.Asset(
-            symbol = "AAPL",
-            name = "Apple",
-            quantity = BigDecimal("10"),
-            currentValue = BigDecimal("1500"),
-            profitLoss = BigDecimal("100"),
-            assetType = com.smartwallet.entity.AssetType.STOCK
-        )
+    private fun createAssets(): List<Asset> = listOf(
+        Asset().apply {
+            symbol = "AAPL"
+            name = "Apple"
+            quantity = BigDecimal("10")
+            purchasePrice = BigDecimal("140")
+            averagePrice = BigDecimal("140")
+            currentPrice = BigDecimal("150")
+            currentValue = BigDecimal("1500")
+            profitLoss = BigDecimal("100")
+            assetType = AssetType.STOCK
+            purchaseDate = LocalDate.now()
+        }
     )
+
+    private fun createUser(): User = User().apply {
+        id = userId
+        email = "test@test.com"
+        passwordHash = "password"
+        fullName = "Test User"
+        isActive = true
+        emailVerified = true
+        role = "USER"
+    }
 
     private fun createAnalysisResult(): AIService.AnalysisResult = AIService.AnalysisResult(
         riskMetrics = RiskMetrics(

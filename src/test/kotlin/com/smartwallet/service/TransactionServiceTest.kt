@@ -4,6 +4,7 @@ import com.smartwallet.dto.transaction.CreateTransactionRequest
 import com.smartwallet.entity.Asset
 import com.smartwallet.entity.Transaction
 import com.smartwallet.entity.Transaction.TransactionType
+import com.smartwallet.entity.User
 import com.smartwallet.entity.Wallet
 import com.smartwallet.exception.ResourceNotFoundException
 import com.smartwallet.repository.AssetRepository
@@ -37,29 +38,28 @@ class TransactionServiceTest {
 
     @Test
     fun `createTransaction recalculates asset after creation`() {
-        val wallet = Wallet(id = 1L, user = com.smartwallet.entity.User(id = userId))
-        val asset = Asset(
-            id = assetId,
-            symbol = "AAPL",
-            wallet = wallet,
-            quantity = BigDecimal.ZERO,
-            averagePrice = BigDecimal.ZERO,
-            totalInvested = BigDecimal.ZERO,
-            currentValue = BigDecimal.ZERO
-        )
+        val wallet = createWallet()
+        val asset = createAsset(wallet, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
 
         val request = CreateTransactionRequest(
-            transactionType = TransactionType.BUY,
-            quantity = BigDecimal("10"),
-            price = BigDecimal("150.00"),
-            fees = BigDecimal("5.00"),
-            transactionDate = LocalDateTime.now(),
-            notes = "Test"
+            TransactionType.BUY,
+            BigDecimal("10"),
+            BigDecimal("150.00"),
+            BigDecimal("5.00"),
+            LocalDateTime.now(),
+            "Test"
         )
 
         whenever(userRepository.existsById(userId)).thenReturn(true)
         whenever(assetRepository.findById(assetId)).thenReturn(java.util.Optional.of(asset))
-        whenever(transactionRepository.save(any())).thenAnswer { it.getArgument(0) }
+        var savedTransaction: Transaction? = null
+        whenever(transactionRepository.save(any())).thenAnswer {
+            savedTransaction = it.getArgument(0)
+            savedTransaction
+        }
+        whenever(transactionRepository.findByAssetIdOrderedByDateDesc(assetId)).thenAnswer {
+            listOf(savedTransaction!!)
+        }
 
         val response = transactionService.createTransaction(userId, assetId, request)
 
@@ -69,34 +69,18 @@ class TransactionServiceTest {
 
     @Test
     fun `updateTransaction recalculates asset after update`() {
-        val wallet = Wallet(id = 1L, user = com.smartwallet.entity.User(id = userId))
-        val asset = Asset(
-            id = assetId,
-            symbol = "AAPL",
-            wallet = wallet,
-            quantity = BigDecimal("5"),
-            averagePrice = BigDecimal("150.00"),
-            totalInvested = BigDecimal("750.00"),
-            currentValue = BigDecimal("800.00")
-        )
+        val wallet = createWallet()
+        val asset = createAsset(wallet, BigDecimal("5"), BigDecimal("150.00"), BigDecimal("750.00"), BigDecimal("800.00"))
 
-        val transaction = Transaction(
-            id = transactionId,
-            asset = asset,
-            transactionType = TransactionType.BUY,
-            quantity = BigDecimal("5"),
-            price = BigDecimal("150.00"),
-            totalValue = BigDecimal("750.00"),
-            transactionDate = LocalDateTime.now()
-        )
+        val transaction = createTransaction(asset, BigDecimal("5"), BigDecimal("150.00"), BigDecimal("750.00"))
 
         val request = CreateTransactionRequest(
-            transactionType = TransactionType.BUY,
-            quantity = BigDecimal("15"),
-            price = BigDecimal("160.00"),
-            fees = BigDecimal("10.00"),
-            transactionDate = LocalDateTime.now(),
-            notes = "Updated"
+            TransactionType.BUY,
+            BigDecimal("15"),
+            BigDecimal("160.00"),
+            BigDecimal("10.00"),
+            LocalDateTime.now(),
+            "Updated"
         )
 
         whenever(userRepository.existsById(userId)).thenReturn(true)
@@ -110,26 +94,10 @@ class TransactionServiceTest {
 
     @Test
     fun `deleteTransaction recalculates asset after deletion`() {
-        val wallet = Wallet(id = 1L, user = com.smartwallet.entity.User(id = userId))
-        val asset = Asset(
-            id = assetId,
-            symbol = "AAPL",
-            wallet = wallet,
-            quantity = BigDecimal("10"),
-            averagePrice = BigDecimal("150.00"),
-            totalInvested = BigDecimal("1500.00"),
-            currentValue = BigDecimal("1600.00")
-        )
+        val wallet = createWallet()
+        val asset = createAsset(wallet, BigDecimal("10"), BigDecimal("150.00"), BigDecimal("1500.00"), BigDecimal("1600.00"))
 
-        val transaction = Transaction(
-            id = transactionId,
-            asset = asset,
-            transactionType = TransactionType.BUY,
-            quantity = BigDecimal("10"),
-            price = BigDecimal("150.00"),
-            totalValue = BigDecimal("1500.00"),
-            transactionDate = LocalDateTime.now()
-        )
+        val transaction = createTransaction(asset, BigDecimal("10"), BigDecimal("150.00"), BigDecimal("1500.00"))
 
         whenever(userRepository.existsById(userId)).thenReturn(true)
         whenever(transactionRepository.findById(transactionId)).thenReturn(java.util.Optional.of(transaction))
@@ -152,9 +120,9 @@ class TransactionServiceTest {
 
     @Test
     fun `getTransactionById returns transaction`() {
-        val wallet = Wallet(id = 1L, user = com.smartwallet.entity.User(id = userId))
-        val asset = Asset(id = assetId, symbol = "AAPL", wallet = wallet)
-        val transaction = Transaction(id = transactionId, asset = asset)
+        val wallet = createWallet()
+        val asset = createAsset(wallet)
+        val transaction = createTransaction(asset)
 
         whenever(userRepository.existsById(userId)).thenReturn(true)
         whenever(transactionRepository.findById(transactionId)).thenReturn(java.util.Optional.of(transaction))
@@ -166,9 +134,9 @@ class TransactionServiceTest {
 
     @Test
     fun `getAllTransactionsByUserId returns list`() {
-        val wallet = Wallet(id = 1L, user = com.smartwallet.entity.User(id = userId))
-        val asset = Asset(id = assetId, symbol = "AAPL", wallet = wallet)
-        val transaction = Transaction(id = transactionId, asset = asset)
+        val wallet = createWallet()
+        val asset = createAsset(wallet)
+        val transaction = createTransaction(asset)
 
         whenever(userRepository.existsById(userId)).thenReturn(true)
         whenever(transactionRepository.findByUserId(userId)).thenReturn(listOf(transaction))
@@ -180,13 +148,10 @@ class TransactionServiceTest {
 
     @Test
     fun `recalculateAssetFromTransactions handles empty transactions`() {
-        val wallet = Wallet(id = 1L, user = com.smartwallet.entity.User(id = userId))
-        val asset = Asset(
-            id = assetId,
-            symbol = "AAPL",
-            wallet = wallet,
+        val wallet = createWallet()
+        val asset = createAsset(wallet).apply {
             quantity = BigDecimal("10")
-        )
+        }
 
         whenever(transactionRepository.findByAssetIdOrderedByDateDesc(assetId)).thenReturn(emptyList())
         whenever(assetRepository.save(any())).thenAnswer { it.getArgument(0) }
@@ -194,5 +159,59 @@ class TransactionServiceTest {
         transactionService.recalculateAssetFromTransactions(asset)
 
         assertTrue(asset.quantity.compareTo(BigDecimal.ZERO) == 0)
+    }
+
+    private fun createUser(): User = User().apply {
+        id = userId
+        email = "test@example.com"
+        passwordHash = "password"
+        fullName = "Test User"
+        isActive = true
+        emailVerified = true
+        role = "USER"
+    }
+
+    private fun createWallet(): Wallet = Wallet().apply {
+        id = 1L
+        user = createUser()
+        name = "Test Wallet"
+        totalBalance = BigDecimal.ZERO
+        totalInvested = BigDecimal.ZERO
+        totalProfitLoss = BigDecimal.ZERO
+        createdAt = LocalDateTime.now()
+        updatedAt = LocalDateTime.now()
+    }
+
+    private fun createAsset(
+        wallet: Wallet,
+        quantity: BigDecimal = BigDecimal.ZERO,
+        averagePrice: BigDecimal = BigDecimal.ZERO,
+        totalInvested: BigDecimal = BigDecimal.ZERO,
+        currentValue: BigDecimal = BigDecimal.ZERO
+    ): Asset = Asset().apply {
+        id = assetId
+        symbol = "AAPL"
+        name = "Apple"
+        this.wallet = wallet
+        this.quantity = quantity
+        this.averagePrice = averagePrice
+        purchasePrice = averagePrice
+        this.totalInvested = totalInvested
+        this.currentValue = currentValue
+    }
+
+    private fun createTransaction(
+        asset: Asset,
+        quantity: BigDecimal = BigDecimal.ZERO,
+        price: BigDecimal = BigDecimal.ZERO,
+        totalValue: BigDecimal = BigDecimal.ZERO
+    ): Transaction = Transaction().apply {
+        id = transactionId
+        this.asset = asset
+        transactionType = TransactionType.BUY
+        this.quantity = quantity
+        this.price = price
+        this.totalValue = totalValue
+        transactionDate = LocalDateTime.now()
     }
 }

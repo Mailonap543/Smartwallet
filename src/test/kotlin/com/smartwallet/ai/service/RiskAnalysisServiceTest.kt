@@ -39,8 +39,8 @@ class RiskAnalysisServiceTest {
 
         val metrics = riskAnalysisService.analyzeRisk(portfolio, null)
 
-        assertEquals(0, metrics.portfolioVolatility.toDouble())
-        assertEquals(0, metrics.sharpeRatio.toDouble())
+        assertEquals(0.0, metrics.portfolioVolatility.toDouble())
+        assertEquals(0.0, metrics.sharpeRatio.toDouble())
         assertEquals(BigDecimal.ONE, metrics.beta)
     }
 
@@ -71,7 +71,7 @@ class RiskAnalysisServiceTest {
 
         val metrics = riskAnalysisService.analyzeRisk(portfolio, null)
 
-        assertEquals(BigDecimal.ZERO, metrics.maxDrawdown)
+        assertEquals(0, metrics.maxDrawdown.compareTo(BigDecimal.ZERO))
     }
 
     @Test

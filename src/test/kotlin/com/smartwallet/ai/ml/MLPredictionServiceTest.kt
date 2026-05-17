@@ -58,7 +58,7 @@ class MLPredictionServiceTest {
 
     @Test
     fun `predictPrice handles null symbol`() {
-        val result = mlPredictionService.predictPrice(null, emptyList())
+        val result = mlPredictionService.predictPrice("", emptyList())
 
         assertNull(result)
     }

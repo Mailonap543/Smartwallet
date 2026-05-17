@@ -19,18 +19,17 @@ import org.junit.platform.suite.api.SuiteDisplayName
 @Suite
 @SuiteDisplayName("SmartWallet AI Service Tests")
 @SelectClasses(
-    value = [
-        RiskAnalysisServiceTest::class,
-        PortfolioScoringServiceTest::class,
-        RecommendationEngineTest::class,
-        AIServiceTest::class,
-        MLPredictionServiceTest::class,
-        ModelsTest::class,
-        JarvisChatModelsTest::class,
-        JarvisChatServiceTest::class,
-        JarvisReplyBuilderTest::class,
-        AiControllerUnitTest::class,
-        HealthServiceTest::class,
-        TransactionServiceTest::class
-    ]
+    RiskAnalysisServiceTest::class,
+    PortfolioScoringServiceTest::class,
+    RecommendationEngineTest::class,
+    AIServiceTest::class,
+    MLPredictionServiceTest::class,
+    ModelsTest::class,
+    JarvisChatModelsTest::class,
+    JarvisChatServiceTest::class,
+    JarvisReplyBuilderTest::class,
+    AiControllerUnitTest::class,
+    HealthServiceTest::class,
+    TransactionServiceTest::class
 )
+class KotlinTestSuite

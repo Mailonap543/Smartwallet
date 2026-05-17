@@ -107,7 +107,7 @@ class JarvisReplyBuilderTest {
 
     @Test
     fun `buildLocal suggests action from relevant recommendation`() {
-        val request = JarvisChatRequest(message = "How to reduce risk?", message = "risco")
+        val request = JarvisChatRequest(message = "risco")
         val context = createSampleContext(recommendations = listOf(
             Recommendation(
                 type = RecommendationType.REDUCE_RISK,
