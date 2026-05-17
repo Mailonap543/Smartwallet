@@ -1,4 +1,4 @@
-﻿package com.smartwallet.notification;
+package com.smartwallet.notification;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-﻿package com.smartwallet;
+package com.smartwallet;
 
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;

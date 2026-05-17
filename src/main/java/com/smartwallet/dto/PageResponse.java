@@ -1,4 +1,4 @@
-﻿package com.smartwallet.dto;
+package com.smartwallet.dto;
 
 import java.util.List;
 

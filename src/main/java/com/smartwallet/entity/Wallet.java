@@ -1,4 +1,4 @@
-﻿package com.smartwallet.entity;
+package com.smartwallet.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

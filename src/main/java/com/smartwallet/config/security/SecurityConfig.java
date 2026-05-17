@@ -1,4 +1,4 @@
-﻿package com.smartwallet.config.security;
+package com.smartwallet.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
