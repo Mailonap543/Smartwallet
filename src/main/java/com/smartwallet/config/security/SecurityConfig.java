@@ -49,8 +49,8 @@ public class SecurityConfig {
         SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
         
         http
-            // CSRF is disabled because this is a stateless REST API using JWT tokens
-            // Session management is STATELESS, so CSRF protection is not needed
+
+
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -60,7 +60,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/subscription/plans").permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
-                // Known API endpoints requiring authentication
+
                 .requestMatchers(new AntPathRequestMatcher("/api/subscription/**")).authenticated()
                 .requestMatchers(new AntPathRequestMatcher("/api/market/**")).authenticated()
                 .requestMatchers(new AntPathRequestMatcher("/api/notifications/**")).authenticated()
@@ -72,7 +72,7 @@ public class SecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/api/bank/**")).authenticated()
                 .requestMatchers(new AntPathRequestMatcher("/api/crypto/**")).authenticated()
                 .requestMatchers(new AntPathRequestMatcher("/api/ai/**")).authenticated()
-                // All other endpoints (including unknown) are permitted and will be handled by the dispatcher
+
                 .anyRequest().permitAll()
             )
             .exceptionHandling(ex -> ex
@@ -93,7 +93,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Using origin patterns instead of "*" for better security when credentials are enabled
+
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:*",
             "http://localhost:3000",
@@ -132,3 +132,4 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
+

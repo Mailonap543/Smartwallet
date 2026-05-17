@@ -1,17 +1,33 @@
-package com.smartwallet.ai
+﻿package com.smartwallet.ai
 
+import com.smartwallet.ai.model.*
+import com.smartwallet.ai.service.PortfolioScoringService
+import com.smartwallet.ai.service.RecommendationEngine
+import com.smartwallet.ai.service.RiskAnalysisService
+import com.smartwallet.entity.AssetType
+import com.smartwallet.entity.Asset
+import com.smartwallet.entity.Wallet
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
+import java.math.RoundingMode
+
+import java.time.LocalDateTime
 
 @Service
-class AIService {
+class AIService(
+    private val riskAnalysisService: RiskAnalysisService,
+    private val portfolioScoringService: PortfolioScoringService,
+    private val recommendationEngine: RecommendationEngine
+) {
 
     private val log = LoggerFactory.getLogger(AIService::class.java)
 
+
     data class AnalysisResult(
-        val riskMetrics: com.smartwallet.ai.model.RiskMetrics,
-        val score: com.smartwallet.ai.model.ScoreMetrics,
-        val recommendations: List<com.smartwallet.ai.model.Recommendation>
+        val riskMetrics: RiskMetrics,
+        val score: ScoreMetrics,
+        val recommendations: List<Recommendation>
     )
 
     fun analyzePortfolio(userId: Long): Map<String, Any> {
@@ -32,43 +48,47 @@ class AIService {
 
     fun analyzePortfolio(
         userId: Long,
-        wallets: List<com.smartwallet.entity.Wallet>,
-        assets: List<com.smartwallet.entity.Asset>
+        wallets: List<Wallet>,
+        assets: List<Asset>
     ): AnalysisResult {
         log.info("AI analysis (detailed) for user: $userId wallets=${wallets.size} assets=${assets.size}")
 
-        val risk = com.smartwallet.ai.model.RiskMetrics(
-            portfolioVolatility = java.math.BigDecimal("0.15"),
-            sharpeRatio = java.math.BigDecimal("0.8"),
-            beta = java.math.BigDecimal("1.05"),
-            maxDrawdown = java.math.BigDecimal("0.12"),
-            var95 = java.math.BigDecimal("0.10"),
-            riskScore = 50,
-            riskLevel = com.smartwallet.ai.model.RiskLevel.MODERATE
+        val portfolio = toPortfolioData(userId, wallets, assets)
+        val riskMetrics = riskAnalysisService.analyzeRisk(portfolio, historicalData = null)
+        val marketData = toMarketData(assets)
+        val scoreMetrics = portfolioScoringService.calculateScore(
+            portfolio = portfolio,
+            riskMetrics = riskMetrics,
+            marketData = marketData
         )
 
-        val score = com.smartwallet.ai.model.ScoreMetrics(
-            overallScore = 75,
-            diversificationScore = 70,
-            riskReturnScore = 72,
-            liquidityScore = 68,
-            concentrationScore = 65,
-            stabilityScore = 74,
-            recommendations = listOf("Diversificar em renda fixa", "Rebalancear 5% para FIIs")
+        val generatedRecommendations = recommendationEngine.generateRecommendations(
+            portfolio = portfolio,
+            riskMetrics = riskMetrics,
+            marketData = marketData
         )
 
-        val recommendations = listOf(
-            com.smartwallet.ai.model.Recommendation(
-                type = com.smartwallet.ai.model.RecommendationType.DIVERSIFY,
-                title = "Diversifique",
-                description = "Adicione ativos de renda fixa para reduzir risco.",
-                priority = 1,
-                potentialImpact = java.math.BigDecimal("0.02"),
-                actionRequired = "Adicionar 5% em Tesouro SELIC"
+
+        val finalRecommendations = if (generatedRecommendations.isNotEmpty()) {
+            generatedRecommendations
+        } else {
+            listOf(
+                Recommendation(
+                    type = RecommendationType.HOLD,
+                    title = "Continue acompanhando",
+                    description = "Sua carteira estÃ¡ dentro de um cenÃ¡rio estÃ¡vel; mantenha o monitoramento e reavalie periodicamente.",
+                    priority = 999,
+                    potentialImpact = null,
+                    actionRequired = "Rebalancear e revisar objetivos a cada trimestre"
+                )
             )
-        )
+        }
 
-        return AnalysisResult(risk, score, recommendations)
+        return AnalysisResult(
+            riskMetrics = riskMetrics,
+            score = scoreMetrics,
+            recommendations = finalRecommendations
+        )
     }
 
     fun getRecommendations(): List<Map<String, Any>> {
@@ -76,7 +96,7 @@ class AIService {
             mapOf(
                 "type" to "BUY",
                 "title" to "Diversifique seus investimentos",
-                "description" to "Considere adicionar investimentos de renda fixa para equilibrar seu portfólio",
+                "description" to "Considere adicionar investimentos de renda fixa para equilibrar seu portfÃ³lio",
                 "priority" to 1
             )
         )
@@ -85,4 +105,98 @@ class AIService {
     fun calculateScore(): Int {
         return 75
     }
+
+    private fun toPortfolioData(
+        userId: Long,
+        wallets: List<Wallet>,
+        assets: List<Asset>
+    ): PortfolioData {
+        val assetData = assets.map(::toAssetData)
+
+        val totalsFromWallets = wallets.fold(
+            Triple(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
+        ) { acc, wallet ->
+            Triple(
+                acc.first + (wallet.totalInvested ?: BigDecimal.ZERO),
+                acc.second + (wallet.totalBalance ?: BigDecimal.ZERO),
+                acc.third + (wallet.totalProfitLoss ?: BigDecimal.ZERO)
+            )
+        }
+
+        val totalsFromAssets = assets.fold(
+            Triple(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
+        ) { acc, asset ->
+            Triple(
+                acc.first + (asset.getTotalInvested() ?: BigDecimal.ZERO),
+                acc.second + (asset.getCurrentValue() ?: BigDecimal.ZERO),
+                acc.third + (asset.getProfitLoss() ?: BigDecimal.ZERO)
+            )
+        }
+
+
+        val totalInvested = if (totalsFromWallets.first > BigDecimal.ZERO) totalsFromWallets.first else totalsFromAssets.first
+        val totalCurrentValue = if (totalsFromWallets.second > BigDecimal.ZERO) totalsFromWallets.second else totalsFromAssets.second
+        val totalProfitLoss = if (totalsFromWallets.third != BigDecimal.ZERO) totalsFromWallets.third else totalsFromAssets.third
+
+        val profitLossPercentage = if (totalInvested > BigDecimal.ZERO) {
+            totalProfitLoss.divide(totalInvested, 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+        } else {
+            BigDecimal.ZERO
+        }
+
+        return PortfolioData(
+            userId = userId,
+            assets = assetData,
+            totalInvested = totalInvested,
+            totalCurrentValue = totalCurrentValue,
+            totalProfitLoss = totalProfitLoss,
+            profitLossPercentage = profitLossPercentage
+        )
+    }
+
+    private fun toAssetData(asset: Asset): AssetData {
+        return AssetData(
+            symbol = asset.getSymbol(),
+            name = asset.getName() ?: asset.getSymbol(),
+            quantity = asset.getQuantity() ?: BigDecimal.ZERO,
+            currentPrice = asset.getCurrentPrice(),
+            averagePrice = asset.getAveragePrice(),
+            assetType = mapAssetType(asset.getAssetType()),
+            currentValue = asset.getCurrentValue(),
+            profitLoss = asset.getProfitLoss(),
+            profitLossPercentage = asset.getProfitLossPercentage(),
+            purchaseDate = asset.getPurchaseDate()
+        )
+    }
+
+    private fun mapAssetType(type: AssetType?): String {
+        return when (type) {
+            null -> "OTHER"
+            AssetType.REIT -> "FII"
+            AssetType.CASH -> "CASH"
+            else -> type.name
+        }
+    }
+
+    private fun toMarketData(assets: List<Asset>): Map<String, MarketData> {
+
+
+        val now = LocalDateTime.now()
+        return assets.associate { asset ->
+            val symbol = asset.getSymbol()
+            val price = asset.getCurrentPrice() ?: asset.getCurrentValue() ?: asset.getPurchasePrice() ?: BigDecimal.ZERO
+            symbol to MarketData(
+                symbol = symbol,
+                price = price,
+                change = null,
+                changePercent = null,
+                dayHigh = asset.getDayHigh(),
+                dayLow = asset.getDayLow(),
+                volume = asset.getDayVolume(),
+                lastUpdate = now
+            )
+        }
+    }
 }
+

@@ -69,7 +69,7 @@ public class Wallet {
         updatedAt = LocalDateTime.now();
     }
 
-    // --- Getters e Setters Manuais ---
+
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -101,3 +101,4 @@ public class Wallet {
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }
+

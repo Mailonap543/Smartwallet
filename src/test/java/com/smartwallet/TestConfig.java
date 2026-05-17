@@ -19,6 +19,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 })
 @EnableJpaRepositories(basePackages = "com.smartwallet")
 public class TestConfig {
-    // This configuration overrides entity scanning for tests
-    // to avoid conflict between Java Asset and Kotlin PortfolioAsset
+
+
 }
+

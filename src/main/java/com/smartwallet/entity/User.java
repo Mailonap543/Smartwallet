@@ -49,8 +49,8 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // Conforme seu log do psql, você tem 'user_plan' e 'plan'.
-    // Vamos usar 'user_plan' como o principal.
+
+
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "user_plan", length = 20)
@@ -89,7 +89,7 @@ public class User {
         updatedAt = LocalDateTime.now();
     }
 
-    // --- Getters e Setters Manuais Exatos ---
+
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

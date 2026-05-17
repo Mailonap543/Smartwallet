@@ -1,4 +1,4 @@
-package com.smartwallet.ai.service
+﻿package com.smartwallet.ai.service
 
 import com.smartwallet.ai.model.*
 import org.slf4j.LoggerFactory
@@ -20,22 +20,22 @@ class RecommendationEngine {
 
         val recommendations = mutableListOf<Recommendation>()
 
-        // Analyze diversification
+
         recommendations.addAll(analyzeDiversification(portfolio))
 
-        // Analyze risk
+
         recommendations.addAll(analyzeRisk(riskMetrics))
 
-        // Analyze concentration
+
         recommendations.addAll(analyzeConcentration(portfolio))
 
-        // Analyze market opportunities
+
         recommendations.addAll(analyzeMarketOpportunities(portfolio, marketData))
 
-        // Analyze liquidity
+
         recommendations.addAll(analyzeLiquidity(portfolio))
 
-        // Sort by priority
+
         return recommendations.sortedBy { it.priority }
     }
 
@@ -44,7 +44,7 @@ class RecommendationEngine {
 
         if (portfolio.assets.isEmpty()) return recommendations
 
-        // Check asset type distribution
+
         val typeDistribution = portfolio.assets.groupBy { it.assetType }
         val typeCount = typeDistribution.size
 
@@ -53,11 +53,11 @@ class RecommendationEngine {
                 recommendations.add(
                     Recommendation(
                         type = RecommendationType.DIVERSIFY,
-                        title = "Falta de Diversificação",
-                        description = "Sua carteira está concentrada em apenas um tipo de ativo. Considere diversificar para reduzir riscos.",
+                        title = "Falta de DiversificaÃ§Ã£o",
+                        description = "Sua carteira estÃ¡ concentrada em apenas um tipo de ativo. Considere diversificar para reduzir riscos.",
                         priority = 1,
                         potentialImpact = null,
-                        actionRequired = "Adicionar ativos de diferentes classes (ações, FIIs, renda fixa)"
+                        actionRequired = "Adicionar ativos de diferentes classes (aÃ§Ãµes, FIIs, renda fixa)"
                     )
                 )
             }
@@ -65,8 +65,8 @@ class RecommendationEngine {
                 recommendations.add(
                     Recommendation(
                         type = RecommendationType.DIVERSIFY,
-                        title = "Diversificação Limitada",
-                        description = "Considere adicionar mais classes de ativos para melhorar a diversificação.",
+                        title = "DiversificaÃ§Ã£o Limitada",
+                        description = "Considere adicionar mais classes de ativos para melhorar a diversificaÃ§Ã£o.",
                         priority = 3,
                         potentialImpact = null,
                         actionRequired = "Explorar outras classes como ETFs, commodities ou crypto"
@@ -75,7 +75,7 @@ class RecommendationEngine {
             }
         }
 
-        // Check geographic diversification (simplified - would need actual data)
+
         val brazilianAssets = portfolio.assets.count { 
             it.symbol.endsWith("3") || it.symbol.endsWith("4") || it.symbol.endsWith("11")
         }
@@ -83,8 +83,8 @@ class RecommendationEngine {
             recommendations.add(
                 Recommendation(
                     type = RecommendationType.DIVERSIFY,
-                    title = "Concentração Geográfica",
-                    description = "Todos os ativos são brasileiros. Considere exposição internacional para diversificação.",
+                    title = "ConcentraÃ§Ã£o GeogrÃ¡fica",
+                    description = "Todos os ativos sÃ£o brasileiros. Considere exposiÃ§Ã£o internacional para diversificaÃ§Ã£o.",
                     priority = 4,
                     potentialImpact = null,
                     actionRequired = "Avaliar ETFs internacionais ou ADRs"
@@ -104,10 +104,10 @@ class RecommendationEngine {
                     Recommendation(
                         type = RecommendationType.REDUCE_RISK,
                         title = "Risco Muito Alto",
-                        description = "Sua carteira apresenta nível de risco muito elevado. Considere rebalancear.",
+                        description = "Sua carteira apresenta nÃ­vel de risco muito elevado. Considere rebalancear.",
                         priority = 1,
                         potentialImpact = riskMetrics.maxDrawdown,
-                        actionRequired = "Reduzir exposição a ativos volatáteis e aumentar ativos de menor risco"
+                        actionRequired = "Reduzir exposiÃ§Ã£o a ativos volatÃ¡teis e aumentar ativos de menor risco"
                     )
                 )
             }
@@ -116,7 +116,7 @@ class RecommendationEngine {
                     Recommendation(
                         type = RecommendationType.REDUCE_RISK,
                         title = "Risco Alto",
-                        description = "O nível de risco da carteira está elevado. Monitore de perto.",
+                        description = "O nÃ­vel de risco da carteira estÃ¡ elevado. Monitore de perto.",
                         priority = 2,
                         potentialImpact = riskMetrics.maxDrawdown,
                         actionRequired = "Considerar hedges ou ativos defensivos"
@@ -129,10 +129,10 @@ class RecommendationEngine {
                         Recommendation(
                             type = RecommendationType.REBALANCE,
                             title = "Otimizar Retorno/Risco",
-                            description = "Relação retorno/risco pode ser melhorada com rebalanceamento.",
+                            description = "RelaÃ§Ã£o retorno/risco pode ser melhorada com rebalanceamento.",
                             priority = 5,
                             potentialImpact = null,
-                            actionRequired = "Revisar alocação e considerar ativos com melhor Sharpe"
+                            actionRequired = "Revisar alocaÃ§Ã£o e considerar ativos com melhor Sharpe"
                         )
                     )
                 }
@@ -140,16 +140,16 @@ class RecommendationEngine {
             else -> {}
         }
 
-        // VaR warning
+
         if (riskMetrics.var95.toDouble() > 10) {
             recommendations.add(
                 Recommendation(
                     type = RecommendationType.WATCH_LIST,
                     title = "Value at Risk Elevado",
-                    description = "VaR de 95% indica perda potencial significativa no pior cenário.",
+                    description = "VaR de 95% indica perda potencial significativa no pior cenÃ¡rio.",
                     priority = 2,
                     potentialImpact = riskMetrics.var95,
-                    actionRequired = "Preparar estratégia de stop-loss ou proteção"
+                    actionRequired = "Preparar estratÃ©gia de stop-loss ou proteÃ§Ã£o"
                 )
             )
         }
@@ -164,7 +164,7 @@ class RecommendationEngine {
             return recommendations
         }
 
-        // Check single asset concentration
+
         val maxConcentration = portfolio.assets.maxOfOrNull { asset ->
             val value = asset.currentValue ?: BigDecimal.ZERO
             if (portfolio.totalCurrentValue.compareTo(BigDecimal.ZERO) > 0) {
@@ -177,11 +177,11 @@ class RecommendationEngine {
                 recommendations.add(
                     Recommendation(
                         type = RecommendationType.DIVERSIFY,
-                        title = "Concentração Excessiva",
-                        description = "Um único ativo representa mais de 50% da carteira.",
+                        title = "ConcentraÃ§Ã£o Excessiva",
+                        description = "Um Ãºnico ativo representa mais de 50% da carteira.",
                         priority = 1,
                         potentialImpact = null,
-                        actionRequired = "Reduzir posição do ativo mais concentrado"
+                        actionRequired = "Reduzir posiÃ§Ã£o do ativo mais concentrado"
                     )
                 )
             }
@@ -189,7 +189,7 @@ class RecommendationEngine {
                 recommendations.add(
                     Recommendation(
                         type = RecommendationType.DIVERSIFY,
-                        title = "Concentração Alta",
+                        title = "ConcentraÃ§Ã£o Alta",
                         description = "Um ativo representa uma parte significativa da carteira.",
                         priority = 3,
                         potentialImpact = null,
@@ -199,7 +199,7 @@ class RecommendationEngine {
             }
         }
 
-        // Top 3 concentration
+
         val top3Value = portfolio.assets.sortedByDescending { it.currentValue ?: BigDecimal.ZERO }
             .take(3)
             .sumOf { it.currentValue ?: BigDecimal.ZERO }
@@ -212,7 +212,7 @@ class RecommendationEngine {
             recommendations.add(
                 Recommendation(
                     type = RecommendationType.DIVERSIFY,
-                    title = "Concentração nos Top 3",
+                    title = "ConcentraÃ§Ã£o nos Top 3",
                     description = "Os 3 maiores ativos representam ${top3Percent.toInt()}% da carteira.",
                     priority = 2,
                     potentialImpact = null,
@@ -230,26 +230,26 @@ class RecommendationEngine {
     ): List<Recommendation> {
         val recommendations = mutableListOf<Recommendation>()
 
-        // Analyze each asset in portfolio
+
         for (asset in portfolio.assets) {
             val market = marketData[asset.symbol]
 
             if (market != null) {
-                // Strong buy signal (significant drop)
+
                 if (market.changePercent != null && market.changePercent.toDouble() < -10) {
                     recommendations.add(
                         Recommendation(
                             type = RecommendationType.BUY_OPPORTUNITY,
                             title = "Oportunidade de Compra: ${asset.symbol}",
-                            description = "${asset.symbol} caiu ${market.changePercent.abs().toDouble()}%. Potencial de recuperação.",
+                            description = "${asset.symbol} caiu ${market.changePercent.abs().toDouble()}%. Potencial de recuperaÃ§Ã£o.",
                             priority = 4,
                             potentialImpact = market.changePercent.abs(),
-                            actionRequired = "Avaliar compra adicional se alinhado com estratégia"
+                            actionRequired = "Avaliar compra adicional se alinhado com estratÃ©gia"
                         )
                     )
                 }
 
-                // Sell warning (significant gain)
+
                 if (market.changePercent != null && market.changePercent.toDouble() > 20) {
                     recommendations.add(
                         Recommendation(
@@ -264,16 +264,16 @@ class RecommendationEngine {
                 }
             }
 
-            // Check if asset has no market data (potential issue)
+
             if (market == null) {
                 recommendations.add(
                     Recommendation(
                         type = RecommendationType.WATCH_LIST,
                         title = "Sem Dados de Mercado: ${asset.symbol}",
-                        description = "${asset.symbol} não possui dados de mercado atualizados.",
+                        description = "${asset.symbol} nÃ£o possui dados de mercado atualizados.",
                         priority = 6,
                         potentialImpact = null,
-                        actionRequired = "Verificar se ativo ainda está ativo na B3"
+                        actionRequired = "Verificar se ativo ainda estÃ¡ ativo na B3"
                     )
                 )
             }
@@ -285,7 +285,7 @@ class RecommendationEngine {
     private fun analyzeLiquidity(portfolio: PortfolioData): List<Recommendation> {
         val recommendations = mutableListOf<Recommendation>()
 
-        // Illiquid assets analysis
+
         val illiquidTypes = listOf("FII", "BOND", "FUND")
         val illiquidValue = portfolio.assets
             .filter { illiquidTypes.contains(it.assetType) }
@@ -303,10 +303,10 @@ class RecommendationEngine {
                     Recommendation(
                         type = RecommendationType.INCREASE_LIQUIDITY,
                         title = "Liquidez Baixa",
-                        description = "${illiquidPercent.toInt()}% da carteira está em ativos ilíquidos.",
+                        description = "${illiquidPercent.toInt()}% da carteira estÃ¡ em ativos ilÃ­quidos.",
                         priority = 3,
                         potentialImpact = null,
-                        actionRequired = "Considerar aumentar posição em ativos mais líquidos"
+                        actionRequired = "Considerar aumentar posiÃ§Ã£o em ativos mais lÃ­quidos"
                     )
                 )
             }

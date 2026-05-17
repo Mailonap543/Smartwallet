@@ -18,7 +18,7 @@ data class NewsItem(
     val publishedAt: Instant,
     val url: String? = null,
     @Column(name = "symbols")
-    val symbols: String? = null, // comma-separated
+    val symbols: String? = null,
     @Column(name = "created_at")
     val createdAt: Instant? = null
 )

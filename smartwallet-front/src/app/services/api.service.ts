@@ -116,6 +116,16 @@ export interface Recommendation {
   actionRequired: string;
 }
 
+export interface JarvisChatRequest {
+  message: string;
+  sessionId?: string;
+}
+
+export interface JarvisChatResponse {
+  reply: string;
+  sessionId: string;
+}
+
 export interface MarketQuote {
   symbol: string;
   name: string;
@@ -339,5 +349,10 @@ export class ApiService {
   getMarketStatus(): Observable<any> {
     return this.http.get<ApiResponse<any>>(\`\${this.baseUrl}/market/status\`, { headers: this.getAuthHeaders() })
       .pipe(map((res: ApiResponse<any>) => res.data as any));
+  }
+
+  chatWithJarvis(payload: JarvisChatRequest): Observable<JarvisChatResponse> {
+    return this.http.post<ApiResponse<JarvisChatResponse>>(\`\${this.baseUrl}/ai/chat\`, payload, { headers: this.getAuthHeaders() })
+      .pipe(map((res: ApiResponse<JarvisChatResponse>) => res.data as JarvisChatResponse));
   }
 }

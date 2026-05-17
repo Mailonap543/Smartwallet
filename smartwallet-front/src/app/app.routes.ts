@@ -22,6 +22,7 @@ export const routes: Routes = [
   { path: 'calculators', canActivate: [authGuard], loadComponent: () => import('./pages/calculators/calculators.component').then(m => m.CalculatorsComponent) },
   
   { path: 'ai-analysis', canActivate: [authGuard], loadComponent: () => import('./pages/ai-analysis/ai-analysis.component').then(m => m.AiAnalysisComponent) },
+  { path: 'ai', canActivate: [authGuard], loadComponent: () => import('./pages/ai-chat/ai-chat.component').then(m => m.AiChatComponent) },
   { path: 'subscription', canActivate: [authGuard], loadComponent: () => import('./pages/subscription/subscription.component').then(m => m.SubscriptionComponent) },
   { path: '**', redirectTo: 'dashboard' }
 ];

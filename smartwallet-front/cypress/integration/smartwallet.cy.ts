@@ -1,4 +1,4 @@
-/// <reference types="cypress" />
+﻿
 
 declare global {
   namespace Cypress {
@@ -20,13 +20,13 @@ beforeEach(() => {
 })
 
 describe('SmartWallet E2E Tests', () => {
-  describe('Autenticação', () => {
-    it('deve exibir página de login', () => {
+  describe('AutenticaÃ§Ã£o', () => {
+    it('deve exibir pÃ¡gina de login', () => {
       cy.visit('/login')
       cy.contains('SmartWallet').should('be.visible')
     })
 
-    it('deve validar campos obrigatórios', () => {
+    it('deve validar campos obrigatÃ³rios', () => {
       cy.visit('/login')
       cy.get('button[type="submit"]').click()
       cy.contains('preencha todos os campos').should('be.visible')
@@ -34,14 +34,14 @@ describe('SmartWallet E2E Tests', () => {
   })
 
   describe('Busca de Ativos', () => {
-    it('deve carregar página de ativos', () => {
+    it('deve carregar pÃ¡gina de ativos', () => {
       cy.visit('/assets')
       cy.contains('Ativos').should('be.visible')
     })
   })
 
   describe('Rankings', () => {
-    it('deve carregar página de rankings', () => {
+    it('deve carregar pÃ¡gina de rankings', () => {
       cy.visit('/market/rankings')
       cy.contains('Rankings').should('be.visible')
     })
@@ -53,7 +53,7 @@ describe('SmartWallet E2E Tests', () => {
   })
 
   describe('Comparador', () => {
-    it('deve carregar página de comparador', () => {
+    it('deve carregar pÃ¡gina de comparador', () => {
       cy.visit('/market/compare')
       cy.contains('Comparar').should('be.visible')
     })
@@ -66,7 +66,7 @@ describe('SmartWallet E2E Tests', () => {
   })
 
   describe('Calculadoras', () => {
-    it('deve carregar página de calculadoras', () => {
+    it('deve carregar pÃ¡gina de calculadoras', () => {
       cy.visit('/calculators')
       cy.contains('Calculadoras').should('be.visible')
     })
@@ -79,12 +79,12 @@ describe('SmartWallet E2E Tests', () => {
   })
 
   describe('Acessibilidade', () => {
-    it('deve carregar página inicial', () => {
+    it('deve carregar pÃ¡gina inicial', () => {
       cy.visit('/')
       cy.get('body').should('exist')
     })
 
-    it('deve ter links de navegação', () => {
+    it('deve ter links de navegaÃ§Ã£o', () => {
       cy.visit('/')
       cy.get('a[href]').should('have.length.greaterThan', 0)
     })

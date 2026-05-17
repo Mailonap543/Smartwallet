@@ -55,6 +55,8 @@ public class TransactionService {
         transaction = transactionRepository.save(transaction);
         log.info("Transaction created: {} - {} for asset: {}", request.transactionType(), transaction.getId(), asset.getSymbol());
 
+        recalculateAssetFromTransactions(asset);
+
         return TransactionResponse.fromEntity(transaction);
     }
 
@@ -109,6 +111,8 @@ public class TransactionService {
         transaction = transactionRepository.save(transaction);
         log.info("Transaction updated: {} for asset: {}", transactionId, transaction.getAsset().getSymbol());
 
+        recalculateAssetFromTransactions(transaction.getAsset());
+
         return TransactionResponse.fromEntity(transaction);
     }
 
@@ -117,9 +121,12 @@ public class TransactionService {
         validateUserExists(userId);
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Transação não encontrada"));
-        validateAssetAccess(transaction.getAsset(), userId);
+        Asset asset = transaction.getAsset();
+        validateAssetAccess(asset, userId);
         transactionRepository.delete(transaction);
-        log.info("Transaction deleted: {} for asset: {}", transactionId, transaction.getAsset().getSymbol());
+        log.info("Transaction deleted: {} for asset: {}", transactionId, asset.getSymbol());
+
+        recalculateAssetFromTransactions(asset);
     }
 
     @Transactional

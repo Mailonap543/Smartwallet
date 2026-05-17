@@ -1,4 +1,4 @@
-package com.smartwallet.ai.service
+﻿package com.smartwallet.ai.service
 
 import com.smartwallet.ai.model.*
 import org.slf4j.LoggerFactory
@@ -71,11 +71,12 @@ class RiskAnalysisService {
     private fun calculateSharpeRatio(returns: List<BigDecimal>, volatility: BigDecimal): BigDecimal {
         if (volatility.compareTo(BigDecimal.ZERO) == 0) return BigDecimal.ZERO
 
-        val riskFreeRate = BigDecimal.valueOf(0.12) // 12% annual for Brazil
+        val riskFreeRate = BigDecimal.valueOf(0.12)
+
         val meanReturn = if (returns.isNotEmpty()) {
             returns.reduce(BigDecimal::add).divide(
                 BigDecimal.valueOf(returns.size.toLong()), 6, RoundingMode.HALF_UP
-            ).multiply(BigDecimal.valueOf(252)) // Annualized
+            ).multiply(BigDecimal.valueOf(252))
         } else BigDecimal.ZERO
 
         val excessReturn = meanReturn.subtract(riskFreeRate)
@@ -88,13 +89,9 @@ class RiskAnalysisService {
 
     private fun estimateBeta(returns: List<BigDecimal>, marketData: Map<String, List<BigDecimal>>?): BigDecimal {
         if (marketData == null || marketData.isNullOrEmpty()) {
-            return BigDecimal.valueOf(1.0) // Default market beta
+            return BigDecimal.ONE
         }
-
-        val portfolioVariance = calculateVariance(returns)
-        if (portfolioVariance.compareTo(BigDecimal.ZERO) == 0) return BigDecimal.ONE
-
-        return BigDecimal.ONE // Simplified - would need market returns for proper calculation
+        return BigDecimal.ONE
     }
 
     private fun calculateMaxDrawdown(returns: List<BigDecimal>): BigDecimal {
@@ -138,7 +135,7 @@ class RiskAnalysisService {
     ): Int {
         var score = 50
 
-        // Volatility contribution (0-25 points)
+
         val volScore = when {
             volatility.toDouble() < 5 -> 0
             volatility.toDouble() < 15 -> 10
@@ -147,7 +144,7 @@ class RiskAnalysisService {
         }
         score += volScore
 
-        // Sharpe ratio contribution (-15 to 15 points)
+
         val sharpeScore = when {
             sharpe.toDouble() > 2 -> -15
             sharpe.toDouble() > 1 -> -10
@@ -156,7 +153,7 @@ class RiskAnalysisService {
         }
         score += sharpeScore
 
-        // Max drawdown contribution (0-20 points)
+
         val ddScore = when {
             maxDrawdown.toDouble() < 5 -> 0
             maxDrawdown.toDouble() < 10 -> 5
@@ -165,7 +162,7 @@ class RiskAnalysisService {
         }
         score += ddScore
 
-        // Beta contribution (0-20 points)
+
         val betaScore = when {
             beta.toDouble() < 0.8 -> 0
             beta.toDouble() < 1.2 -> 10

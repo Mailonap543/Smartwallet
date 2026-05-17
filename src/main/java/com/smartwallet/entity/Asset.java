@@ -96,6 +96,22 @@ public class Asset {
         updatedAt = LocalDateTime.now();
     }
 
+    public String getSymbol() { return symbol; }
+    public String getName() { return name; }
+    public AssetType getAssetType() { return assetType; }
+    public BigDecimal getPurchasePrice() { return purchasePrice; }
+    public BigDecimal getAveragePrice() { return averagePrice; }
+    public BigDecimal getCurrentPrice() { return currentPrice; }
+    public BigDecimal getQuantity() { return quantity; }
+    public LocalDate getPurchaseDate() { return purchaseDate; }
+    public BigDecimal getTotalInvested() { return totalInvested; }
+    public BigDecimal getCurrentValue() { return currentValue; }
+    public BigDecimal getProfitLoss() { return profitLoss; }
+    public BigDecimal getProfitLossPercentage() { return profitLossPercentage; }
+    public BigDecimal getDayHigh() { return dayHigh; }
+    public BigDecimal getDayLow() { return dayLow; }
+    public Long getDayVolume() { return dayVolume; }
+
     public void calculateProfitLoss() {
         if (currentValue != null && totalInvested != null) {
             profitLoss = currentValue.subtract(totalInvested);

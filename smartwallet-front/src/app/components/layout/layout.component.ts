@@ -29,6 +29,7 @@ import { SearchBarComponent } from '../search-bar/search-bar.component';
             @if (menuOpen()) {
               <div class="dropdown">
                 <a routerLink="/dashboard">Dashboard</a>
+                <a routerLink="/ai">Jarvis</a>
                 <a routerLink="/ai-analysis">Análise IA</a>
                 <a routerLink="/subscription">Plano</a>
                 <button (click)="logout()">Sair</button>
@@ -79,6 +80,10 @@ import { SearchBarComponent } from '../search-bar/search-bar.component';
 
           <div class="nav-divider"></div>
 
+          <a routerLink="/ai" routerLinkActive="active" class="nav-item">
+            <span class="nav-icon">🪙</span>
+            <span class="nav-label">Jarvis</span>
+          </a>
           <a routerLink="/ai-analysis" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">🤖</span>
             <span class="nav-label">IA Análise</span>
