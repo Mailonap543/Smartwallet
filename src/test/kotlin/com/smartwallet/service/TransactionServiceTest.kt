@@ -61,7 +61,7 @@ class TransactionServiceTest {
             listOf(savedTransaction!!)
         }
 
-        val response = transactionService.createTransaction(userId, assetId, request)
+        transactionService.createTransaction(userId, assetId, request)
 
         verify(assetRepository).save(asset)
         assertTrue(asset.quantity.compareTo(BigDecimal("10")) == 0)
