@@ -87,7 +87,7 @@ class TransactionServiceTest {
         whenever(transactionRepository.findById(transactionId)).thenReturn(java.util.Optional.of(transaction))
         whenever(transactionRepository.save(any())).thenAnswer { it.getArgument(0) }
 
-        val response = transactionService.updateTransaction(userId, transactionId, request)
+        transactionService.updateTransaction(userId, transactionId, request)
 
         verify(assetRepository).save(asset)
     }
