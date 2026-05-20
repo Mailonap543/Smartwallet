@@ -1,0 +1,10 @@
+ALTER TABLE portfolio_assets ADD COLUMN IF NOT EXISTS average_price NUMERIC(19, 4);
+ALTER TABLE portfolio_assets ADD COLUMN IF NOT EXISTS current_value NUMERIC(19, 4);
+ALTER TABLE portfolio_assets ADD COLUMN IF NOT EXISTS total_invested NUMERIC(19, 4);
+ALTER TABLE portfolio_assets ADD COLUMN IF NOT EXISTS profit_loss NUMERIC(19, 4);
+ALTER TABLE portfolio_assets ADD COLUMN IF NOT EXISTS profit_loss_percentage NUMERIC(7, 4);
+ALTER TABLE portfolio_assets ADD COLUMN IF NOT EXISTS day_high NUMERIC(19, 4);
+ALTER TABLE portfolio_assets ADD COLUMN IF NOT EXISTS day_low NUMERIC(19, 4);
+ALTER TABLE portfolio_assets ADD COLUMN IF NOT EXISTS day_volume BIGINT;
+ALTER TABLE portfolio_assets ADD COLUMN IF NOT EXISTS market_cap NUMERIC(24, 4);
+ALTER TABLE portfolio_assets ADD COLUMN IF NOT EXISTS last_quote_at TIMESTAMP;

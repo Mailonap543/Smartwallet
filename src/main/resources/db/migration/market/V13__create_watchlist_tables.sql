@@ -1,4 +1,4 @@
--- Watchlist tables
+-- V13: Watchlist tables
 CREATE TABLE IF NOT EXISTS watchlists (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -23,13 +23,14 @@ CREATE INDEX idx_watchlist_items_watchlist_id ON watchlist_items(watchlist_id);
 
 -- Alertas table
 CREATE TABLE IF NOT EXISTS alerts (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    asset_symbol VARCHAR(20) NOT NULL,
-    alert_type VARCHAR(50) NOT NULL,
-    target_value DECIMAL(18,4),
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+     id BIGSERIAL PRIMARY KEY,
+     user_id BIGINT NOT NULL,
+     asset_symbol VARCHAR(20) NOT NULL,
+     alert_type VARCHAR(50) NOT NULL,
+     condition_type VARCHAR(50) NOT NULL,
+     target_value DECIMAL(18,4),
+     is_active BOOLEAN DEFAULT TRUE,
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_alerts_user_id ON alerts(user_id);

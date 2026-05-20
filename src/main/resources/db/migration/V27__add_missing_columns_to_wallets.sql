@@ -1,0 +1,2 @@
+ALTER TABLE wallets ADD COLUMN IF NOT EXISTS total_invested NUMERIC(15, 2);
+ALTER TABLE wallets ADD COLUMN IF NOT EXISTS total_profit_loss NUMERIC(15, 2);

@@ -155,20 +155,20 @@ class AIService(
         )
     }
 
-    private fun toAssetData(asset: Asset): AssetData {
-        return AssetData(
-            symbol = asset.getSymbol(),
-            name = asset.getName() ?: asset.getSymbol(),
-            quantity = asset.getQuantity() ?: BigDecimal.ZERO,
-            currentPrice = asset.getCurrentPrice(),
-            averagePrice = asset.getAveragePrice(),
-            assetType = mapAssetType(asset.getAssetType()),
-            currentValue = asset.getCurrentValue(),
-            profitLoss = asset.getProfitLoss(),
-            profitLossPercentage = asset.getProfitLossPercentage(),
-            purchaseDate = asset.getPurchaseDate()
-        )
-    }
+     private fun toAssetData(asset: Asset): AssetData {
+         return AssetData(
+             symbol = asset.symbol,
+             name = asset.name ?: asset.symbol,
+             quantity = asset.quantity ?: BigDecimal.ZERO,
+             currentPrice = asset.currentPrice,
+             averagePrice = asset.averagePrice,
+             assetType = mapAssetType(asset.assetType),
+             currentValue = asset.currentValue,
+             profitLoss = asset.profitLoss,
+             profitLossPercentage = asset.profitLossPercentage,
+             purchaseDate = asset.purchaseDate
+         )
+     }
 
     private fun mapAssetType(type: AssetType?): String {
         return when (type) {

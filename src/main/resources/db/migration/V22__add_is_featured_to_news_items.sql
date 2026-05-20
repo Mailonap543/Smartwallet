@@ -1,0 +1,1 @@
+ALTER TABLE news_items ADD COLUMN is_featured BOOLEAN DEFAULT FALSE;
