@@ -17,7 +17,15 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
     "com.smartwallet.notification",
     "com.smartwallet.portfolio.model"
 })
-@EnableJpaRepositories(basePackages = "com.smartwallet")
+@EnableJpaRepositories(basePackages = {
+    "com.smartwallet.repository",
+    "com.smartwallet.market.repository",
+    "com.smartwallet.alert.repository",
+    "com.smartwallet.news.repository",
+    "com.smartwallet.notification",
+    "com.smartwallet.watchlist.repository",
+    "com.smartwallet.audit.repository"
+})
 public class SmartwalletApplication {
     public static void main(String[] args) {
         SpringApplication.run(SmartwalletApplication.class, args);

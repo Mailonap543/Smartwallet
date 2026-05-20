@@ -1,4 +1,4 @@
--- V1__create_market_tables.sql
+-- V12__create_market_tables.sql
 -- Asset Categories and Market Data Tables
 
 -- Asset Categories

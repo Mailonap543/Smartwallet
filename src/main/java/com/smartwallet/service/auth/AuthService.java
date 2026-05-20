@@ -32,49 +32,32 @@ public class AuthService {
     @Transactional
     public AuthResponse login(LoginRequest request) {
         logger.info("Login attempt for: {}", request.email());
-        
+
         User user = userRepository.findByEmail(request.email())
                 .orElse(null);
-        
+
         if (user == null) {
             logger.warn("User not found: {}", request.email());
             throw new com.smartwallet.exception.BusinessException("Credenciais inválidas", "INVALID_CREDENTIALS");
         }
-        
+
         String storedPassword = user.getPasswordHash();
         logger.debug("Stored password hash length: {}", storedPassword != null ? storedPassword.length() : 0);
-        
+
         boolean passwordMatches = passwordEncoder.matches(request.password(), storedPassword);
         logger.debug("Password match result: {}", passwordMatches);
-        
+
         if (!passwordMatches) {
             logger.warn("Invalid password for user: {}", request.email());
             throw new com.smartwallet.exception.BusinessException("Credenciais inválidas", "INVALID_CREDENTIALS");
         }
 
         logger.info("User logged in: {}", user.getEmail());
-        
-        String accessToken = jwtUtils.generateToken(user.getEmail());
-        String refreshToken = jwtUtils.generateRefreshToken(user.getEmail());
-        
-        logger.debug("Tokens generated successfully");
-        
-        RefreshToken tokenEntity = RefreshToken.builder()
-                .token(refreshToken)
-                .user(user)
-                .expiresAt(LocalDateTime.now().plusSeconds(jwtUtils.getRefreshExpirationMs() / 1000))
-                .build();
-        refreshTokenRepository.save(tokenEntity);
-        
-        logger.debug("Refresh token saved to database");
-        
-        return new AuthResponse(
-                accessToken,
-                refreshToken,
-                "Bearer",
-                jwtUtils.getJwtExpirationMs(),
-                new AuthResponse.UserInfo(user.getId(), user.getEmail(), user.getFullName())
-        );
+
+        // REMOVE TOKENS ANTERIORES ANTES DE GERAR E SALVAR O NOVO!
+        refreshTokenRepository.deleteByUser(user);
+
+        return generateAuthResponse(user);
     }
 
     @Transactional
