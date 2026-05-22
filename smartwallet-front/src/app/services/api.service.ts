@@ -242,6 +242,25 @@ export class ApiService {
       );
   }
 
+  getWalletAssets(walletId: number): Observable<Asset[]> {
+    return this.getAssets(walletId);
+  }
+
+  addAsset(walletId: number, assetData: any): Observable<Asset> {
+    return this.http.post<ApiResponse<Asset>>(`${this.baseUrl}/portfolio/wallets/${walletId}/assets`, assetData, { headers: this.getAuthHeaders() })
+      .pipe(map((res: ApiResponse<Asset>) => res.data as Asset));
+  }
+
+  updateAssetPrice(assetId: number, price: number): Observable<Asset> {
+    return this.http.put<ApiResponse<Asset>>(`${this.baseUrl}/portfolio/assets/${assetId}/price`, { price }, { headers: this.getAuthHeaders() })
+      .pipe(map((res: ApiResponse<Asset>) => res.data as Asset));
+  }
+
+  deleteAsset(assetId: number): Observable<void> {
+    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/portfolio/assets/${assetId}`, { headers: this.getAuthHeaders() })
+      .pipe(map((res: ApiResponse<void>) => res.data as void));
+  }
+
   getAssetBySymbol(symbol: string): Observable<Asset> {
     return this.http.get<ApiResponse<Asset>>(`${this.baseUrl}/market/assets/${symbol}`)
       .pipe(
@@ -447,6 +466,11 @@ export class ApiService {
       );
   }
 
+  getPortfolioSummary(): Observable<PortfolioSummary> {
+    return this.http.get<ApiResponse<PortfolioSummary>>(`${this.baseUrl}/portfolio/summary`, { headers: this.getAuthHeaders() })
+      .pipe(map((res: ApiResponse<PortfolioSummary>) => res.data as PortfolioSummary));
+  }
+
   getRiskMetrics(): Observable<RiskMetrics> {
     return this.http.get<ApiResponse<RiskMetrics>>(`${this.baseUrl}/ai/risk`)
       .pipe(
@@ -517,5 +541,15 @@ export class ApiService {
         map((res: ApiResponse<any>) => res.data),
         catchError(err => this.handleError(err))
       );
+  }
+
+  getFavorites(): Observable<any[]> {
+    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/favorites`, { headers: this.getAuthHeaders() })
+      .pipe(map((res: ApiResponse<any[]>) => res.data as any[]));
+  }
+
+  removeFavorite(symbol: string): Observable<any> {
+    return this.http.delete<ApiResponse<any>>(`${this.baseUrl}/market/favorites/${symbol}`, { headers: this.getAuthHeaders() })
+      .pipe(map((res: ApiResponse<any>) => res.data));
   }
 }

@@ -104,7 +104,7 @@ public class AuthService {
             throw new BusinessException("Refresh token inválido", "INVALID_REFRESH_TOKEN");
         }
 
-        // Verifica se é refresh token
+        
         boolean isRefresh = jwtUtils.isRefreshToken(refreshToken);
         logger.info("🔄 [RefreshToken] É refresh token: {}", isRefresh);
 
