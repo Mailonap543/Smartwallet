@@ -15,6 +15,7 @@ import java.util.Date;
 public class JwtUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
+    private static final String TOKEN_TYPE_REFRESH = "refresh";
 
     @Value("${jwt.secret}")
     private String jwtSecret;
@@ -64,7 +65,7 @@ public class JwtUtils {
                 .subject(email)
                 .issuedAt(now)
                 .expiration(expiryDate)
-                .claim("type", "refresh")
+                .claim("type", TOKEN_TYPE_REFRESH)
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -101,7 +102,7 @@ public class JwtUtils {
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
-            boolean isRefresh = "refresh".equals(claims.get("type"));
+            boolean isRefresh = TOKEN_TYPE_REFRESH.equals(claims.get("type"));
             logger.debug("🔍 [IsRefreshToken] isRefresh: {}", isRefresh);
             return isRefresh;
         } catch (Exception e) {
@@ -117,7 +118,7 @@ public class JwtUtils {
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
-            return !"refresh".equals(claims.get("type"));
+            return !TOKEN_TYPE_REFRESH.equals(claims.get("type"));
         } catch (Exception e) {
             logger.error("❌ [IsAccessToken] Erro: {}", e.getMessage());
             return false;

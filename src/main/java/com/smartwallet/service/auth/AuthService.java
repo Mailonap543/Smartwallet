@@ -93,7 +93,7 @@ public class AuthService {
         String refreshToken = request.refreshToken();
 
         logger.info("🔄 [RefreshToken] Token recebido: {}",
-                refreshToken != null ? refreshToken.substring(0, Math.min(20, refreshToken.length())) + "..." : "NULL");
+            "entrada processada");
 
         // Valida o JWT
         boolean isTokenValid = jwtUtils.validateToken(refreshToken);
@@ -193,8 +193,8 @@ public class AuthService {
         String accessToken = jwtUtils.generateToken(user.getEmail());
         String refreshToken = jwtUtils.generateRefreshToken(user.getEmail());
 
-        logger.debug("   - Access Token: {} ...", accessToken.substring(0, Math.min(20, accessToken.length())));
-        logger.debug("   - Refresh Token: {} ...", refreshToken.substring(0, Math.min(20, refreshToken.length())));
+    logger.debug("   - Access Token gerado");
+    logger.debug("   - Refresh Token gerado");
 
         RefreshToken tokenEntity = RefreshToken.builder()
                 .token(refreshToken)

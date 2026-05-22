@@ -67,7 +67,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidJsonException(HttpMessageNotReadableException ex) {
+    public ResponseEntity<ErrorResponse> handleInvalidJsonException() {
         ErrorResponse error = new ErrorResponse(
             false,
             "Dados invalidos ou incompletos",
