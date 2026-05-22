@@ -27,6 +27,10 @@ public class WalletService {
 
     @Transactional
     public WalletResponse createWallet(Long userId, CreateWalletRequest request) {
+        if (userId == null) {
+            throw new BusinessException("ID do usuario nao fornecido", "USER_ID_NULL");
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
@@ -36,7 +40,7 @@ public class WalletService {
 
         Wallet wallet = Wallet.builder()
                 .user(user)
-                .name(request.name())
+                .name(request.name().trim())
                 .description(request.description())
                 .totalBalance(BigDecimal.ZERO)
                 .totalInvested(BigDecimal.ZERO)
@@ -46,7 +50,18 @@ public class WalletService {
         wallet = walletRepository.save(wallet);
         log.info("Wallet created: {} for user: {}", wallet.getId(), userId);
 
-        return WalletResponse.fromEntity(wallet);
+        return new WalletResponse(
+                wallet.getId(),
+                wallet.getName(),
+                wallet.getDescription(),
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                0,
+                wallet.getCreatedAt(),
+                wallet.getUpdatedAt()
+        );
     }
 
     @Transactional(readOnly = true)

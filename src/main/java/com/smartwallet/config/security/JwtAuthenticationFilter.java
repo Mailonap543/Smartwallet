@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -35,6 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String method = request.getMethod();
         
         log.debug("JWT Filter: {} {}", method, path);
+        SecurityContextHolder.clearContext();
 
         if ("OPTIONS".equalsIgnoreCase(method) || 
             path.startsWith("/api/auth/") || 
@@ -49,7 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = extractJwtFromRequest(request);
             log.debug("JWT extracted: {}", jwt != null ? "present" : "null");
 
-            if (StringUtils.hasText(jwt) && jwtUtils.validateToken(jwt)) {
+            if (StringUtils.hasText(jwt) && jwtUtils.validateToken(jwt) && !jwtUtils.isRefreshToken(jwt)) {
                 String email = jwtUtils.getEmailFromToken(jwt);
                 log.debug("Token valid for email: {}", email);
                 
@@ -60,12 +62,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                SecurityContext context = SecurityContextHolder.createEmptyContext();
+                context.setAuthentication(authentication);
+                SecurityContextHolder.setContext(context);
                 log.debug("User authenticated: {}", email);
+            } else if (StringUtils.hasText(jwt) && jwtUtils.isRefreshToken(jwt)) {
+                log.warn("Refresh token recebido como Authorization Bearer em rota protegida");
             } else {
                 log.debug("No valid JWT token - request will be rejected by Spring Security");
             }
         } catch (Exception e) {
+            SecurityContextHolder.clearContext();
             log.error("JWT Filter ERROR: {} - {}", e.getClass().getSimpleName(), e.getMessage(), e);
         }
 

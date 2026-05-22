@@ -20,33 +20,43 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
-        log.debug("Register request received");
+        log.info("🔐 [Register] Recebido: {}", request.email());
         AuthResponse response = authService.register(request);
+        log.info("✅ [Register] Sucesso: {}", request.email());
         return ResponseEntity.ok(ApiResponse.success("Usuário registrado com sucesso", response));
     }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
-        log.debug("Login request received");
+        log.info("🔐 [Login] Tentativa para: {}", request.email());
         AuthResponse response = authService.login(request);
-        log.debug("Login successful");
+        log.info("✅ [Login] Sucesso: {}", request.email());
         return ResponseEntity.ok(ApiResponse.success("Login realizado com sucesso", response));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponse>> refresh(@Valid @RequestBody RefreshTokenRequest request) {
-        AuthResponse response = authService.refreshToken(request);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        log.info("🔄 [Refresh] Iniciando...");
+        try {
+            AuthResponse response = authService.refreshToken(request);
+            log.info("✅ [Refresh] Sucesso");
+            return ResponseEntity.ok(ApiResponse.success("Token refreshed", response));
+        } catch (Exception e) {
+            log.error(" [Refresh] Erro: {}", e.getMessage());
+            return ResponseEntity.status(401).body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @PostMapping("/forgot-password")
     public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        log.info("📧 [ForgotPassword] Solicitação para: {}", request.email());
         authService.forgotPassword(request);
         return ResponseEntity.ok(ApiResponse.success("Email de recuperação enviado", null));
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        log.info("🔑 [ResetPassword] Iniciando...");
         authService.resetPassword(request);
         return ResponseEntity.ok(ApiResponse.success("Senha redefinida com sucesso", null));
     }

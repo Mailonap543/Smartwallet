@@ -4,6 +4,7 @@ import com.smartwallet.dto.ApiResponse;
 import com.smartwallet.dto.asset.*;
 import com.smartwallet.dto.transaction.*;
 import com.smartwallet.dto.wallet.*;
+import com.smartwallet.security.AuthUserResolver;
 import com.smartwallet.security.CustomUserDetails;
 import com.smartwallet.service.portfolio.PortfolioService;
 import jakarta.validation.Valid;
@@ -20,22 +21,22 @@ import java.util.List;
 public class PortfolioController {
 
     private final PortfolioService portfolioService;
+    private final AuthUserResolver authUserResolver;
 
     @PostMapping("/wallets")
     public ResponseEntity<ApiResponse<WalletResponse>> createWallet(
             @AuthenticationPrincipal CustomUserDetails user,
             @Valid @RequestBody CreateWalletRequest request) {
-        WalletResponse response = portfolioService.createWallet(user.getId(), request);
+        CustomUserDetails currentUser = authUserResolver.currentUser();
+        WalletResponse response = portfolioService.createWallet(currentUser.getId(), request);
         return ResponseEntity.ok(ApiResponse.success("Carteira criada com sucesso", response));
     }
 
     @GetMapping("/wallets")
     public ResponseEntity<ApiResponse<List<WalletResponse>>> getWallets(
             @AuthenticationPrincipal CustomUserDetails user) {
-        if (user == null) {
-            return ResponseEntity.status(401).body(ApiResponse.success("Usuário não autenticado", null));
-        }
-        List<WalletResponse> response = portfolioService.getUserWallets(user.getId());
+        CustomUserDetails currentUser = authUserResolver.currentUser();
+        List<WalletResponse> response = portfolioService.getUserWallets(currentUser.getId());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -43,7 +44,8 @@ public class PortfolioController {
     public ResponseEntity<ApiResponse<WalletResponse>> getWallet(
             @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable Long walletId) {
-        WalletResponse response = portfolioService.getWalletById(walletId, user.getId());
+        CustomUserDetails currentUser = authUserResolver.currentUser();
+        WalletResponse response = portfolioService.getWalletById(walletId, currentUser.getId());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -52,7 +54,8 @@ public class PortfolioController {
             @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable Long walletId,
             @Valid @RequestBody CreateAssetRequest request) {
-        AssetResponse response = portfolioService.addAsset(walletId, user.getId(), request);
+        CustomUserDetails currentUser = authUserResolver.currentUser();
+        AssetResponse response = portfolioService.addAsset(walletId, currentUser.getId(), request);
         return ResponseEntity.ok(ApiResponse.success("Ativo adicionado com sucesso", response));
     }
 
@@ -60,7 +63,8 @@ public class PortfolioController {
     public ResponseEntity<ApiResponse<List<AssetResponse>>> getWalletAssets(
             @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable Long walletId) {
-        List<AssetResponse> response = portfolioService.getWalletAssets(walletId, user.getId());
+        CustomUserDetails currentUser = authUserResolver.currentUser();
+        List<AssetResponse> response = portfolioService.getWalletAssets(walletId, currentUser.getId());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -69,8 +73,19 @@ public class PortfolioController {
             @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable Long assetId,
             @Valid @RequestBody UpdatePriceRequest request) {
-        AssetResponse response = portfolioService.updateAssetPrice(assetId, user.getId(), request);
+        CustomUserDetails currentUser = authUserResolver.currentUser();
+        AssetResponse response = portfolioService.updateAssetPrice(assetId, currentUser.getId(), request);
         return ResponseEntity.ok(ApiResponse.success("Preço atualizado com sucesso", response));
+    }
+
+    @PutMapping("/assets/{assetId}")
+    public ResponseEntity<ApiResponse<AssetResponse>> updateAsset(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PathVariable Long assetId,
+            @Valid @RequestBody UpdateAssetRequest request) {
+        CustomUserDetails currentUser = authUserResolver.currentUser();
+        AssetResponse response = portfolioService.updateAsset(assetId, currentUser.getId(), request);
+        return ResponseEntity.ok(ApiResponse.success("Ativo atualizado com sucesso", response));
     }
 
     @PostMapping("/assets/{assetId}/transactions")
@@ -78,7 +93,8 @@ public class PortfolioController {
             @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable Long assetId,
             @Valid @RequestBody CreateTransactionRequest request) {
-        TransactionResponse response = portfolioService.addTransaction(assetId, user.getId(), request);
+        CustomUserDetails currentUser = authUserResolver.currentUser();
+        TransactionResponse response = portfolioService.addTransaction(assetId, currentUser.getId(), request);
         return ResponseEntity.ok(ApiResponse.success("Transação registrada com sucesso", response));
     }
 
@@ -86,24 +102,24 @@ public class PortfolioController {
     public ResponseEntity<ApiResponse<List<TransactionResponse>>> getAssetTransactions(
             @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable Long assetId) {
-        List<TransactionResponse> response = portfolioService.getAssetTransactions(assetId, user.getId());
+        CustomUserDetails currentUser = authUserResolver.currentUser();
+        List<TransactionResponse> response = portfolioService.getAssetTransactions(assetId, currentUser.getId());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping("/transactions")
     public ResponseEntity<ApiResponse<List<TransactionResponse>>> getUserTransactions(
             @AuthenticationPrincipal CustomUserDetails user) {
-        List<TransactionResponse> response = portfolioService.getUserTransactions(user.getId());
+        CustomUserDetails currentUser = authUserResolver.currentUser();
+        List<TransactionResponse> response = portfolioService.getUserTransactions(currentUser.getId());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping("/summary")
     public ResponseEntity<ApiResponse<PortfolioService.PortfolioSummary>> getPortfolioSummary(
             @AuthenticationPrincipal CustomUserDetails user) {
-        if (user == null) {
-            return ResponseEntity.status(401).body(ApiResponse.success("Sessão expirada ou usuário não identificado", null));
-        }
-        PortfolioService.PortfolioSummary response = portfolioService.getPortfolioSummary(user.getId());
+        CustomUserDetails currentUser = authUserResolver.currentUser();
+        PortfolioService.PortfolioSummary response = portfolioService.getPortfolioSummary(currentUser.getId());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

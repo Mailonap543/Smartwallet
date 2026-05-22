@@ -6,6 +6,7 @@ package com.smartwallet.entity;
 public enum AssetType {
     STOCK,
     REIT,
+    FII,
     ETF,
     BOND,
     FUND,

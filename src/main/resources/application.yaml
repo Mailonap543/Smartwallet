@@ -90,9 +90,9 @@ logging:
       max-history: 30
 
 jwt:
-  secret: ${JWT_SECRET:esta_e_uma_chave_jwt_muito_longa_e_segura_para_producao_com_mais_de_64_caracteres_abcdef123456}
-  expiration-ms: 86400000
-  refresh-expiration-ms: 604800000
+  secret: ${JWT_SECRET:sua-chave-secreta-muito-longa-e-segura-aqui}
+  expiration-ms: 3600000        # 1 hora para access token
+  refresh-expiration-ms: 604800000  # 7 dias para refresh token
 
 market:
   ingest:

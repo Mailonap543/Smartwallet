@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService, Wallet, Asset } from '../../services/api.service';
+import { ToastService } from '../../shared/toast.service';
 
 @Component({
   selector: 'app-assets',
@@ -47,7 +48,7 @@ import { ApiService, Wallet, Asset } from '../../services/api.service';
         <!-- Add Asset Button -->
         <div class="flex justify-end mb-6">
           <button
-            (click)="showAddModal.set(true)"
+            (click)="openAddModal()"
             class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
           >
             + Adicionar Ativo
@@ -120,7 +121,7 @@ import { ApiService, Wallet, Asset } from '../../services/api.service';
               <form (ngSubmit)="saveAsset()" class="space-y-4">
                 <div>
                   <label class="block text-sm text-gray-300 mb-1">Símbolo</label>
-                  <input [(ngModel)]="assetForm.symbol" name="symbol" required class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white" placeholder="PETR4">
+                  <input [ngModel]="assetForm.symbol" (ngModelChange)="onSymbolChange($event)" name="symbol" required maxlength="20" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white uppercase" placeholder="PETR4">
                 </div>
                 <div>
                   <label class="block text-sm text-gray-300 mb-1">Nome</label>
@@ -140,16 +141,20 @@ import { ApiService, Wallet, Asset } from '../../services/api.service';
                 <div class="grid grid-cols-2 gap-4">
                   <div>
                     <label class="block text-sm text-gray-300 mb-1">Quantidade</label>
-                    <input [(ngModel)]="assetForm.quantity" name="quantity" type="number" step="0.0001" required class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+                    <input [ngModel]="assetForm.quantity" (ngModelChange)="onQuantityChange($event)" name="quantity" inputmode="decimal" pattern="[0-9.,]*" required class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white">
                   </div>
                   <div>
                     <label class="block text-sm text-gray-300 mb-1">Preço Compra</label>
-                    <input [(ngModel)]="assetForm.purchasePrice" name="purchasePrice" type="number" step="0.01" required class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+                    <input [ngModel]="assetForm.purchasePrice" (ngModelChange)="onMoneyChange('purchasePrice', $event)" (paste)="onMoneyPaste('purchasePrice', $event)" name="purchasePrice" inputmode="numeric" required class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white">
                   </div>
                 </div>
                 <div>
                   <label class="block text-sm text-gray-300 mb-1">Data Compra</label>
                   <input [(ngModel)]="assetForm.purchaseDate" name="purchaseDate" type="date" required class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-300 mb-1">Preco Atual</label>
+                  <input [ngModel]="assetForm.currentPrice" (ngModelChange)="onMoneyChange('currentPrice', $event)" (paste)="onMoneyPaste('currentPrice', $event)" name="currentPrice" inputmode="numeric" required class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white">
                 </div>
                 <div class="flex gap-3 mt-6">
                   <button type="button" (click)="closeModal()" class="flex-1 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded transition-colors">Cancelar</button>
@@ -165,6 +170,7 @@ import { ApiService, Wallet, Asset } from '../../services/api.service';
 })
 export class AssetsComponent implements OnInit {
   api = inject(ApiService);
+  toast = inject(ToastService);
 
   loading = signal(true);
   wallets = signal<Wallet[]>([]);
@@ -177,8 +183,9 @@ export class AssetsComponent implements OnInit {
     symbol: '',
     name: '',
     assetType: 'STOCK',
-    quantity: 0,
-    purchasePrice: 0,
+    quantity: '',
+    purchasePrice: '',
+    currentPrice: '',
     purchaseDate: new Date().toISOString().split('T')[0]
   };
 
@@ -218,14 +225,49 @@ export class AssetsComponent implements OnInit {
     this.loadAssets(walletId);
   }
 
+  onSymbolChange(value: string) {
+    const nextSymbol = this.normalizeSymbol(value);
+    const symbolChanged = this.assetForm.symbol && nextSymbol !== this.assetForm.symbol;
+
+    this.assetForm.symbol = nextSymbol;
+
+    if (symbolChanged) {
+      this.assetForm.name = '';
+      this.assetForm.assetType = 'STOCK';
+    }
+  }
+
+  onQuantityChange(value: string) {
+    this.assetForm.quantity = this.sanitizeDecimal(value, 4);
+  }
+
+  onMoneyChange(field: 'purchasePrice' | 'currentPrice', value: string) {
+    this.assetForm[field] = this.formatMoneyInput(value);
+  }
+
+  onMoneyPaste(field: 'purchasePrice' | 'currentPrice', event: ClipboardEvent) {
+    event.preventDefault();
+    const pastedText = event.clipboardData?.getData('text') || '';
+    this.assetForm[field] = this.formatMoneyInput(pastedText);
+  }
+
+  openAddModal() {
+    if (!this.selectedWalletId()) {
+      this.toast.warning('Crie uma carteira antes de adicionar ativos.');
+      return;
+    }
+    this.showAddModal.set(true);
+  }
+
   editAsset(asset: Asset) {
     this.editingAsset.set(asset);
     this.assetForm = {
       symbol: asset.symbol,
       name: asset.name,
       assetType: asset.assetType || 'STOCK',
-      quantity: +(asset.quantity || 0),
-      purchasePrice: +(asset.purchasePrice || 0),
+      quantity: this.formatDecimal(asset.quantity || 0),
+      purchasePrice: this.formatMoneyValue(asset.purchasePrice || 0),
+      currentPrice: this.formatMoneyValue(asset.currentPrice || asset.purchasePrice || 0),
       purchaseDate: asset.purchaseDate?.split('T')[0] || new Date().toISOString().split('T')[0]
     };
     this.showAddModal.set(true);
@@ -242,25 +284,52 @@ export class AssetsComponent implements OnInit {
 
   saveAsset() {
     const walletId = this.selectedWalletId();
-    if (!walletId) return;
+    if (!walletId) {
+      this.toast.warning('Crie uma carteira antes de adicionar ativos.');
+      return;
+    }
+
+    const quantity = this.parseDecimal(this.assetForm.quantity);
+    const purchasePrice = this.parseMoney(this.assetForm.purchasePrice);
+    const currentPrice = this.assetForm.currentPrice
+      ? this.parseMoney(this.assetForm.currentPrice)
+      : purchasePrice;
+
+    if (!this.assetForm.symbol) {
+      this.toast.warning('Preencha o campo Simbolo.');
+      return;
+    }
+    if (!this.assetForm.name.trim()) {
+      this.toast.warning('Preencha o campo Nome.');
+      return;
+    }
+    if (quantity <= 0) {
+      this.toast.warning('Informe uma quantidade valida.');
+      return;
+    }
+    if (purchasePrice <= 0 || currentPrice <= 0) {
+      this.toast.warning('Informe precos validos.');
+      return;
+    }
 
     const assetData = {
-      symbol: this.assetForm.symbol.toUpperCase(),
-      name: this.assetForm.name,
+      symbol: this.assetForm.symbol.trim().toUpperCase(),
+      name: this.assetForm.name.trim(),
       assetType: this.assetForm.assetType,
-      quantity: this.assetForm.quantity,
-      purchasePrice: this.assetForm.purchasePrice,
-      currentPrice: this.assetForm.purchasePrice,
+      quantity,
+      purchasePrice,
+      currentPrice,
       purchaseDate: this.assetForm.purchaseDate
     };
 
     const editingId = this.editingAsset()?.id;
     const request = editingId
-      ? this.api.updateAssetPrice(editingId, this.assetForm.purchasePrice)
+      ? this.api.updateAsset(editingId, assetData)
       : this.api.addAsset(walletId, assetData);
 
     request.subscribe({
       next: () => {
+        this.toast.success(editingId ? 'Ativo atualizado com sucesso.' : 'Ativo adicionado com sucesso.');
         this.closeModal();
         this.loadAssets(walletId);
       }
@@ -274,9 +343,51 @@ export class AssetsComponent implements OnInit {
       symbol: '',
       name: '',
       assetType: 'STOCK',
-      quantity: 0,
-      purchasePrice: 0,
+      quantity: '',
+      purchasePrice: '',
+      currentPrice: '',
       purchaseDate: new Date().toISOString().split('T')[0]
     };
+  }
+
+  private normalizeSymbol(value: string) {
+    return (value || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+  }
+
+  private sanitizeDecimal(value: string, maxDecimals: number) {
+    const normalized = (value || '').replace(/,/g, '.').replace(/[^0-9.]/g, '');
+    const [integerPart, ...decimalParts] = normalized.split('.');
+    const decimals = decimalParts.join('').slice(0, maxDecimals);
+
+    return decimals ? `${integerPart}.${decimals}` : integerPart;
+  }
+
+  private formatDecimal(value: number) {
+    return String(value).replace(',', '.');
+  }
+
+  private formatMoneyInput(value: string) {
+    const digits = (value || '').replace(/\D/g, '').replace(/^0+(?=\d{3,})/, '');
+    if (!digits) return '';
+
+    const cents = Number(digits) / 100;
+    return this.formatMoneyValue(cents);
+  }
+
+  private formatMoneyValue(value: number) {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 2
+    }).format(value || 0);
+  }
+
+  private parseDecimal(value: string) {
+    return Number((value || '').replace(',', '.')) || 0;
+  }
+
+  private parseMoney(value: string) {
+    const normalized = (value || '').replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.');
+    return Number(normalized) || 0;
   }
 }

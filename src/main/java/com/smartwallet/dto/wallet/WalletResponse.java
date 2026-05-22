@@ -24,7 +24,14 @@ public record WalletResponse(
                     .multiply(BigDecimal.valueOf(100));
         }
         
-        Integer assetCount = wallet.getAssets() != null ? wallet.getAssets().size() : 0;
+        Integer assetCount = 0;
+        if (wallet.getAssets() != null) {
+            try {
+                assetCount = wallet.getAssets().size();
+            } catch (RuntimeException ignored) {
+                assetCount = 0;
+            }
+        }
         
         return new WalletResponse(
             wallet.getId(),

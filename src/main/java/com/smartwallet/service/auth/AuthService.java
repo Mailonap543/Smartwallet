@@ -31,38 +31,42 @@ public class AuthService {
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        logger.info("Login attempt for: {}", request.email());
+        logger.info("🔐 [Login] Tentativa para: {}", request.email());
 
         User user = userRepository.findByEmail(request.email())
                 .orElse(null);
 
         if (user == null) {
-            logger.warn("User not found: {}", request.email());
-            throw new com.smartwallet.exception.BusinessException("Credenciais inválidas", "INVALID_CREDENTIALS");
+            logger.warn("❌ [Login] Usuário não encontrado: {}", request.email());
+            throw new BusinessException("Credenciais inválidas", "INVALID_CREDENTIALS");
         }
 
         String storedPassword = user.getPasswordHash();
-        logger.debug("Stored password hash length: {}", storedPassword != null ? storedPassword.length() : 0);
+        logger.debug("📝 [Login] Hash length: {}", storedPassword != null ? storedPassword.length() : 0);
 
         boolean passwordMatches = passwordEncoder.matches(request.password(), storedPassword);
-        logger.debug("Password match result: {}", passwordMatches);
+        logger.debug("✓ [Login] Senha match: {}", passwordMatches);
 
         if (!passwordMatches) {
-            logger.warn("Invalid password for user: {}", request.email());
-            throw new com.smartwallet.exception.BusinessException("Credenciais inválidas", "INVALID_CREDENTIALS");
+            logger.warn("❌ [Login] Senha inválida para: {}", request.email());
+            throw new BusinessException("Credenciais inválidas", "INVALID_CREDENTIALS");
         }
 
-        logger.info("User logged in: {}", user.getEmail());
+        logger.info("✅ [Login] Usuário autenticado: {}", user.getEmail());
 
-        // REMOVE TOKENS ANTERIORES ANTES DE GERAR E SALVAR O NOVO!
+        // Remove tokens anteriores
         refreshTokenRepository.deleteByUser(user);
+        logger.debug("🗑️ [Login] Tokens antigos removidos");
 
         return generateAuthResponse(user);
     }
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        logger.info("📝 [Register] Novo registro: {}", request.email());
+
         if (userRepository.findByEmail(request.email()).isPresent()) {
+            logger.warn("❌ [Register] Email já existe: {}", request.email());
             throw new BusinessException("Email já cadastrado", "EMAIL_ALREADY_EXISTS");
         }
 
@@ -78,52 +82,99 @@ public class AuthService {
                 .build();
 
         user = userRepository.save(user);
-        logger.info("New user registered: {}", user.getEmail());
+        logger.info("✅ [Register] Usuário criado: {}", user.getEmail());
 
         return generateAuthResponse(user);
     }
 
     @Transactional
     public AuthResponse refreshToken(RefreshTokenRequest request) {
+        logger.info("🔄 [RefreshToken] Iniciando refresh...");
         String refreshToken = request.refreshToken();
 
-        if (!jwtUtils.validateToken(refreshToken) || !jwtUtils.isRefreshToken(refreshToken)) {
+        logger.info("🔄 [RefreshToken] Token recebido: {}",
+            "entrada processada");
+
+        // Valida o JWT
+        boolean isTokenValid = jwtUtils.validateToken(refreshToken);
+        logger.info("🔄 [RefreshToken] JWT válido: {}", isTokenValid);
+
+        if (!isTokenValid) {
+            logger.warn("❌ [RefreshToken] Token JWT inválido");
             throw new BusinessException("Refresh token inválido", "INVALID_REFRESH_TOKEN");
         }
 
-        RefreshToken tokenEntity = refreshTokenRepository.findByToken(refreshToken)
-                .orElseThrow(() -> new BusinessException("Token não encontrado", "TOKEN_NOT_FOUND"));
+        
+        boolean isRefresh = jwtUtils.isRefreshToken(refreshToken);
+        logger.info("🔄 [RefreshToken] É refresh token: {}", isRefresh);
 
-        if (!tokenEntity.isValid()) {
+        if (!isRefresh) {
+            logger.warn("❌ [RefreshToken] Não é um refresh token");
+            throw new BusinessException("Token não é refresh token", "INVALID_TOKEN_TYPE");
+        }
+
+        // Busca na base de dados
+        logger.info("🔄 [RefreshToken] Buscando token no banco de dados...");
+        RefreshToken tokenEntity = refreshTokenRepository.findByToken(refreshToken)
+                .orElseThrow(() -> {
+                    logger.warn("❌ [RefreshToken] Token NÃO encontrado no banco!");
+                    return new BusinessException("Token não encontrado no banco", "TOKEN_NOT_FOUND");
+                });
+
+        logger.info("✅ [RefreshToken] Token encontrado no banco!");
+
+        // Valida expiração
+        boolean isValid = tokenEntity.isValid();
+        boolean isExpired = tokenEntity.isExpired();
+        boolean isRevoked = tokenEntity.getIsRevoked();
+
+        logger.info("🔄 [RefreshToken] isValid: {}, isExpired: {}, isRevoked: {}", isValid, isExpired, isRevoked);
+
+        if (!isValid) {
+            logger.warn("❌ [RefreshToken] Token inválido (expirado ou revogado)");
             throw new BusinessException("Token expirado ou revogado", "TOKEN_EXPIRED");
         }
 
         User user = tokenEntity.getUser();
+        logger.info("✅ [RefreshToken] Token válido para: {}", user.getEmail());
+
+        // Remove tokens antigos
         refreshTokenRepository.deleteByUser(user);
 
-        logger.info("Token refreshed for user: {}", user.getEmail());
+        logger.info("✅ [RefreshToken] Novo token gerado para: {}", user.getEmail());
         return generateAuthResponse(user);
     }
 
     @Transactional
     public void forgotPassword(ForgotPasswordRequest request) {
+        logger.info("📧 [ForgotPassword] Solicitação para: {}", request.email());
+
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new ResourceNotFoundException("Email não encontrado"));
+                .orElseThrow(() -> {
+                    logger.warn("❌ [ForgotPassword] Email não encontrado: {}", request.email());
+                    return new ResourceNotFoundException("Email não encontrado");
+                });
 
         String token = UUID.randomUUID().toString();
         user.setResetToken(token);
         user.setResetTokenExpiry(LocalDateTime.now().plusHours(1));
         userRepository.save(user);
 
-        logger.info("Password reset requested for: {}", user.getEmail());
+        logger.info("✅ [ForgotPassword] Token reset enviado para: {}", user.getEmail());
     }
 
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
+        logger.info("🔑 [ResetPassword] Solicitação de reset");
+
         User user = userRepository.findByResetToken(request.token())
-                .orElseThrow(() -> new BusinessException("Token inválido", "INVALID_TOKEN"));
+                .orElseThrow(() -> {
+                    logger.warn("❌ [ResetPassword] Token inválido");
+                    return new BusinessException("Token inválido", "INVALID_TOKEN");
+                });
 
         if (user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            logger.warn("❌ [ResetPassword] Token expirado");
             throw new BusinessException("Token expirado", "TOKEN_EXPIRED");
         }
 
@@ -133,12 +184,17 @@ public class AuthService {
         userRepository.save(user);
 
         refreshTokenRepository.deleteByUser(user);
-        logger.info("Password reset successful for: {}", user.getEmail());
+        logger.info("✅ [ResetPassword] Senha alterada com sucesso para: {}", user.getEmail());
     }
 
     private AuthResponse generateAuthResponse(User user) {
+        logger.debug("📝 [GenerateAuthResponse] Gerando tokens para: {}", user.getEmail());
+
         String accessToken = jwtUtils.generateToken(user.getEmail());
         String refreshToken = jwtUtils.generateRefreshToken(user.getEmail());
+
+    logger.debug("   - Access Token gerado");
+    logger.debug("   - Refresh Token gerado");
 
         RefreshToken tokenEntity = RefreshToken.builder()
                 .token(refreshToken)
@@ -146,13 +202,22 @@ public class AuthService {
                 .expiresAt(LocalDateTime.now().plusSeconds(jwtUtils.getRefreshExpirationMs() / 1000))
                 .build();
         refreshTokenRepository.save(tokenEntity);
+        logger.debug("✅ [GenerateAuthResponse] Token salvo no banco");
 
-        return new AuthResponse(
+        AuthResponse response = new AuthResponse(
                 accessToken,
                 refreshToken,
                 "Bearer",
                 jwtUtils.getJwtExpirationMs(),
-                new AuthResponse.UserInfo(user.getId(), user.getEmail(), user.getFullName())
+                new AuthResponse.UserInfo(
+                        user.getId(),
+                        user.getEmail(),
+                        user.getFullName(),
+                        user.getRole()
+                )
         );
+
+        logger.info("✅ [GenerateAuthResponse] Response gerado com sucesso");
+        return response;
     }
 }

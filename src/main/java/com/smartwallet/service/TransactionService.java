@@ -134,50 +134,92 @@ public class TransactionService {
         List<Transaction> transactions = transactionRepository.findByAssetIdOrderedByDateDesc(asset.getId());
 
         if (transactions.isEmpty()) {
-            asset.setQuantity(BigDecimal.ZERO);
-            asset.setAveragePrice(BigDecimal.ZERO);
-            asset.setTotalInvested(BigDecimal.ZERO);
-            asset.setCurrentValue(BigDecimal.ZERO);
-            asset.setProfitLoss(BigDecimal.ZERO);
-            asset.setProfitLossPercentage(BigDecimal.ZERO);
-            assetRepository.save(asset);
-            return;
-        }
-
-        BigDecimal totalQuantity = BigDecimal.ZERO;
-        BigDecimal totalCost = BigDecimal.ZERO;
-
-        for (Transaction t : transactions) {
-            switch (t.getTransactionType()) {
-                case BUY -> {
-                    BigDecimal cost = t.getTotalWithFees() != null ? t.getTotalWithFees() : t.getTotalValue();
-                    totalQuantity = totalQuantity.add(t.getQuantity());
-                    totalCost = totalCost.add(cost);
-                }
-                case SELL -> {
-                    BigDecimal avgPrice = totalQuantity.compareTo(BigDecimal.ZERO) > 0
-                            ? totalCost.divide(totalQuantity, 8, RoundingMode.HALF_UP)
-                            : BigDecimal.ZERO;
-                    totalCost = totalCost.subtract(avgPrice.multiply(t.getQuantity()));
-                    totalQuantity = totalQuantity.subtract(t.getQuantity());
-                }
-                default -> {
-                }
-            }
-        }
-
-        if (totalQuantity.compareTo(BigDecimal.ZERO) > 0) {
-            asset.setQuantity(totalQuantity);
-            asset.setAveragePrice(totalCost.divide(totalQuantity, 2, RoundingMode.HALF_UP));
-            asset.setTotalInvested(totalCost);
+            applyManualAssetTotals(asset);
         } else {
-            asset.setQuantity(BigDecimal.ZERO);
-            asset.setAveragePrice(BigDecimal.ZERO);
-            asset.setTotalInvested(BigDecimal.ZERO);
+            applyTransactionTotals(asset, calculateTransactionTotals(transactions));
         }
 
         asset.calculateProfitLoss();
         assetRepository.save(asset);
+    }
+
+    private void applyManualAssetTotals(Asset asset) {
+        BigDecimal quantity = valueOrZero(asset.getQuantity());
+        BigDecimal purchasePrice = valueOrZero(asset.getPurchasePrice());
+        BigDecimal currentPrice = asset.getCurrentPrice() != null ? asset.getCurrentPrice() : purchasePrice;
+
+        asset.setAveragePrice(asset.getAveragePrice() != null ? asset.getAveragePrice() : purchasePrice);
+        asset.setTotalInvested(quantity.multiply(purchasePrice));
+        asset.setCurrentValue(quantity.multiply(currentPrice));
+    }
+
+    private TransactionTotals calculateTransactionTotals(List<Transaction> transactions) {
+        BigDecimal totalQuantity = BigDecimal.ZERO;
+        BigDecimal totalCost = BigDecimal.ZERO;
+
+        for (Transaction transaction : transactions) {
+            if (isBuyTransaction(transaction)) {
+                totalQuantity = totalQuantity.add(transaction.getQuantity());
+                totalCost = totalCost.add(totalTransactionCost(transaction));
+            } else if (isSellTransaction(transaction)) {
+                BigDecimal averagePrice = averagePrice(totalCost, totalQuantity, 8);
+                totalCost = totalCost.subtract(averagePrice.multiply(transaction.getQuantity()));
+                totalQuantity = totalQuantity.subtract(transaction.getQuantity());
+            }
+        }
+
+        return new TransactionTotals(totalQuantity, totalCost);
+    }
+
+    private void applyTransactionTotals(Asset asset, TransactionTotals totals) {
+        if (totals.quantity().compareTo(BigDecimal.ZERO) <= 0) {
+            clearAssetTotals(asset);
+            return;
+        }
+
+        asset.setQuantity(totals.quantity());
+        asset.setAveragePrice(averagePrice(totals.cost(), totals.quantity(), 2));
+        asset.setTotalInvested(totals.cost());
+        BigDecimal currentPrice = asset.getCurrentPrice() != null ? asset.getCurrentPrice() : asset.getAveragePrice();
+        asset.setCurrentValue(totals.quantity().multiply(currentPrice));
+    }
+
+    private void clearAssetTotals(Asset asset) {
+        asset.setQuantity(BigDecimal.ZERO);
+        asset.setAveragePrice(BigDecimal.ZERO);
+        asset.setTotalInvested(BigDecimal.ZERO);
+        asset.setCurrentValue(BigDecimal.ZERO);
+    }
+
+    private BigDecimal totalTransactionCost(Transaction transaction) {
+        return transaction.getTotalWithFees() != null ? transaction.getTotalWithFees() : transaction.getTotalValue();
+    }
+
+    private boolean isBuyTransaction(Transaction transaction) {
+        return hasTransactionType(transaction, "BUY");
+    }
+
+    private boolean isSellTransaction(Transaction transaction) {
+        return hasTransactionType(transaction, "SELL");
+    }
+
+    private boolean hasTransactionType(Transaction transaction, String expectedType) {
+        return transaction.getTransactionType() != null
+                && expectedType.equals(transaction.getTransactionType().name());
+    }
+
+    private BigDecimal averagePrice(BigDecimal totalCost, BigDecimal totalQuantity, int scale) {
+        if (totalQuantity.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+        return totalCost.divide(totalQuantity, scale, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal valueOrZero(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
+    }
+
+    private record TransactionTotals(BigDecimal quantity, BigDecimal cost) {
     }
 
     private void validateUserExists(Long userId) {

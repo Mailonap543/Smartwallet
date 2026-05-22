@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, map, catchError, throwError } from 'rxjs';
 import { ToastService } from '../shared/toast.service';
 import { AuthService } from './auth.service';
@@ -147,54 +147,99 @@ export class ApiService {
   private auth = inject(AuthService);
   private baseUrl = environment.apiUrl + '/api';
 
-  private getAuthHeaders(): HttpHeaders {
-    const token = this.auth.getToken() || '';
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    return new HttpHeaders(headers);
-  }
-
   private handleError(error: any, defaultMsg = 'Algo deu errado') {
     const message = error?.error?.message || error?.message || defaultMsg;
+    console.error('🔴 API Error:', message, error);
     this.toast.error(message);
     return throwError(() => ({ status: error?.status, message }));
   }
 
   getWallets(): Observable<Wallet[]> {
-    return this.http.get<ApiResponse<Wallet[]>>(`${this.baseUrl}/portfolio/wallets`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<Wallet[]>) => res.data as Wallet[]));
+    console.log('📤 GET /portfolio/wallets');
+    return this.http.get<ApiResponse<Wallet[]>>(`${this.baseUrl}/portfolio/wallets`)
+      .pipe(
+        map((res: ApiResponse<Wallet[]>) => res.data as Wallet[]),
+        catchError(err => this.handleError(err, 'Erro ao carregar wallets'))
+      );
   }
 
   getWallet(id: number): Observable<Wallet> {
-    return this.http.get<ApiResponse<Wallet>>(`${this.baseUrl}/portfolio/wallets/${id}`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<Wallet>) => res.data as Wallet));
+    return this.http.get<ApiResponse<Wallet>>(`${this.baseUrl}/portfolio/wallets/${id}`)
+      .pipe(
+        map((res: ApiResponse<Wallet>) => res.data as Wallet),
+        catchError(err => this.handleError(err))
+      );
   }
 
   createWallet(data: { name: string; description?: string } | string): Observable<Wallet> {
     const payload = typeof data === 'string' ? { name: data } : data;
-    return this.http.post<ApiResponse<Wallet>>(`${this.baseUrl}/portfolio/wallets`, payload, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<Wallet>) => res.data as Wallet));
+    console.log('📤 POST /portfolio/wallets', payload);
+    return this.http.post<ApiResponse<Wallet>>(`${this.baseUrl}/portfolio/wallets`, payload)
+      .pipe(
+        map((res: ApiResponse<Wallet>) => res.data as Wallet),
+        catchError(err => this.handleError(err))
+      );
   }
 
   updateWallet(id: number, data: any): Observable<Wallet> {
-    return this.http.put<ApiResponse<Wallet>>(`${this.baseUrl}/portfolio/wallets/${id}`, data, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<Wallet>) => res.data as Wallet));
+    return this.http.put<ApiResponse<Wallet>>(`${this.baseUrl}/portfolio/wallets/${id}`, data)
+      .pipe(
+        map((res: ApiResponse<Wallet>) => res.data as Wallet),
+        catchError(err => this.handleError(err))
+      );
   }
 
   deleteWallet(id: number): Observable<void> {
-    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/portfolio/wallets/${id}`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<void>) => res.data as void));
+    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/portfolio/wallets/${id}`)
+      .pipe(
+        map((res: ApiResponse<void>) => res.data as void),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getAssets(walletId: number): Observable<Asset[]> {
-    return this.http.get<ApiResponse<Asset[]>>(`${this.baseUrl}/portfolio/wallets/${walletId}/assets`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<Asset[]>) => res.data as Asset[]));
+    console.log('📤 GET /portfolio/wallets/:id/assets');
+    return this.http.get<ApiResponse<Asset[]>>(`${this.baseUrl}/portfolio/wallets/${walletId}/assets`)
+      .pipe(
+        map((res: ApiResponse<Asset[]>) => res.data as Asset[]),
+        catchError(err => this.handleError(err))
+      );
+  }
+
+  getWalletAssets(walletId: number): Observable<Asset[]> {
+    return this.getAssets(walletId);
+  }
+
+  addAsset(walletId: number, assetData: any): Observable<Asset> {
+    return this.http.post<ApiResponse<Asset>>(`${this.baseUrl}/portfolio/wallets/${walletId}/assets`, assetData)
+      .pipe(
+        map((res: ApiResponse<Asset>) => res.data as Asset),
+        catchError(err => this.handleError(err))
+      );
+  }
+
+  updateAsset(assetId: number, assetData: any): Observable<Asset> {
+    return this.http.put<ApiResponse<Asset>>(`${this.baseUrl}/portfolio/assets/${assetId}`, assetData)
+      .pipe(
+        map((res: ApiResponse<Asset>) => res.data as Asset),
+        catchError(err => this.handleError(err))
+      );
+  }
+
+  updateAssetPrice(assetId: number, price: number): Observable<Asset> {
+    return this.http.put<ApiResponse<Asset>>(`${this.baseUrl}/portfolio/assets/${assetId}/price`, { currentPrice: price })
+      .pipe(
+        map((res: ApiResponse<Asset>) => res.data as Asset),
+        catchError(err => this.handleError(err))
+      );
+  }
+
+  deleteAsset(assetId: number): Observable<void> {
+    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/portfolio/assets/${assetId}`)
+      .pipe(
+        map((res: ApiResponse<void>) => res.data as void),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getWalletAssets(walletId: number): Observable<Asset[]> {
@@ -217,127 +262,208 @@ export class ApiService {
   }
 
   getAssetBySymbol(symbol: string): Observable<Asset> {
-    return this.http.get<ApiResponse<Asset>>(`${this.baseUrl}/market/assets/${symbol}`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<Asset>) => res.data as Asset));
+    return this.http.get<ApiResponse<Asset>>(`${this.baseUrl}/market/assets/${symbol}`)
+      .pipe(
+        map((res: ApiResponse<Asset>) => res.data as Asset),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getFeatured(): Observable<Asset[]> {
-    return this.http.get<ApiResponse<Asset[]>>(`${this.baseUrl}/market/featured`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<Asset[]>) => res.data as Asset[]));
+    return this.http.get<ApiResponse<Asset[]>>(`${this.baseUrl}/market/featured`)
+      .pipe(
+        map((res: ApiResponse<Asset[]>) => res.data as Asset[]),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getTrending(): Observable<Asset[]> {
-    return this.http.get<ApiResponse<Asset[]>>(`${this.baseUrl}/market/trending`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<Asset[]>) => res.data as Asset[]));
+    return this.http.get<ApiResponse<Asset[]>>(`${this.baseUrl}/market/trending`)
+      .pipe(
+        map((res: ApiResponse<Asset[]>) => res.data as Asset[]),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getCategories(): Observable<{code: string; name: string}[]> {
-    return this.http.get<ApiResponse<{code: string; name: string}[]>>(`${this.baseUrl}/market/categories`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<{code: string; name: string}[]>) => res.data as {code: string; name: string}[]));
+    return this.http.get<ApiResponse<{code: string; name: string}[]>>(`${this.baseUrl}/market/categories`)
+      .pipe(
+        map((res: ApiResponse<{code: string; name: string}[]>) => res.data as {code: string; name: string}[]),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getFactsBySymbol(symbol: string): Observable<any[]> {
-    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/facts/${symbol}`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<any[]>) => res.data as any[]));
+    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/facts/${symbol}`)
+      .pipe(
+        map((res: ApiResponse<any[]>) => res.data as any[]),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getDividendsBySymbol(symbol: string): Observable<any[]> {
-    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/assets/${symbol}/dividends`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<any[]>) => res.data as any[]));
+    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/assets/${symbol}/dividends`)
+      .pipe(
+        map((res: ApiResponse<any[]>) => res.data as any[]),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getEarningsBySymbol(symbol: string): Observable<any[]> {
-    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/assets/${symbol}/earnings`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<any[]>) => res.data as any[]));
+    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/assets/${symbol}/earnings`)
+      .pipe(
+        map((res: ApiResponse<any[]>) => res.data as any[]),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getHistory(symbol: string, period = '3M'): Observable<any[]> {
-    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/assets/${symbol}/history?period=${period}`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<any[]>) => res.data as any[]));
+    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/assets/${symbol}/history?period=${period}`)
+      .pipe(
+        map((res: ApiResponse<any[]>) => res.data as any[]),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getNews(page = 0, size = 20): Observable<any> {
-    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/news?page=${page}&size=${size}`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<any>) => res.data));
+    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/news?page=${page}&size=${size}`)
+      .pipe(
+        map((res: ApiResponse<any>) => res.data),
+        catchError(err => this.handleError(err))
+      );
   }
 
   searchMarket(query: string, category?: string, page = 0, size = 20): Observable<{content: Asset[]; totalElements: number; totalPages: number}> {
     let url = `${this.baseUrl}/market/search?q=${encodeURIComponent(query)}&page=${page}&size=${size}`;
     if (category) url += `&category=${category}`;
-    return this.http.get<ApiResponse<{content: Asset[]; totalElements: number; totalPages: number}>>(url, { headers: this.getAuthHeaders() })
-      .pipe(map((res: any) => res.data));
+    return this.http.get<ApiResponse<{content: Asset[]; totalElements: number; totalPages: number}>>(url)
+      .pipe(
+        map((res: any) => res.data),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getRankings(category?: string, page = 0, size = 10): Observable<Record<string, Asset[]>> {
     let url = `${this.baseUrl}/market/rankings?page=${page}&size=${size}`;
     if (category) url += `&category=${category}`;
-    return this.http.get<any>(url, { headers: this.getAuthHeaders() })
-      .pipe(map((res: any) => res.data as Record<string, Asset[]>));
+    return this.http.get<any>(url)
+      .pipe(
+        map((res: any) => res.data as Record<string, Asset[]>),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getRankingByType(type: string, page = 0, size = 20): Observable<Asset[]> {
-    return this.http.get<any>(`${this.baseUrl}/market/rankings/${type}?page=${page}&size=${size}`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: any) => res.data as Asset[]));
+    return this.http.get<any>(`${this.baseUrl}/market/rankings/${type}?page=${page}&size=${size}`)
+      .pipe(
+        map((res: any) => res.data as Asset[]),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getAssetHistory(symbol: string, period = '3M'): Observable<any[]> {
-    return this.http.get<any>(`${this.baseUrl}/market/assets/${symbol}/history?period=${period}`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: any) => res.data as any[]));
+    return this.http.get<any>(`${this.baseUrl}/market/assets/${symbol}/history?period=${period}`)
+      .pipe(
+        map((res: any) => res.data as any[]),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getAssetDividends(symbol: string): Observable<any[]> {
-    return this.http.get<any>(`${this.baseUrl}/market/assets/${symbol}/dividends`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: any) => res.data as any[]));
+    return this.http.get<any>(`${this.baseUrl}/market/assets/${symbol}/dividends`)
+      .pipe(
+        map((res: any) => res.data as any[]),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getAssetEarnings(symbol: string): Observable<any[]> {
-    return this.http.get<any>(`${this.baseUrl}/market/assets/${symbol}/earnings`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: any) => res.data as any[]));
+    return this.http.get<any>(`${this.baseUrl}/market/assets/${symbol}/earnings`)
+      .pipe(
+        map((res: any) => res.data as any[]),
+        catchError(err => this.handleError(err))
+      );
   }
 
   runScreener(filters: any): Observable<Asset[]> {
-    return this.http.post<any>(`${this.baseUrl}/market/screener`, filters, { headers: this.getAuthHeaders() })
-      .pipe(map((res: any) => res.data as Asset[]));
+    return this.http.post<any>(`${this.baseUrl}/market/screener`, filters)
+      .pipe(
+        map((res: any) => res.data as Asset[]),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getScreenerPresets(): Observable<Record<string, {name: string; description: string}>> {
-    return this.http.get<any>(`${this.baseUrl}/market/screener/presets`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: any) => res.data as Record<string, {name: string; description: string}>));
+    return this.http.get<any>(`${this.baseUrl}/market/screener/presets`)
+      .pipe(
+        map((res: any) => res.data as Record<string, {name: string; description: string}>),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getGoals(walletId: number): Observable<any[]> {
-    return this.http.get<any>(`${this.baseUrl}/portfolio/wallets/${walletId}/goals`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: any) => res.data as any[]));
+    return this.http.get<any>(`${this.baseUrl}/portfolio/wallets/${walletId}/goals`)
+      .pipe(
+        map((res: any) => res.data as any[]),
+        catchError(err => this.handleError(err))
+      );
   }
 
   createGoal(walletId: number, goal: any): Observable<any> {
-    return this.http.post<any>(`${this.baseUrl}/portfolio/wallets/${walletId}/goals`, goal, { headers: this.getAuthHeaders() })
-      .pipe(map((res: any) => res.data));
+    return this.http.post<any>(`${this.baseUrl}/portfolio/wallets/${walletId}/goals`, goal)
+      .pipe(
+        map((res: any) => res.data),
+        catchError(err => this.handleError(err))
+      );
   }
 
   updateGoal(goalId: number, goal: any): Observable<any> {
-    return this.http.put<any>(`${this.baseUrl}/portfolio/goals/${goalId}`, goal, { headers: this.getAuthHeaders() })
-      .pipe(map((res: any) => res.data));
+    return this.http.put<any>(`${this.baseUrl}/portfolio/goals/${goalId}`, goal)
+      .pipe(
+        map((res: any) => res.data),
+        catchError(err => this.handleError(err))
+      );
   }
 
   deleteGoal(goalId: number): Observable<void> {
-    return this.http.delete<any>(`${this.baseUrl}/portfolio/goals/${goalId}`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: any) => res.data));
+    return this.http.delete<any>(`${this.baseUrl}/portfolio/goals/${goalId}`)
+      .pipe(
+        map((res: any) => res.data),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getDividends(walletId: number): Observable<any[]> {
-    return this.http.get<any>(`${this.baseUrl}/portfolio/wallets/${walletId}/dividends`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: any) => res.data as any[]));
+    return this.http.get<any>(`${this.baseUrl}/portfolio/wallets/${walletId}/dividends`)
+      .pipe(
+        map((res: any) => res.data as any[]),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getBenchmark(walletId: number, period: number): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/portfolio/wallets/${walletId}/benchmark?period=${period}`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: any) => res.data));
+    return this.http.get<any>(`${this.baseUrl}/portfolio/wallets/${walletId}/benchmark?period=${period}`)
+      .pipe(
+        map((res: any) => res.data),
+        catchError(err => this.handleError(err))
+      );
   }
 
   analyzePortfolio(): Observable<any> {
-    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/ai/analyze`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<any>) => res.data as any));
+    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/ai/analyze`)
+      .pipe(
+        map((res: ApiResponse<any>) => res.data as any),
+        catchError(err => this.handleError(err))
+      );
+  }
+
+  getPortfolioSummary(): Observable<PortfolioSummary> {
+    console.log('📤 GET /portfolio/summary');
+    return this.http.get<ApiResponse<PortfolioSummary>>(`${this.baseUrl}/portfolio/summary`)
+      .pipe(
+        map((res: ApiResponse<PortfolioSummary>) => res.data as PortfolioSummary),
+        catchError(err => this.handleError(err, 'Erro ao carregar resumo do portfólio'))
+      );
   }
 
   getPortfolioSummary(): Observable<PortfolioSummary> {
@@ -346,38 +472,75 @@ export class ApiService {
   }
 
   getRiskMetrics(): Observable<RiskMetrics> {
-    return this.http.get<ApiResponse<RiskMetrics>>(`${this.baseUrl}/ai/risk`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<RiskMetrics>) => res.data as RiskMetrics));
+    return this.http.get<ApiResponse<RiskMetrics>>(`${this.baseUrl}/ai/risk`)
+      .pipe(
+        map((res: ApiResponse<RiskMetrics>) => res.data as RiskMetrics),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getPortfolioScore(): Observable<ScoreMetrics> {
-    return this.http.get<ApiResponse<ScoreMetrics>>(`${this.baseUrl}/ai/score`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<ScoreMetrics>) => res.data as ScoreMetrics));
+    return this.http.get<ApiResponse<ScoreMetrics>>(`${this.baseUrl}/ai/score`)
+      .pipe(
+        map((res: ApiResponse<ScoreMetrics>) => res.data as ScoreMetrics),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getRecommendations(): Observable<Recommendation[]> {
-    return this.http.get<ApiResponse<Recommendation[]>>(`${this.baseUrl}/ai/recommendations`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<Recommendation[]>) => res.data as Recommendation[]));
+    return this.http.get<ApiResponse<Recommendation[]>>(`${this.baseUrl}/ai/recommendations`)
+      .pipe(
+        map((res: ApiResponse<Recommendation[]>) => res.data as Recommendation[]),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getQuote(symbol: string): Observable<MarketQuote | null> {
-    return this.http.get<ApiResponse<MarketQuote>>(`${this.baseUrl}/market/quote/${symbol}`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<MarketQuote>) => res.success ? res.data as MarketQuote : null));
+    return this.http.get<ApiResponse<MarketQuote>>(`${this.baseUrl}/market/quote/${symbol}`)
+      .pipe(
+        map((res: ApiResponse<MarketQuote>) => res.success ? res.data as MarketQuote : null),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getQuotes(symbols: string[]): Observable<MarketQuote[]> {
-    return this.http.post<ApiResponse<MarketQuote[]>>(`${this.baseUrl}/market/quotes`, symbols, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<MarketQuote[]>) => res.data as MarketQuote[]));
+    return this.http.post<ApiResponse<MarketQuote[]>>(`${this.baseUrl}/market/quotes`, symbols)
+      .pipe(
+        map((res: ApiResponse<MarketQuote[]>) => res.data as MarketQuote[]),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getMarketStatus(): Observable<any> {
-    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/market/status`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<any>) => res.data as any));
+    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/market/status`)
+      .pipe(
+        map((res: ApiResponse<any>) => res.data as any),
+        catchError(err => this.handleError(err))
+      );
   }
 
   chatWithJarvis(payload: JarvisChatRequest): Observable<JarvisChatResponse> {
-    return this.http.post<ApiResponse<JarvisChatResponse>>(`${this.baseUrl}/ai/chat`, payload, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<JarvisChatResponse>) => res.data as JarvisChatResponse));
+    return this.http.post<ApiResponse<JarvisChatResponse>>(`${this.baseUrl}/ai/chat`, payload)
+      .pipe(
+        map((res: ApiResponse<JarvisChatResponse>) => res.data as JarvisChatResponse),
+        catchError(err => this.handleError(err))
+      );
+  }
+
+  getFavorites(): Observable<any[]> {
+    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/favorites`)
+      .pipe(
+        map((res: ApiResponse<any[]>) => res.data as any[]),
+        catchError(err => this.handleError(err))
+      );
+  }
+
+  removeFavorite(symbol: string): Observable<any> {
+    return this.http.delete<ApiResponse<any>>(`${this.baseUrl}/market/favorites/${symbol}`)
+      .pipe(
+        map((res: ApiResponse<any>) => res.data),
+        catchError(err => this.handleError(err))
+      );
   }
 
   getFavorites(): Observable<any[]> {
