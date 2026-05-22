@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,6 +40,7 @@ public class PortfolioService {
         return walletService.createWallet(userId, request);
     }
 
+    @Transactional
     public List<WalletResponse> getUserWallets(Long userId) {
         logger.info("getUserWallets called for userId: {}", userId);
         
@@ -64,6 +64,7 @@ public class PortfolioService {
                 .toList();
     }
 
+    @Transactional
     public WalletResponse getWalletById(Long walletId, Long userId) {
         walletService.validateWalletAccess(walletId, userId);
         Wallet wallet = walletService.getWalletEntityById(walletId);
@@ -76,8 +77,9 @@ public class PortfolioService {
         walletService.validateWalletAccess(walletId, userId);
         Wallet wallet = walletService.getWalletEntityById(walletId);
 
-        if (assetRepository.findByWalletIdAndSymbol(walletId, request.symbol().toUpperCase()).isPresent()) {
-            throw new BusinessException("Ativo já existe nesta carteira", "ASSET_ALREADY_EXISTS");
+        String symbol = normalizeSymbol(request.symbol());
+        if (assetRepository.findByWalletIdAndSymbol(walletId, symbol).isPresent()) {
+            throw new BusinessException("O simbolo " + symbol + " ja existe nesta carteira. Verifique o campo Simbolo.", "ASSET_ALREADY_EXISTS");
         }
 
         BigDecimal totalInvested = request.quantity().multiply(request.purchasePrice());
@@ -86,8 +88,8 @@ public class PortfolioService {
 
         Asset asset = Asset.builder()
                 .wallet(wallet)
-                .symbol(request.symbol().toUpperCase())
-                .name(request.name())
+                .symbol(symbol)
+                .name(request.name().trim())
                 .assetType(request.assetType())
                 .quantity(request.quantity())
                 .purchasePrice(request.purchasePrice())
@@ -116,11 +118,51 @@ public class PortfolioService {
         walletService.validateWalletAccess(asset.getWallet().getId(), userId);
 
         asset.setCurrentPrice(request.currentPrice());
+        BigDecimal quantity = asset.getQuantity() != null ? asset.getQuantity() : BigDecimal.ZERO;
+        asset.setCurrentValue(quantity.multiply(request.currentPrice()));
         asset.calculateProfitLoss();
         asset = assetRepository.save(asset);
 
         walletService.recalculateWalletTotals(asset.getWallet());
         logger.info("Price updated for asset: {}", asset.getSymbol());
+
+        return AssetResponse.fromEntity(asset);
+    }
+
+    @Transactional
+    public AssetResponse updateAsset(Long assetId, Long userId, UpdateAssetRequest request) {
+        Asset asset = assetRepository.findById(assetId)
+                .orElseThrow(() -> new ResourceNotFoundException(ASSET_NOT_FOUND));
+
+        walletService.validateWalletAccess(asset.getWallet().getId(), userId);
+
+        String symbol = normalizeSymbol(request.symbol());
+        assetRepository.findByWalletIdAndSymbol(asset.getWallet().getId(), symbol)
+                .filter(existing -> !existing.getId().equals(assetId))
+                .ifPresent(existing -> {
+                    throw new BusinessException("O simbolo " + symbol + " ja existe nesta carteira. Verifique o campo Simbolo.", "ASSET_ALREADY_EXISTS");
+                });
+
+        BigDecimal currentPrice = request.currentPrice() != null ? request.currentPrice() : request.purchasePrice();
+        BigDecimal totalInvested = request.quantity().multiply(request.purchasePrice());
+        BigDecimal currentValue = request.quantity().multiply(currentPrice);
+
+        asset.setSymbol(symbol);
+        asset.setName(request.name().trim());
+        asset.setAssetType(request.assetType());
+        asset.setQuantity(request.quantity());
+        asset.setPurchasePrice(request.purchasePrice());
+        asset.setAveragePrice(request.purchasePrice());
+        asset.setCurrentPrice(currentPrice);
+        asset.setPurchaseDate(request.purchaseDate());
+        asset.setTotalInvested(totalInvested);
+        asset.setCurrentValue(currentValue);
+        asset.setProfitLoss(currentValue.subtract(totalInvested));
+        asset.calculateProfitLoss();
+
+        asset = assetRepository.save(asset);
+        walletService.recalculateWalletTotals(asset.getWallet());
+        logger.info("Asset updated: {}", asset.getSymbol());
 
         return AssetResponse.fromEntity(asset);
     }
@@ -142,6 +184,7 @@ public class PortfolioService {
         return response;
     }
 
+    @Transactional
     public List<AssetResponse> getWalletAssets(Long walletId, Long userId) {
         walletService.validateWalletAccess(walletId, userId);
         
@@ -160,6 +203,7 @@ public class PortfolioService {
         return transactionService.getAllTransactionsByUserId(userId);
     }
 
+    @Transactional
     public PortfolioSummary getPortfolioSummary(Long userId) {
         List<Wallet> wallets = walletRepository.findByUserId(userId);
         
@@ -216,4 +260,8 @@ public class PortfolioService {
         int assetCount,
         List<AssetTypeSummary> byType
     ) {}
+
+    private String normalizeSymbol(String symbol) {
+        return symbol.trim().toUpperCase();
+    }
 }

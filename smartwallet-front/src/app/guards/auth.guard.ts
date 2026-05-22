@@ -2,16 +2,17 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
-function canAccessProtectedRoute(): boolean {
+export const authGuard: CanActivateFn = (route, state) => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  if (auth.getToken()) {
+  const token = auth.getToken();
+  const isAuthenticated = auth.isAuthenticated();
+
+  if (isAuthenticated) {
     return true;
   }
 
-  router.navigate(['/login']);
+  router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
   return false;
-}
-
-export const authGuard: CanActivateFn = () => canAccessProtectedRoute();
+};

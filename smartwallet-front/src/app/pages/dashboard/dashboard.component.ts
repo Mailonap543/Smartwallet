@@ -39,6 +39,14 @@ import { AuthService } from '../../services/auth.service';
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
             </svg>
           </div>
+        } @else if (error()) {
+          <div class="bg-red-900/20 border border-red-500 rounded-lg p-6 text-red-300">
+            <p class="font-bold">❌ Erro ao carregar dados</p>
+            <p class="text-sm mt-2">{{ error() }}</p>
+            <button (click)="loadData()" class="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-colors">
+              Tentar Novamente
+            </button>
+          </div>
         } @else {
           <!-- Portfolio Summary Cards -->
           <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -114,14 +122,14 @@ import { AuthService } from '../../services/auth.service';
             <div class="overflow-x-auto">
               <table class="w-full">
                 <thead>
-                  <tr class="text-left text-gray-400 text-sm border-b border-gray-700">
-                    <th class="pb-3">Símbolo</th>
-                    <th class="pb-3">Nome</th>
-                    <th class="pb-3">Tipo</th>
-                    <th class="pb-3 text-right">Quantidade</th>
-                    <th class="pb-3 text-right">Valor Atual</th>
-                    <th class="pb-3 text-right">Lucro/Prejuízo</th>
-                  </tr>
+                <tr class="text-left text-gray-400 text-sm border-b border-gray-700">
+                  <th class="pb-3">Símbolo</th>
+                  <th class="pb-3">Nome</th>
+                  <th class="pb-3">Tipo</th>
+                  <th class="pb-3 text-right">Quantidade</th>
+                  <th class="pb-3 text-right">Valor Atual</th>
+                  <th class="pb-3 text-right">Lucro/Prejuízo</th>
+                </tr>
                 </thead>
                 <tbody>
                   @for (asset of assets().slice(0, 5); track asset.id) {
@@ -155,19 +163,25 @@ export class DashboardComponent implements OnInit {
   api = inject(ApiService);
 
   loading = signal(true);
+  error = signal<string | null>(null);
   wallets = signal<Wallet[]>([]);
   assets = signal<Asset[]>([]);
   summary = signal<PortfolioSummary | null>(null);
 
   ngOnInit() {
+    console.log('🚀 DashboardComponent ngOnInit');
     this.loadData();
   }
 
   loadData() {
+    console.log('📊 Carregando dados do dashboard...');
     this.loading.set(true);
+    this.error.set(null);
 
+    // Requisição 1: Wallets
     this.api.getWallets().subscribe({
       next: (data) => {
+        console.log('✅ Wallets carregadas:', data);
         this.wallets.set(data);
         if (data.length > 0) {
           this.loadAssets(data[0].id);
@@ -175,22 +189,57 @@ export class DashboardComponent implements OnInit {
           this.loading.set(false);
         }
       },
-      error: () => this.loading.set(false)
+      error: (err) => {
+        console.error('❌ Erro ao carregar wallets:', err);
+        this.wallets.set([]);
+        this.assets.set([]);
+        this.summary.set({
+          totalInvested: 0,
+          totalCurrentValue: 0,
+          totalProfitLoss: 0,
+          totalProfitLossPercentage: 0,
+          walletCount: 0,
+          assetCount: 0,
+          byType: []
+        });
+        this.loading.set(false);
+      }
     });
 
+    // Requisição 2: Portfolio Summary
     this.api.getPortfolioSummary().subscribe({
-      next: (data) => this.summary.set(data),
-      error: () => {}
+      next: (data) => {
+        console.log('✅ Portfolio Summary carregado:', data);
+        this.summary.set(data);
+      },
+      error: (err) => {
+        console.error('❌ Erro ao carregar portfolio summary:', err);
+        this.summary.set({
+          totalInvested: 0,
+          totalCurrentValue: 0,
+          totalProfitLoss: 0,
+          totalProfitLossPercentage: 0,
+          walletCount: this.wallets().length,
+          assetCount: this.assets().length,
+          byType: []
+        });
+      }
     });
   }
 
   loadAssets(walletId: number) {
+    console.log('📦 Carregando assets da wallet:', walletId);
     this.api.getWalletAssets(walletId).subscribe({
       next: (data) => {
+        console.log('✅ Assets carregados:', data);
         this.assets.set(data);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false)
+      error: (err) => {
+        console.error('❌ Erro ao carregar assets:', err);
+        this.error.set(err.message || 'Erro ao carregar assets');
+        this.loading.set(false);
+      }
     });
   }
 
@@ -199,7 +248,11 @@ export class DashboardComponent implements OnInit {
     if (name) {
       this.api.createWallet(name).subscribe({
         next: (wallet) => {
+          console.log('✅ Wallet criada:', wallet);
           this.wallets.update(w => [...w, wallet]);
+        },
+        error: (err) => {
+          console.error('❌ Erro ao criar wallet:', err);
         }
       });
     }

@@ -1,7 +1,17 @@
+// smartwallet-front/src/app/interceptors/auth.interceptor.ts
+
 import { inject } from '@angular/core';
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+
+function withBearerToken(req: HttpRequest<unknown>, token: string) {
+  return req.clone({
+    setHeaders: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+}
 
 function isAuthEndpoint(url: string): boolean {
   return (
@@ -16,37 +26,62 @@ function isAuthEndpoint(url: string): boolean {
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   const requestIsAuthEndpoint = isAuthEndpoint(req.url);
+
+  console.log('🔐 [AuthInterceptor] URL:', req.url);
+  console.log('🔐 [AuthInterceptor] isAuthEndpoint:', requestIsAuthEndpoint);
+
+  // Se é endpoint de auth, deixa passar sem token
+  if (requestIsAuthEndpoint) {
+    console.log('✅ [AuthInterceptor] Auth endpoint - sem token necessário');
+    return next(req);
+  }
+
+  // Para requisições protegidas, SEMPRE tenta pegar o token
   const token = auth.getToken();
+  console.log('🔐 [AuthInterceptor] Token recuperado:', token ? '✅ Presente' : '❌ Ausente');
 
-  const request = !requestIsAuthEndpoint && token && !req.headers.has('Authorization')
-    ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
-    : req;
+  let request = req;
 
+  // Se tem token e não tem header de autorização, adiciona
+  if (token && !req.headers.has('Authorization')) {
+    console.log('➕ [AuthInterceptor] Adicionando Authorization header');
+    request = withBearerToken(req, token);
+  } else if (!token) {
+    console.warn('⚠️ [AuthInterceptor] Nenhum token disponível para requisição protegida!');
+  }
+
+  // Envia a requisição
   return next(request).pipe(
     catchError((error: unknown) => {
+      // Se não é erro 401 ou é auth endpoint, passa o erro adiante
       if (!(error instanceof HttpErrorResponse) || error.status !== 401 || requestIsAuthEndpoint) {
+        console.error('❌ [AuthInterceptor] Erro:', error instanceof HttpErrorResponse ? error.status : 'desconhecido');
         return throwError(() => error);
       }
+
+      // Se é 401, tenta fazer refresh do token
+      console.warn('🔄 [AuthInterceptor] 401 recebido - tentando refresh token');
 
       return auth.refreshToken().pipe(
         switchMap((response) => {
           const refreshedToken = response?.accessToken || auth.getToken();
+
           if (!refreshedToken) {
+            console.error('❌ [AuthInterceptor] Refresh falhou - token não obtido');
             auth.logout();
             return throwError(() => error);
           }
 
-          const retryRequest = req.clone({
-            setHeaders: {
-              Authorization: `Bearer ${refreshedToken}`
-            }
-          });
+          console.log('✅ [AuthInterceptor] Refresh bem-sucedido - retry requisição');
+
+          const retryRequest = withBearerToken(req, refreshedToken);
 
           return next(retryRequest);
         }),
-        catchError(() => {
+        catchError((refreshError) => {
+          console.error('❌ [AuthInterceptor] Refresh/retry falhou:', refreshError);
           auth.logout();
-          return throwError(() => error);
+          return throwError(() => refreshError);
         })
       );
     })

@@ -54,6 +54,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .anonymous(anonymous -> anonymous.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/health").permitAll()
@@ -66,7 +67,9 @@ public class SecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/api/notifications/**")).authenticated()
                 .requestMatchers(new AntPathRequestMatcher("/api/payment/**")).authenticated()
                 .requestMatchers(new AntPathRequestMatcher("/api/wallet/**")).authenticated()
+                .requestMatchers(new AntPathRequestMatcher("/api/wallets/**")).authenticated()
                 .requestMatchers(new AntPathRequestMatcher("/api/portfolio/**")).authenticated()
+                .requestMatchers(new AntPathRequestMatcher("/api/transactions/**")).authenticated()
                 .requestMatchers(new AntPathRequestMatcher("/api/users/**")).authenticated()
                 .requestMatchers(new AntPathRequestMatcher("/api/audit/**")).authenticated()
                 .requestMatchers(new AntPathRequestMatcher("/api/bank/**")).authenticated()

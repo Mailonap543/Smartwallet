@@ -277,8 +277,8 @@
                 <version>3.14.0</version>
 
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <source>25</source>
+                    <target>25</target>
                     <parameters>true</parameters>
                 </configuration>
             </plugin>

@@ -134,12 +134,14 @@ public class TransactionService {
         List<Transaction> transactions = transactionRepository.findByAssetIdOrderedByDateDesc(asset.getId());
 
         if (transactions.isEmpty()) {
-            asset.setQuantity(BigDecimal.ZERO);
-            asset.setAveragePrice(BigDecimal.ZERO);
-            asset.setTotalInvested(BigDecimal.ZERO);
-            asset.setCurrentValue(BigDecimal.ZERO);
-            asset.setProfitLoss(BigDecimal.ZERO);
-            asset.setProfitLossPercentage(BigDecimal.ZERO);
+            BigDecimal quantity = asset.getQuantity() != null ? asset.getQuantity() : BigDecimal.ZERO;
+            BigDecimal purchasePrice = asset.getPurchasePrice() != null ? asset.getPurchasePrice() : BigDecimal.ZERO;
+            BigDecimal currentPrice = asset.getCurrentPrice() != null ? asset.getCurrentPrice() : purchasePrice;
+
+            asset.setAveragePrice(asset.getAveragePrice() != null ? asset.getAveragePrice() : purchasePrice);
+            asset.setTotalInvested(quantity.multiply(purchasePrice));
+            asset.setCurrentValue(quantity.multiply(currentPrice));
+            asset.calculateProfitLoss();
             assetRepository.save(asset);
             return;
         }
@@ -170,10 +172,13 @@ public class TransactionService {
             asset.setQuantity(totalQuantity);
             asset.setAveragePrice(totalCost.divide(totalQuantity, 2, RoundingMode.HALF_UP));
             asset.setTotalInvested(totalCost);
+            BigDecimal currentPrice = asset.getCurrentPrice() != null ? asset.getCurrentPrice() : asset.getAveragePrice();
+            asset.setCurrentValue(totalQuantity.multiply(currentPrice));
         } else {
             asset.setQuantity(BigDecimal.ZERO);
             asset.setAveragePrice(BigDecimal.ZERO);
             asset.setTotalInvested(BigDecimal.ZERO);
+            asset.setCurrentValue(BigDecimal.ZERO);
         }
 
         asset.calculateProfitLoss();

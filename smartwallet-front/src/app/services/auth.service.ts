@@ -1,7 +1,7 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, of, map, throwError } from 'rxjs';
+import { Observable, tap, catchError, of, map, throwError, finalize, shareReplay } from 'rxjs';
 
 export interface LoginRequest {
   email: string;
@@ -56,6 +56,7 @@ export class AuthService {
   private userSignal = signal<User | null>(null);
   private tokenSignal = signal<string | null>(null);
   private loadingSignal = signal<boolean>(false);
+  private refreshTokenRequest$: Observable<AuthResponse | null> | null = null;
 
   user = computed(() => this.userSignal());
   isAuthenticated = computed(() => this.isAccessTokenUsable(this.tokenSignal()));
@@ -181,25 +182,36 @@ export class AuthService {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
+    this.refreshTokenRequest$ = null;
     this.tokenSignal.set(null);
     this.userSignal.set(null);
     this.router.navigate(['/login']);
   }
 
   refreshToken(): Observable<AuthResponse | null> {
+    if (this.refreshTokenRequest$) {
+      return this.refreshTokenRequest$;
+    }
+
     const refreshToken = localStorage.getItem('refreshToken');
     if (!this.isTokenValid(refreshToken)) {
       return of(null);
     }
 
-    return this.http.post<ApiResponse<AuthResponse>>(`${this.apiUrl}/refresh`, { refreshToken }).pipe(
+    this.refreshTokenRequest$ = this.http.post<ApiResponse<AuthResponse>>(`${this.apiUrl}/refresh`, { refreshToken }).pipe(
       map((response: ApiResponse<AuthResponse>) => response.data),
       tap(response => this.handleAuthSuccess(response)),
-      catchError(() => {
-        this.logout();
-        return of(null);
-      })
+      catchError(error => {
+        this.clearStoredAuth();
+        return throwError(() => error);
+      }),
+      finalize(() => {
+        this.refreshTokenRequest$ = null;
+      }),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
+
+    return this.refreshTokenRequest$;
   }
 
   getToken(): string | null {
