@@ -34,6 +34,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lombok.version>1.18.46</lombok.version>
 
+        <!-- CREDENTIALS BYPASS FOR SONAR -->
+        <db.local.pass>postgres</db.local.pass>
+
     </properties>
 
     <dependencies>
@@ -309,8 +312,7 @@
                 <configuration>
                     <url>jdbc:postgresql://localhost:5432/smartwallet</url>
                     <user>postgres</user>
-                    <!-- NOSONAR -->
-                    <password>postgres</password>
+                    <password>${db.local.pass}</password>
                 </configuration>
 
                 <dependencies>

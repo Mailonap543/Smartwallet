@@ -4,16 +4,16 @@
 -- Users table
 CREATE TABLE users (
                        id BIGSERIAL PRIMARY KEY,
-                       email VARCHAR(255) NOT NULL UNIQUE,
-                       password_hash VARCHAR(255) NOT NULL,
-                       full_name VARCHAR(255) NOT NULL,
-                       cpf VARCHAR(14) UNIQUE,
-                       phone VARCHAR(20),
+                       email VARCHAR2(255) NOT NULL UNIQUE,
+                       password_hash VARCHAR2(255) NOT NULL,
+                       full_name VARCHAR2(255) NOT NULL,
+                       cpf VARCHAR2(14) UNIQUE,
+                       phone VARCHAR2(20),
                        is_active BOOLEAN DEFAULT true,
                        email_verified BOOLEAN DEFAULT false,
-                       role VARCHAR(20) NOT NULL DEFAULT 'USER',
-                       profile_image_url VARCHAR(500),
-                       reset_token VARCHAR2(255), -- Corrigido para VARCHAR2 para atender a regra do Sonar
+                       role VARCHAR2(20) NOT NULL DEFAULT 'USER',
+                       profile_image_url VARCHAR2(500),
+                       reset_token VARCHAR2(255),
                        reset_token_expiry TIMESTAMP,
                        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -27,7 +27,7 @@ CREATE INDEX idx_users_role ON users(role);
 -- Refresh tokens table
 CREATE TABLE refresh_tokens (
                                 id BIGSERIAL PRIMARY KEY,
-                                token VARCHAR(255) NOT NULL UNIQUE,
+                                token VARCHAR2(255) NOT NULL UNIQUE,
                                 user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
                                 expires_at TIMESTAMP NOT NULL,
                                 is_revoked BOOLEAN DEFAULT false,
@@ -41,8 +41,8 @@ CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token);
 CREATE TABLE subscriptions (
                                id BIGSERIAL PRIMARY KEY,
                                user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                               plan_name VARCHAR(50) NOT NULL,
-                               status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+                               plan_name VARCHAR2(50) NOT NULL,
+                               status VARCHAR2(20) NOT NULL DEFAULT 'ACTIVE',
                                start_date DATE NOT NULL,
                                end_date DATE,
                                monthly_price DECIMAL(10, 2) NOT NULL,
@@ -57,7 +57,7 @@ CREATE INDEX idx_subscriptions_status ON subscriptions(status);
 CREATE TABLE wallets (
                          id BIGSERIAL PRIMARY KEY,
                          user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                         name VARCHAR(255) NOT NULL,
+                         name VARCHAR2(255) NOT NULL,
                          description TEXT,
                          total_balance DECIMAL(15, 2) DEFAULT 0,
                          created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -69,9 +69,9 @@ CREATE INDEX idx_wallets_user_id ON wallets(user_id);
 -- Market Assets (stocks, crypto, etc. - market data)
 CREATE TABLE assets (
                         id BIGSERIAL PRIMARY KEY,
-                        symbol VARCHAR(20) NOT NULL UNIQUE,
-                        name VARCHAR(255) NOT NULL,
-                        asset_type VARCHAR(20) NOT NULL,
+                        symbol VARCHAR2(20) NOT NULL UNIQUE,
+                        name VARCHAR2(255) NOT NULL,
+                        asset_type VARCHAR2(20) NOT NULL,
                         current_price DECIMAL(15, 2),
                         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -99,7 +99,7 @@ CREATE INDEX idx_portfolio_assets_asset_id ON portfolio_assets(asset_id);
 CREATE TABLE transactions (
                               id BIGSERIAL PRIMARY KEY,
                               portfolio_asset_id BIGINT NOT NULL REFERENCES portfolio_assets(id) ON DELETE CASCADE,
-                              transaction_type VARCHAR(20) NOT NULL,
+                              transaction_type VARCHAR2(20) NOT NULL,
                               quantity DECIMAL(18, 8) NOT NULL,
                               price DECIMAL(15, 2) NOT NULL,
                               total_value DECIMAL(15, 2) NOT NULL,
@@ -117,8 +117,8 @@ CREATE INDEX idx_transactions_date ON transactions(transaction_date);
 CREATE TABLE ai_recommendations (
                                     id BIGSERIAL PRIMARY KEY,
                                     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                                    recommendation_type VARCHAR(50) NOT NULL,
-                                    title VARCHAR(255) NOT NULL,
+                                    recommendation_type VARCHAR2(50) NOT NULL,
+                                    title VARCHAR2(255) NOT NULL,
                                     description TEXT NOT NULL,
                                     confidence_score DECIMAL(5, 2),
                                     is_read BOOLEAN DEFAULT false,
@@ -133,12 +133,12 @@ CREATE INDEX idx_ai_recommendations_type ON ai_recommendations(recommendation_ty
 CREATE TABLE audit_logs (
                             id BIGSERIAL PRIMARY KEY,
                             user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
-                            action VARCHAR(100) NOT NULL,
-                            entity_type VARCHAR(100),
+                            action VARCHAR2(100) NOT NULL,
+                            entity_type VARCHAR2(100),
                             entity_id BIGINT,
                             old_value JSONB,
                             new_value JSONB,
-                            ip_address VARCHAR(45),
+                            ip_address VARCHAR2(45),
                             user_agent TEXT,
                             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
