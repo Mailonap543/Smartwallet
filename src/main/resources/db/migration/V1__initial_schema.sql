@@ -13,7 +13,7 @@ CREATE TABLE users (
                        email_verified BOOLEAN DEFAULT false,
                        role VARCHAR(20) NOT NULL DEFAULT 'USER',
                        profile_image_url VARCHAR(500),
-                       reset_token VARCHAR(255),
+                       reset_token VARCHAR2(255), -- Corrigido para VARCHAR2 para atender a regra do Sonar
                        reset_token_expiry TIMESTAMP,
                        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP

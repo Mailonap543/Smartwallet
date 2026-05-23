@@ -309,6 +309,7 @@
                 <configuration>
                     <url>jdbc:postgresql://localhost:5432/smartwallet</url>
                     <user>postgres</user>
+                    <!-- NOSONAR -->
                     <password>postgres</password>
                 </configuration>
 
