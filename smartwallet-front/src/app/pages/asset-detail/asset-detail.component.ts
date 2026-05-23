@@ -288,14 +288,25 @@ export class AssetDetailComponent implements OnInit {
     const symbol = this.route.snapshot.paramMap.get('symbol');
     if (symbol) {
       this.api.getAssetBySymbol(symbol).subscribe({
-        next: (asset) => { this.asset = asset; this.loading = false; },
-        error: () => { this.loading = false; }
+        next: (asset) => this.deferState(() => {
+          this.asset = asset;
+          this.loading = false;
+        }),
+        error: () => this.deferState(() => {
+          this.loading = false;
+        })
       });
-      this.api.getDividendsBySymbol(symbol).subscribe({ next: d => this.dividends = d });
-      this.api.getEarningsBySymbol(symbol).subscribe({ next: e => this.earnings = e });
-      this.api.getHistory(symbol, this.period()).subscribe({ next: h => this.history = h });
-      this.api.getFactsBySymbol(symbol).subscribe({ next: f => this.facts = f });
+      this.api.getDividendsBySymbol(symbol).subscribe({ next: d => this.deferState(() => this.dividends = d) });
+      this.api.getEarningsBySymbol(symbol).subscribe({ next: e => this.deferState(() => this.earnings = e) });
+      this.api.getHistory(symbol, this.period()).subscribe({ next: h => this.deferState(() => this.history = h) });
+      this.api.getFactsBySymbol(symbol).subscribe({ next: f => this.deferState(() => this.facts = f) });
+    } else {
+      this.loading = false;
     }
+  }
+
+  private deferState(update: () => void): void {
+    setTimeout(update);
   }
 
   calculateMargin(): string {

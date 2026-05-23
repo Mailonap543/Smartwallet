@@ -23,6 +23,21 @@ function isAuthEndpoint(url: string): boolean {
   );
 }
 
+function isOptionalMarketNotFound(error: unknown, url: string): boolean {
+  return error instanceof HttpErrorResponse
+    && error.status === 404
+    && (
+      url.includes('/api/market/favorites')
+      || url.includes('/api/v1/alerts')
+      || url.includes('/api/notifications')
+      || url.includes('/api/market/facts/')
+      || /\/api\/market\/assets\/[^/]+$/.test(url)
+      || url.includes('/dividends')
+      || url.includes('/earnings')
+      || url.includes('/history')
+    );
+}
+
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   const requestIsAuthEndpoint = isAuthEndpoint(req.url);
@@ -55,7 +70,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: unknown) => {
       // Se não é erro 401 ou é auth endpoint, passa o erro adiante
       if (!(error instanceof HttpErrorResponse) || error.status !== 401 || requestIsAuthEndpoint) {
-        console.error('❌ [AuthInterceptor] Erro:', error instanceof HttpErrorResponse ? error.status : 'desconhecido');
+        if (!isOptionalMarketNotFound(error, request.url)) {
+          console.error('❌ [AuthInterceptor] Erro:', error instanceof HttpErrorResponse ? error.status : 'desconhecido');
+        }
         return throwError(() => error);
       }
 

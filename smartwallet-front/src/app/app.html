@@ -1,2 +1,141 @@
-<router-outlet />
+<div class="smart-shell" [class.auth-shell]="!showNavigation">
+  @if (showNavigation) {
+    <aside class="smart-sidebar" aria-label="Menu principal">
+      <a class="brand" routerLink="/dashboard" aria-label="Ir para o dashboard">
+        <span class="brand-mark material-symbols-rounded" aria-hidden="true">bar_chart_4_bars</span>
+        <span class="brand-text">
+          <strong>Carteira Inteligente</strong>
+          <small>de Investimentos</small>
+        </span>
+      </a>
+
+      <nav class="side-nav" aria-label="Seções">
+        @for (item of navigationItems; track item.path) {
+          <a
+            class="nav-item"
+            [routerLink]="item.path"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="item.exact ? { exact: true } : { exact: false }"
+            [attr.aria-label]="item.label"
+            [attr.title]="item.label"
+          >
+            <span class="material-symbols-rounded" aria-hidden="true">{{ item.icon }}</span>
+            <span>{{ item.label }}</span>
+          </a>
+        }
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="ai-quick-action" type="button" routerLink="/ai-analysis" aria-label="Abrir inteligência IA" title="Inteligência IA">
+          <span class="material-symbols-rounded" aria-hidden="true">smart_toy</span>
+        </button>
+
+        <button class="notification-action" type="button" aria-label="Notificações" title="Notificações" (click)="toggleNotifications()">
+          <span class="material-symbols-rounded" aria-hidden="true">notifications</span>
+          @if (unreadNotifications > 0) {
+            <span class="notification-badge">{{ unreadNotifications }}</span>
+          }
+        </button>
+
+        @if (notificationsOpen) {
+          <section class="notifications-popover" aria-label="Notificações">
+            <header>
+              <div>
+                <strong>Notificações</strong>
+                <small>{{ unreadNotifications }} nova(s)</small>
+              </div>
+              <button type="button" (click)="markAllNotificationsAsRead()">Ler todas</button>
+            </header>
+
+            @if (notifications.length) {
+              <div class="notification-list">
+                @for (notification of notifications.slice(0, 5); track notification.id) {
+                  <button
+                    class="notification-item"
+                    type="button"
+                    [class.unread]="!notification.isRead"
+                    (click)="markNotificationAsRead(notification)"
+                  >
+                    <span class="material-symbols-rounded" aria-hidden="true">
+                      {{ notification.type === 'RISK_ALERT' ? 'warning' : notification.type === 'NEWS' ? 'article' : notification.type === 'MARKET_PRICE' ? 'monitoring' : 'notifications' }}
+                    </span>
+                    <span>
+                      <strong>{{ notification.title }}</strong>
+                      <small>{{ notification.message || 'Atualização da Smartwallet' }}</small>
+                    </span>
+                  </button>
+                }
+              </div>
+            } @else {
+              <div class="notification-empty">
+                <span class="material-symbols-rounded" aria-hidden="true">notifications_off</span>
+                <p>Nenhuma notificação por enquanto.</p>
+              </div>
+            }
+
+            <div class="whatsapp-alert-panel">
+              <div class="whatsapp-heading">
+                <span class="material-symbols-rounded" aria-hidden="true">forum</span>
+                <div>
+                  <strong>Alertas por WhatsApp</strong>
+                  <small>Preparado para sua IA em Kotlin/Python</small>
+                </div>
+              </div>
+
+              <label class="phone-field">
+                Numero do usuario
+                <input
+                  type="tel"
+                  inputmode="tel"
+                  placeholder="+55 11 99999-9999"
+                  [(ngModel)]="whatsappPhone"
+                  aria-label="Numero de WhatsApp para alertas"
+                />
+              </label>
+
+              <label class="toggle-row">
+                <input type="checkbox" [(ngModel)]="whatsappBuyAlerts" />
+                <span>Enviar quando houver oportunidade de compra</span>
+              </label>
+
+              <label class="toggle-row">
+                <input type="checkbox" [(ngModel)]="whatsappAiBridge" />
+                <span>Permitir integracao futura com IA</span>
+              </label>
+
+              <button class="save-alert-preferences" type="button" (click)="saveWhatsappPreferences()">
+                Salvar preparacao
+              </button>
+
+              @if (notificationPreferencesSaved) {
+                <small class="integration-status">Preferencias salvas. O envio real ainda fica desligado.</small>
+              } @else {
+                <small class="integration-status">Envio real desligado ate conectar o servico de WhatsApp.</small>
+              }
+            </div>
+          </section>
+        }
+
+        <a class="user-card profile-card" routerLink="/profile" routerLinkActive="active" aria-label="Abrir perfil" title="Perfil">
+          <div class="avatar" aria-hidden="true">{{ userInitials() }}</div>
+          <div class="user-info">
+            <strong>{{ user()?.fullName || 'Perfil' }}</strong>
+            <small>{{ user()?.email || 'Sua conta' }}</small>
+          </div>
+          <span class="profile-label">Perfil</span>
+        </a>
+
+        <button class="logout-button" type="button" aria-label="Sair da conta" title="Sair" (click)="logout()">
+          <span class="material-symbols-rounded" aria-hidden="true">logout</span>
+          <span>Sair</span>
+        </button>
+      </div>
+    </aside>
+  }
+
+  <main class="smart-content">
+    <router-outlet />
+  </main>
+</div>
+
 <app-toast-container />

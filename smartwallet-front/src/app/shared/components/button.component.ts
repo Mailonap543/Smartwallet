@@ -27,11 +27,30 @@ import { CommonModule } from '@angular/common';
       justify-content: center;
       gap: var(--space-sm);
       border: none;
-      border-radius: var(--radius-md);
-      font-weight: 600;
-      transition: all var(--transition-fast);
+      border-radius: 14px;
+      font-weight: 800;
+      letter-spacing: 0;
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, border-color 160ms ease;
       position: relative;
       overflow: hidden;
+    }
+
+    .btn::before {
+      position: absolute;
+      inset: 0;
+      content: '';
+      opacity: 0;
+      background: linear-gradient(120deg, rgba(255, 255, 255, 0.22), transparent 42%);
+      transition: opacity 160ms ease;
+    }
+
+    .btn:hover:not(:disabled)::before {
+      opacity: 1;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
     }
     
     .btn:active:not(:disabled) {
@@ -44,28 +63,31 @@ import { CommonModule } from '@angular/common';
     }
     
     .btn-sm {
-      padding: var(--space-sm) var(--space-md);
+      min-height: 38px;
+      padding: 0 var(--space-md);
       font-size: var(--font-sm);
     }
     
     .btn-md {
-      padding: var(--space-md) var(--space-lg);
+      min-height: 46px;
+      padding: 0 var(--space-lg);
       font-size: var(--font-md);
     }
     
     .btn-lg {
-      padding: var(--space-md) var(--space-xl);
+      min-height: 54px;
+      padding: 0 var(--space-xl);
       font-size: var(--font-lg);
     }
     
     .btn-primary {
-      background: var(--primary);
-      color: var(--text);
+      background: linear-gradient(135deg, #6729ff, #3187ff 48%, #27e29b);
+      color: #ffffff;
+      box-shadow: 0 16px 34px rgba(39, 226, 155, 0.18);
     }
     
     .btn-primary:hover:not(:disabled) {
-      background: var(--primary-light);
-      box-shadow: var(--shadow-md);
+      box-shadow: 0 22px 48px rgba(39, 226, 155, 0.24);
     }
     
     .btn-secondary {
@@ -115,7 +137,9 @@ import { CommonModule } from '@angular/common';
       display: flex;
       align-items: center;
       gap: var(--space-sm);
-      opacity: 0;
+      position: relative;
+      z-index: 1;
+      opacity: 1;
       transition: opacity var(--transition-fast);
     }
     
