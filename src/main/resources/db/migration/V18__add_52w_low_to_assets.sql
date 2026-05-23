@@ -1,1 +1,1 @@
-ALTER TABLE assets ADD COLUMN "52w_low" NUMERIC;
+ALTER TABLE portfolio_assets ADD COLUMN "52w_low" NUMERIC;

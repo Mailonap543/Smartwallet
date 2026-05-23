@@ -28,6 +28,7 @@
         <!-- DATABASE -->
         <flyway.version>11.7.2</flyway.version>
         <h2.version>2.2.224</h2.version>
+        <postgresql.version>42.7.2</postgresql.version>
 
         <!-- UTILS -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -305,14 +306,18 @@
                 <artifactId>flyway-maven-plugin</artifactId>
                 <version>${flyway.version}</version>
 
+                <configuration>
+                    <url>jdbc:postgresql://localhost:5432/smartwallet</url>
+                    <user>postgres</user>
+                    <password>postgres</password>
+                </configuration>
+
                 <dependencies>
-
                     <dependency>
-                        <groupId>com.h2database</groupId>
-                        <artifactId>h2</artifactId>
-                        <version>${h2.version}</version>
+                        <groupId>org.postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>${postgresql.version}</version>
                     </dependency>
-
                 </dependencies>
 
             </plugin>
@@ -322,4 +327,3 @@
     </build>
 
 </project>
-
