@@ -21,6 +21,7 @@ export const routes: Routes = [
   { path: 'wallet', canActivate: [authGuard], loadComponent: () => import('./pages/wallet/wallet.component').then(m => m.WalletComponent) },
   { path: 'favorites', canActivate: [authGuard], loadComponent: () => import('./pages/favorites/favorites.component').then(m => m.FavoritesComponent) },
   { path: 'calculators', canActivate: [authGuard], loadComponent: () => import('./pages/calculators/calculators.component').then(m => m.CalculatorsComponent) },
+  { path: 'profile', canActivate: [authGuard], loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent) },
   
   { path: 'ai-analysis', canActivate: [authGuard], loadComponent: () => import('./pages/ai-analysis/ai-analysis.component').then(m => m.AiAnalysisComponent) },
   { path: 'ai', canActivate: [authGuard], loadComponent: () => import('./pages/ai-chat/ai-chat.component').then(m => m.AiChatComponent) },

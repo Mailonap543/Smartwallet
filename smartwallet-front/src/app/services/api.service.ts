@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, catchError, throwError } from 'rxjs';
+import { Observable, map, catchError, throwError, of } from 'rxjs';
 import { ToastService } from '../shared/toast.service';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
@@ -138,6 +138,28 @@ export interface MarketQuote {
   lastUpdate?: string;
 }
 
+export interface NotificationItem {
+  id: number;
+  userId: number;
+  type: 'MARKET_PRICE' | 'RISK_ALERT' | 'NEWS' | 'SYSTEM';
+  title: string;
+  message?: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+interface LegacyAlert {
+  id: number;
+  userId: number;
+  assetSymbol?: string;
+  alertType?: string;
+  conditionType?: string;
+  targetValue?: number;
+  active?: boolean;
+  isActive?: boolean;
+  createdAt?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -152,6 +174,13 @@ export class ApiService {
     console.error('🔴 API Error:', message, error);
     this.toast.error(message);
     return throwError(() => ({ status: error?.status, message }));
+  }
+
+  private optionalArray<T>(error: any): Observable<T[]> {
+    if (error?.status === 404) {
+      return of([]);
+    }
+    return this.handleError(error);
   }
 
   getWallets(): Observable<Wallet[]> {
@@ -242,30 +271,21 @@ export class ApiService {
       );
   }
 
-  getWalletAssets(walletId: number): Observable<Asset[]> {
-    return this.getAssets(walletId);
-  }
-
-  addAsset(walletId: number, assetData: any): Observable<Asset> {
-    return this.http.post<ApiResponse<Asset>>(`${this.baseUrl}/portfolio/wallets/${walletId}/assets`, assetData, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<Asset>) => res.data as Asset));
-  }
-
-  updateAssetPrice(assetId: number, price: number): Observable<Asset> {
-    return this.http.put<ApiResponse<Asset>>(`${this.baseUrl}/portfolio/assets/${assetId}/price`, { price }, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<Asset>) => res.data as Asset));
-  }
-
-  deleteAsset(assetId: number): Observable<void> {
-    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/portfolio/assets/${assetId}`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<void>) => res.data as void));
-  }
-
   getAssetBySymbol(symbol: string): Observable<Asset> {
     return this.http.get<ApiResponse<Asset>>(`${this.baseUrl}/market/assets/${symbol}`)
       .pipe(
         map((res: ApiResponse<Asset>) => res.data as Asset),
-        catchError(err => this.handleError(err))
+        catchError(err => {
+          if (err?.status === 404) {
+            return of({
+              symbol,
+              name: symbol,
+              currentPrice: 0,
+              changePercent: 0
+            } as Asset);
+          }
+          return this.handleError(err);
+        })
       );
   }
 
@@ -297,7 +317,7 @@ export class ApiService {
     return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/facts/${symbol}`)
       .pipe(
         map((res: ApiResponse<any[]>) => res.data as any[]),
-        catchError(err => this.handleError(err))
+        catchError(err => this.optionalArray<any>(err))
       );
   }
 
@@ -305,7 +325,7 @@ export class ApiService {
     return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/assets/${symbol}/dividends`)
       .pipe(
         map((res: ApiResponse<any[]>) => res.data as any[]),
-        catchError(err => this.handleError(err))
+        catchError(err => this.optionalArray<any>(err))
       );
   }
 
@@ -313,7 +333,7 @@ export class ApiService {
     return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/assets/${symbol}/earnings`)
       .pipe(
         map((res: ApiResponse<any[]>) => res.data as any[]),
-        catchError(err => this.handleError(err))
+        catchError(err => this.optionalArray<any>(err))
       );
   }
 
@@ -321,7 +341,7 @@ export class ApiService {
     return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/assets/${symbol}/history?period=${period}`)
       .pipe(
         map((res: ApiResponse<any[]>) => res.data as any[]),
-        catchError(err => this.handleError(err))
+        catchError(err => this.optionalArray<any>(err))
       );
   }
 
@@ -365,7 +385,7 @@ export class ApiService {
     return this.http.get<any>(`${this.baseUrl}/market/assets/${symbol}/history?period=${period}`)
       .pipe(
         map((res: any) => res.data as any[]),
-        catchError(err => this.handleError(err))
+        catchError(err => this.optionalArray<any>(err))
       );
   }
 
@@ -373,7 +393,7 @@ export class ApiService {
     return this.http.get<any>(`${this.baseUrl}/market/assets/${symbol}/dividends`)
       .pipe(
         map((res: any) => res.data as any[]),
-        catchError(err => this.handleError(err))
+        catchError(err => this.optionalArray<any>(err))
       );
   }
 
@@ -381,7 +401,7 @@ export class ApiService {
     return this.http.get<any>(`${this.baseUrl}/market/assets/${symbol}/earnings`)
       .pipe(
         map((res: any) => res.data as any[]),
-        catchError(err => this.handleError(err))
+        catchError(err => this.optionalArray<any>(err))
       );
   }
 
@@ -466,11 +486,6 @@ export class ApiService {
       );
   }
 
-  getPortfolioSummary(): Observable<PortfolioSummary> {
-    return this.http.get<ApiResponse<PortfolioSummary>>(`${this.baseUrl}/portfolio/summary`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<PortfolioSummary>) => res.data as PortfolioSummary));
-  }
-
   getRiskMetrics(): Observable<RiskMetrics> {
     return this.http.get<ApiResponse<RiskMetrics>>(`${this.baseUrl}/ai/risk`)
       .pipe(
@@ -531,7 +546,7 @@ export class ApiService {
     return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/favorites`)
       .pipe(
         map((res: ApiResponse<any[]>) => res.data as any[]),
-        catchError(err => this.handleError(err))
+        catchError(err => this.optionalArray<any>(err))
       );
   }
 
@@ -543,13 +558,60 @@ export class ApiService {
       );
   }
 
-  getFavorites(): Observable<any[]> {
-    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/favorites`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<any[]>) => res.data as any[]));
+  getNotifications(): Observable<NotificationItem[]> {
+    return this.http.get<ApiResponse<LegacyAlert[]>>(`${environment.apiUrl}/api/v1/alerts`)
+      .pipe(
+        map((res: ApiResponse<LegacyAlert[]>) => (res.data || []).map(alert => this.mapAlertToNotification(alert))),
+        catchError(err => this.optionalArray<NotificationItem>(err))
+      );
   }
 
-  removeFavorite(symbol: string): Observable<any> {
-    return this.http.delete<ApiResponse<any>>(`${this.baseUrl}/market/favorites/${symbol}`, { headers: this.getAuthHeaders() })
-      .pipe(map((res: ApiResponse<any>) => res.data));
+  getUnreadNotificationCount(): Observable<number> {
+    return this.getNotifications().pipe(
+      map(notifications => notifications.filter(notification => !notification.isRead).length)
+    );
   }
+
+  markNotificationAsRead(notificationId: number): Observable<void> {
+    return of(void notificationId);
+  }
+
+  markAllNotificationsAsRead(): Observable<void> {
+    return of(void 0);
+  }
+
+  private mapAlertToNotification(alert: LegacyAlert): NotificationItem {
+    const symbol = alert.assetSymbol || 'Ativo';
+    const condition = this.describeAlertCondition(alert);
+    return {
+      id: alert.id,
+      userId: alert.userId,
+      type: 'MARKET_PRICE',
+      title: `Alerta de ${symbol}`,
+      message: `${condition}. Preparado para virar aviso por WhatsApp quando a IA liberar uma oportunidade.`,
+      isRead: false,
+      createdAt: alert.createdAt || new Date().toISOString()
+    };
+  }
+
+  private describeAlertCondition(alert: LegacyAlert): string {
+    const value = Number(alert.targetValue || 0).toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+
+    switch (alert.conditionType) {
+      case 'GREATER_THAN':
+        return `Dispara quando passar de ${value}`;
+      case 'LESS_THAN':
+        return `Dispara quando cair abaixo de ${value}`;
+      case 'EQUALS':
+        return `Dispara quando chegar em ${value}`;
+      case 'PERCENT_CHANGE':
+        return `Dispara por variacao percentual configurada`;
+      default:
+        return 'Alerta de oportunidade configurado';
+    }
+  }
+
 }
