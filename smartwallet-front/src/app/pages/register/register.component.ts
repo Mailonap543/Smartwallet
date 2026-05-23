@@ -1,34 +1,62 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   template: `
-    <main class="auth-page register-page">
-      <section class="register-column">
-        <a class="brand" routerLink="/home" aria-label="Smartwallet">
-          <span class="brand-symbol">W</span>
-          <span>Smart<strong>wallet</strong></span>
-        </a>
+    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
+      <div class="bg-gray-800 rounded-2xl shadow-lg px-10 py-10 w-full max-w-md">
+        <h1 class="text-2xl font-black text-white mb-6 text-center">Criar Conta</h1>
+        <form (ngSubmit)="onSubmit()" class="space-y-5" autocomplete="off">
 
-        <header class="auth-header">
-          <h1>Crie sua <span>conta</span></h1>
-          <p>De o primeiro passo para uma carteira inteligente e investimentos melhores.</p>
-        </header>
+          <div *ngIf="error()"
+               class="w-full flex justify-center items-center mb-2 bg-red-600/40 rounded py-2 px-3 text-xs text-white font-bold">
+            {{ error() }}
+          </div>
 
-        <form class="auth-form" (ngSubmit)="onSubmit()" autocomplete="off">
-          <label class="field">
-            <span>Nome completo</span>
-            <div class="input-shell">
-              <span class="material-symbols-rounded" aria-hidden="true">person</span>
-              <input type="text" [(ngModel)]="fullName" name="fullName" placeholder="Seu nome completo" autocomplete="name" required />
-            </div>
-          </label>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Nome completo</label>
+            <input
+              type="text"
+              [(ngModel)]="fullName"
+              name="fullName"
+              required
+              class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Seu nome"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">CPF</label>
+            <input
+              type="text"
+              [(ngModel)]="cpf"
+              name="cpf"
+              required
+              maxlength="14"
+              class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Apenas números"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Telefone</label>
+            <input
+              type="text"
+              [(ngModel)]="phone"
+              name="phone"
+              required
+              maxlength="15"
+              class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="DDD + número"
+            />
+          </div>
 
           <label class="field">
             <span>E-mail</span>
@@ -731,6 +759,13 @@ export class RegisterComponent {
       return;
     }
 
+    console.log('Tentando cadastrar:', {
+      fullName: this.fullName,
+      cpf: onlyDigitsCpf,
+      phone: onlyDigitsPhone,
+      email: this.email
+    });
+
     this.auth.register({
       fullName: this.fullName,
       cpf: onlyDigitsCpf,
@@ -742,6 +777,7 @@ export class RegisterComponent {
         void this.router.navigate(['/dashboard']);
       },
       error: (err) => {
+        console.error("Erro ao criar conta:", err);
         this.error.set(err.error?.message || 'Erro ao criar conta. Tente novamente.');
       }
     });
