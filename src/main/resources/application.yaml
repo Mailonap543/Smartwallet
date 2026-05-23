@@ -21,6 +21,7 @@ spring:
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
+      # Retornado para validate após as correções automáticas no banco
       ddl-auto: validate
     show-sql: false
     open-in-view: false
@@ -34,6 +35,8 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    repair-on-migrate: true
+    out-of-order: true           # <-- Permite executar a V6 mesmo já existindo uma versão superior gravada no banco
 
   data:
     redis:

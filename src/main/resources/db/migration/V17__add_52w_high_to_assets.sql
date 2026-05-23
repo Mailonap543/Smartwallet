@@ -1,1 +1,0 @@
-ALTER TABLE assets ADD COLUMN "52w_high" NUMERIC;

@@ -1,19 +1,28 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
-    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
-      <div class="bg-gray-800 rounded-2xl shadow-lg px-10 py-10 w-full max-w-md">
+    <main class="auth-page">
+      <div class="register-column">
+        <header class="auth-header">
+          <a routerLink="/" class="brand">
+            <span class="brand-symbol">SW</span>
+            <strong>Smart</strong>wallet
+          </a>
+          <p>Crie sua conta para começar a gerenciar seus investimentos.</p>
+        </header>
+
         <h1 class="text-2xl font-black text-white mb-6 text-center">Criar Conta</h1>
-        <form (ngSubmit)="onSubmit()" class="space-y-5" autocomplete="off">
+
+        <form (ngSubmit)="onSubmit()" class="auth-form" autocomplete="off">
 
           <div *ngIf="error()"
                class="w-full flex justify-center items-center mb-2 bg-red-600/40 rounded py-2 px-3 text-xs text-white font-bold">
@@ -29,32 +38,6 @@ import { Router } from '@angular/router';
               required
               class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Seu nome"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">CPF</label>
-            <input
-              type="text"
-              [(ngModel)]="cpf"
-              name="cpf"
-              required
-              maxlength="14"
-              class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Apenas números"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Telefone</label>
-            <input
-              type="text"
-              [(ngModel)]="phone"
-              name="phone"
-              required
-              maxlength="15"
-              class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="DDD + número"
             />
           </div>
 
@@ -146,7 +129,7 @@ import { Router } from '@angular/router';
             <p>Mais que uma carteira, uma inteligencia para multiplicar seus resultados.</p>
           </div>
         </section>
-      </section>
+      </div>
 
       <section class="phone-showcase" aria-hidden="true">
         <div class="phone">

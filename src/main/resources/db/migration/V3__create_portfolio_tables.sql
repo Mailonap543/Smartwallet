@@ -1,5 +1,4 @@
--- V14: Portfolio tables (additional to existing)
--- Goals
+
 CREATE TABLE IF NOT EXISTS goals (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,

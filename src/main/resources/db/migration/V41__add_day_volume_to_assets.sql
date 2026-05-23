@@ -1,0 +1,2 @@
+
+ALTER TABLE assets ADD COLUMN IF NOT EXISTS day_volume NUMERIC(25, 4);

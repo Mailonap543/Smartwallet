@@ -24,15 +24,19 @@ ALTER TABLE assets ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT false;
 ALTER TABLE assets ADD COLUMN IF NOT EXISTS data_source VARCHAR(255);
 ALTER TABLE assets ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
 
--- Add foreign key for category_id if assets table uses asset_categories
+-- Add foreign key for category_id safely using dynamic execution
 DO $$
 BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.table_constraints
-        WHERE constraint_name = 'fk_assets_category_id'
-        AND table_name = 'assets'
-    ) THEN
-ALTER TABLE assets ADD CONSTRAINT fk_assets_category_id
-    FOREIGN KEY (category_id) REFERENCES asset_categories(id) ON DELETE SET NULL;
+    -- Só tenta criar a chave estrangeira se a tabela alvo existir no banco
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'asset_categories') THEN
+        -- Garante que não vai tentar criar uma constraint duplicada
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.table_constraints
+            WHERE constraint_name = 'fk_assets_category_id'
+            AND table_name = 'assets'
+        ) THEN
+            -- Executa via string dinâmica para o Postgres não validar a tabela antes da hora
+            EXECUTE 'ALTER TABLE assets ADD CONSTRAINT fk_assets_category_id FOREIGN KEY (category_id) REFERENCES asset_categories(id) ON DELETE SET NULL';
+END IF;
 END IF;
 END $$;
