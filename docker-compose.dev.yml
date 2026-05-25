@@ -19,9 +19,12 @@ services:
       - SPRING_REDIS_PORT=6379
       - JWT_SECRET=dev-secret-key-change-in-production
       - JWT_EXPIRATION=86400000
+      - SMARTWALLET_AI_PYTHON_MOCK_ENABLED=false
+      - SMARTWALLET_AI_PYTHON_BASE_URL=http://ai-python-service:8001
     depends_on:
       - postgres
       - redis
+      - ai-python-service
     volumes:
       - .:/app
       - ./target/classes:/app/target/classes
@@ -94,6 +97,26 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  ai-python-service:
+    build:
+      context: ./ai-python-service
+      dockerfile: Dockerfile
+    container_name: smartwallet-ai-python-dev
+    ports:
+      - "8001:8001"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
+    volumes:
+      - ./ai-python-service:/app
+    networks:
+      - smartwallet-dev
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health', timeout=3)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   prometheus:
     image: prom/prometheus:latest
