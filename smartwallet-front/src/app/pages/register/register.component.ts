@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { Router, RouterModule } from '@angular/router';
@@ -44,7 +43,7 @@ import { Router, RouterModule } from '@angular/router';
           <label class="field">
             <span>E-mail</span>
             <div class="input-shell">
-              <span class="material-symbols-rounded" aria-hidden="true">mail</span>
+              <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">mail</span>
               <input type="email" [(ngModel)]="email" name="email" placeholder="seu@email.com" autocomplete="email" required />
             </div>
           </label>
@@ -53,7 +52,7 @@ import { Router, RouterModule } from '@angular/router';
             <label class="field">
               <span>CPF</span>
               <div class="input-shell compact">
-                <span class="material-symbols-rounded" aria-hidden="true">badge</span>
+                <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">badge</span>
                 <input type="text" [(ngModel)]="cpf" name="cpf" placeholder="Apenas numeros" maxlength="14" required />
               </div>
             </label>
@@ -61,7 +60,7 @@ import { Router, RouterModule } from '@angular/router';
             <label class="field">
               <span>Telefone</span>
               <div class="input-shell compact">
-                <span class="material-symbols-rounded" aria-hidden="true">call</span>
+                <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">call</span>
                 <input type="text" [(ngModel)]="phone" name="phone" placeholder="DDD + numero" maxlength="15" required />
               </div>
             </label>
@@ -70,10 +69,10 @@ import { Router, RouterModule } from '@angular/router';
           <label class="field">
             <span>Senha</span>
             <div class="input-shell">
-              <span class="material-symbols-rounded" aria-hidden="true">lock</span>
+              <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">lock</span>
               <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password" placeholder="Crie uma senha" autocomplete="new-password" required />
               <button class="icon-button" type="button" (click)="showPassword = !showPassword" aria-label="Mostrar ou ocultar senha">
-                <span class="material-symbols-rounded" aria-hidden="true">{{ showPassword ? 'visibility' : 'visibility_off' }}</span>
+                <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">{{ showPassword ? 'visibility' : 'visibility_off' }}</span>
               </button>
             </div>
           </label>
@@ -81,10 +80,10 @@ import { Router, RouterModule } from '@angular/router';
           <label class="field">
             <span>Confirmar senha</span>
             <div class="input-shell">
-              <span class="material-symbols-rounded" aria-hidden="true">lock</span>
+              <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">lock</span>
               <input [type]="showConfirmPassword ? 'text' : 'password'" [(ngModel)]="confirmPassword" name="confirmPassword" placeholder="Confirme sua senha" autocomplete="new-password" required />
               <button class="icon-button" type="button" (click)="showConfirmPassword = !showConfirmPassword" aria-label="Mostrar ou ocultar confirmacao de senha">
-                <span class="material-symbols-rounded" aria-hidden="true">{{ showConfirmPassword ? 'visibility' : 'visibility_off' }}</span>
+                <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">{{ showConfirmPassword ? 'visibility' : 'visibility_off' }}</span>
               </button>
             </div>
           </label>
@@ -123,7 +122,7 @@ import { Router, RouterModule } from '@angular/router';
         <p class="switch-link">Ja tem uma conta? <a routerLink="/login">Entrar</a></p>
 
         <section class="smart-card">
-          <div class="smart-icon material-symbols-rounded" aria-hidden="true">star</div>
+          <div class="smart-icon material-symbols-rounded notranslate" aria-hidden="true">star</div>
           <div>
             <h2>Smartwallet</h2>
             <p>Mais que uma carteira, uma inteligencia para multiplicar seus resultados.</p>
@@ -767,6 +766,7 @@ export class RegisterComponent {
   }
 
   protected registerWithProvider(provider: 'Google' | 'Apple' | 'Microsoft'): void {
-    this.error.set(`Cadastro com ${provider} ainda precisa ser conectado no backend.`);
+    this.error.set('');
+    this.auth.loginWithProvider(provider);
   }
 }

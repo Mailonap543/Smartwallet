@@ -134,23 +134,13 @@ public class TransactionService {
         List<Transaction> transactions = transactionRepository.findByAssetIdOrderedByDateDesc(asset.getId());
 
         if (transactions.isEmpty()) {
-            applyManualAssetTotals(asset);
+            clearAssetTotals(asset);
         } else {
             applyTransactionTotals(asset, calculateTransactionTotals(transactions));
         }
 
         asset.calculateProfitLoss();
         assetRepository.save(asset);
-    }
-
-    private void applyManualAssetTotals(Asset asset) {
-        BigDecimal quantity = valueOrZero(asset.getQuantity());
-        BigDecimal purchasePrice = valueOrZero(asset.getPurchasePrice());
-        BigDecimal currentPrice = asset.getCurrentPrice() != null ? asset.getCurrentPrice() : purchasePrice;
-
-        asset.setAveragePrice(asset.getAveragePrice() != null ? asset.getAveragePrice() : purchasePrice);
-        asset.setTotalInvested(quantity.multiply(purchasePrice));
-        asset.setCurrentValue(quantity.multiply(currentPrice));
     }
 
     private TransactionTotals calculateTransactionTotals(List<Transaction> transactions) {
@@ -213,10 +203,6 @@ public class TransactionService {
             return BigDecimal.ZERO;
         }
         return totalCost.divide(totalQuantity, scale, RoundingMode.HALF_UP);
-    }
-
-    private BigDecimal valueOrZero(BigDecimal value) {
-        return value != null ? value : BigDecimal.ZERO;
     }
 
     private record TransactionTotals(BigDecimal quantity, BigDecimal cost) {

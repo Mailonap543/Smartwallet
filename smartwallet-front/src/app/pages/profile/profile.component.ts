@@ -17,7 +17,7 @@ import { AuthService } from '../../services/auth.service';
           <p>{{ user()?.email || 'Complete seus dados para personalizar sua experiencia.' }}</p>
         </div>
         <a class="hero-action" routerLink="/subscription" aria-label="Abrir plano">
-          <span class="material-symbols-rounded" aria-hidden="true">workspace_premium</span>
+          <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">workspace_premium</span>
           <span>Plano</span>
         </a>
       </section>
@@ -25,7 +25,7 @@ import { AuthService } from '../../services/auth.service';
       <section class="profile-grid">
         <article class="profile-card account-card">
           <div class="card-heading">
-            <span class="material-symbols-rounded" aria-hidden="true">badge</span>
+            <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">badge</span>
             <div>
               <h2>Dados da conta</h2>
               <p>Informacoes principais do usuario logado.</p>
@@ -50,7 +50,7 @@ import { AuthService } from '../../services/auth.service';
 
         <article class="profile-card status-card">
           <div class="card-heading">
-            <span class="material-symbols-rounded" aria-hidden="true">shield_lock</span>
+            <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">shield_lock</span>
             <div>
               <h2>Seguranca</h2>
               <p>Sessao ativa e protegida por token.</p>
@@ -62,14 +62,14 @@ import { AuthService } from '../../services/auth.service';
             Conta autenticada
           </div>
           <button type="button" class="secondary-action" (click)="logout()">
-            <span class="material-symbols-rounded" aria-hidden="true">logout</span>
+            <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">logout</span>
             Sair da conta
           </button>
         </article>
 
         <article class="profile-card preferences-card">
           <div class="card-heading">
-            <span class="material-symbols-rounded" aria-hidden="true">tune</span>
+            <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">tune</span>
             <div>
               <h2>Preferencias</h2>
               <p>Preferencias usadas para personalizar alertas e recomendacoes.</p>
@@ -77,7 +77,7 @@ import { AuthService } from '../../services/auth.service';
           </div>
 
           <div class="risk-summary">
-            <span class="material-symbols-rounded" aria-hidden="true">psychology</span>
+            <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">psychology</span>
             <div>
               <small>Perfil de risco atual</small>
               <strong>{{ riskProfile }}</strong>
@@ -102,13 +102,13 @@ import { AuthService } from '../../services/auth.service';
             <strong>WhatsApp</strong>
           </div>
           <a class="preference-link" routerLink="/calculators" aria-label="Refazer pesquisa de perfil de risco">
-            <span class="material-symbols-rounded" aria-hidden="true">edit_note</span>
+            <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">edit_note</span>
             Refazer pesquisa de risco
           </a>
         </article>
 
         <article class="profile-card shortcut-card">
-          <div class="shortcut-icon material-symbols-rounded" aria-hidden="true">smart_toy</div>
+          <div class="shortcut-icon material-symbols-rounded notranslate" aria-hidden="true">smart_toy</div>
           <h2>Carteira inteligente</h2>
           <p>Use a IA para revisar sua carteira e encontrar oportunidades de melhoria.</p>
           <a routerLink="/ai-analysis">Abrir inteligencia IA</a>

@@ -20,7 +20,7 @@ public class Transaction {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "asset_id", nullable = false)
+    @JoinColumn(name = "portfolio_asset_id", nullable = false)
     @JsonIgnore
     private Asset asset;
 

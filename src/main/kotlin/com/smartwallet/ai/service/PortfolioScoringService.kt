@@ -260,17 +260,12 @@ class PortfolioScoringService {
         stability: Int
     ): Int {
 
-        val weights = mapOf(
-            diversification to 0.20,
-            riskReturn to 0.30,
-            liquidity to 0.15,
-            concentration to 0.15,
-            stability to 0.20
-        )
-
-        val weightedSum = weights.entries.sumOf { (score, weight) ->
-            score * weight
-        }
+        val weightedSum =
+            diversification * 0.20 +
+                riskReturn * 0.30 +
+                liquidity * 0.15 +
+                concentration * 0.15 +
+                stability * 0.20
 
         return weightedSum.toInt().coerceIn(0, 100)
     }

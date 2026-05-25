@@ -24,6 +24,7 @@ export const routes: Routes = [
   { path: 'profile', canActivate: [authGuard], loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent) },
   
   { path: 'ai-analysis', canActivate: [authGuard], loadComponent: () => import('./pages/ai-analysis/ai-analysis.component').then(m => m.AiAnalysisComponent) },
+  { path: 'ai-chat', redirectTo: 'ai', pathMatch: 'full' },
   { path: 'ai', canActivate: [authGuard], loadComponent: () => import('./pages/ai-chat/ai-chat.component').then(m => m.AiChatComponent) },
   { path: 'subscription', canActivate: [authGuard], loadComponent: () => import('./pages/subscription/subscription.component').then(m => m.SubscriptionComponent) },
   { path: '**', redirectTo: 'dashboard' }

@@ -1,11 +1,11 @@
-<div class="smart-shell" [class.auth-shell]="!showNavigation">
+<div class="smart-shell" [class.auth-shell]="!showNavigation" [class.jarvis-route]="isJarvisRoute">
   @if (showNavigation) {
     <aside class="smart-sidebar" aria-label="Menu principal">
       <a class="brand" routerLink="/dashboard" aria-label="Ir para o dashboard">
-        <span class="brand-mark material-symbols-rounded" aria-hidden="true">bar_chart_4_bars</span>
+        <span class="brand-mark material-symbols-rounded notranslate" aria-hidden="true">near_me</span>
         <span class="brand-text">
-          <strong>Carteira Inteligente</strong>
-          <small>de Investimentos</small>
+          <strong>Smartwallet</strong>
+          <small>Carteira Inteligente de Investimentos</small>
         </span>
       </a>
 
@@ -19,7 +19,7 @@
             [attr.aria-label]="item.label"
             [attr.title]="item.label"
           >
-            <span class="material-symbols-rounded" aria-hidden="true">{{ item.icon }}</span>
+            <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">{{ item.icon }}</span>
             <span>{{ item.label }}</span>
           </a>
         }
@@ -27,11 +27,11 @@
 
       <div class="sidebar-footer">
         <button class="ai-quick-action" type="button" routerLink="/ai-analysis" aria-label="Abrir inteligência IA" title="Inteligência IA">
-          <span class="material-symbols-rounded" aria-hidden="true">smart_toy</span>
+          <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">smart_toy</span>
         </button>
 
         <button class="notification-action" type="button" aria-label="Notificações" title="Notificações" (click)="toggleNotifications()">
-          <span class="material-symbols-rounded" aria-hidden="true">notifications</span>
+          <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">notifications</span>
           @if (unreadNotifications > 0) {
             <span class="notification-badge">{{ unreadNotifications }}</span>
           }
@@ -56,7 +56,7 @@
                     [class.unread]="!notification.isRead"
                     (click)="markNotificationAsRead(notification)"
                   >
-                    <span class="material-symbols-rounded" aria-hidden="true">
+                    <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">
                       {{ notification.type === 'RISK_ALERT' ? 'warning' : notification.type === 'NEWS' ? 'article' : notification.type === 'MARKET_PRICE' ? 'monitoring' : 'notifications' }}
                     </span>
                     <span>
@@ -68,14 +68,14 @@
               </div>
             } @else {
               <div class="notification-empty">
-                <span class="material-symbols-rounded" aria-hidden="true">notifications_off</span>
+                <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">notifications_off</span>
                 <p>Nenhuma notificação por enquanto.</p>
               </div>
             }
 
             <div class="whatsapp-alert-panel">
               <div class="whatsapp-heading">
-                <span class="material-symbols-rounded" aria-hidden="true">forum</span>
+                <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">forum</span>
                 <div>
                   <strong>Alertas por WhatsApp</strong>
                   <small>Preparado para sua IA em Kotlin/Python</small>
@@ -126,7 +126,7 @@
         </a>
 
         <button class="logout-button" type="button" aria-label="Sair da conta" title="Sair" (click)="logout()">
-          <span class="material-symbols-rounded" aria-hidden="true">logout</span>
+          <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">logout</span>
           <span>Sair</span>
         </button>
       </div>

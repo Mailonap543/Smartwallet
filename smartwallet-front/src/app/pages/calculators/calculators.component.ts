@@ -21,7 +21,7 @@ type CalculatorTab = 'compound' | 'reserve' | 'dividend' | 'goal' | 'risk';
       <nav class="calculator-tabs" aria-label="Calculadoras">
         @for (tab of tabs; track tab.id) {
           <button [class.active]="activeCalc === tab.id" (click)="activeCalc = tab.id">
-            <span class="material-symbols-rounded" aria-hidden="true">{{ tab.icon }}</span>
+            <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">{{ tab.icon }}</span>
             {{ tab.label }}
           </button>
         }
@@ -31,7 +31,7 @@ type CalculatorTab = 'compound' | 'reserve' | 'dividend' | 'goal' | 'risk';
         @if (activeCalc === 'compound') {
           <article class="calc-card">
             <div class="card-heading">
-              <span class="material-symbols-rounded" aria-hidden="true">query_stats</span>
+              <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">query_stats</span>
               <div>
                 <h2>Juros compostos</h2>
                 <p>Veja quanto seu dinheiro pode crescer ao longo do tempo.</p>
@@ -54,7 +54,7 @@ type CalculatorTab = 'compound' | 'reserve' | 'dividend' | 'goal' | 'risk';
         @if (activeCalc === 'reserve') {
           <article class="calc-card">
             <div class="card-heading">
-              <span class="material-symbols-rounded" aria-hidden="true">savings</span>
+              <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">savings</span>
               <div>
                 <h2>Reserva de emergencia</h2>
                 <p>Calcule quanto guardar para atravessar imprevistos.</p>
@@ -76,7 +76,7 @@ type CalculatorTab = 'compound' | 'reserve' | 'dividend' | 'goal' | 'risk';
         @if (activeCalc === 'dividend') {
           <article class="calc-card">
             <div class="card-heading">
-              <span class="material-symbols-rounded" aria-hidden="true">redeem</span>
+              <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">redeem</span>
               <div>
                 <h2>Dividendos</h2>
                 <p>Simule a renda passiva mensal pelo dividend yield.</p>
@@ -97,7 +97,7 @@ type CalculatorTab = 'compound' | 'reserve' | 'dividend' | 'goal' | 'risk';
         @if (activeCalc === 'goal') {
           <article class="calc-card">
             <div class="card-heading">
-              <span class="material-symbols-rounded" aria-hidden="true">flag</span>
+              <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">flag</span>
               <div>
                 <h2>Meta patrimonial</h2>
                 <p>Descubra o aporte mensal necessario para chegar ao objetivo.</p>
@@ -120,7 +120,7 @@ type CalculatorTab = 'compound' | 'reserve' | 'dividend' | 'goal' | 'risk';
         @if (activeCalc === 'risk') {
           <article class="calc-card risk-card">
             <div class="card-heading">
-              <span class="material-symbols-rounded" aria-hidden="true">psychology</span>
+              <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">psychology</span>
               <div>
                 <h2>Pesquisa de perfil de risco</h2>
                 <p>Responda e descubra se seu perfil e conservador, moderado ou arrojado.</p>

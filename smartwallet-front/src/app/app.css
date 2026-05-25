@@ -215,10 +215,10 @@
 }
 
 .notifications-popover {
-  position: absolute;
-  left: calc(100% + 14px);
-  bottom: 116px;
-  z-index: 60;
+  position: fixed;
+  left: calc(var(--sidebar-width) + (var(--shell-gap) * 2) + 22px);
+  bottom: 26px;
+  z-index: 1200;
   width: 320px;
   max-height: calc(100vh - 80px);
   overflow-y: auto;
@@ -518,6 +518,204 @@
   box-shadow: none;
 }
 
+.smart-shell.jarvis-route {
+  grid-template-columns: 232px minmax(0, 1fr);
+  gap: 14px;
+  padding: 14px;
+  color: #f8fbff;
+  background:
+    linear-gradient(rgba(0, 198, 255, 0.026) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 198, 255, 0.026) 1px, transparent 1px),
+    radial-gradient(circle at 50% 0%, rgba(0, 149, 255, 0.14), transparent 32%),
+    linear-gradient(145deg, #02040d 0%, #050b1c 48%, #02040d 100%);
+  background-size: 36px 36px, 36px 36px, auto, auto;
+}
+
+.jarvis-route .smart-sidebar {
+  top: 14px;
+  height: calc(100vh - 28px);
+  align-items: stretch;
+  padding: 14px 10px;
+  border-color: rgba(0, 195, 255, 0.24);
+  border-radius: 4px 20px 4px 20px;
+  background:
+    linear-gradient(180deg, rgba(3, 10, 28, 0.96), rgba(2, 6, 18, 0.96)),
+    radial-gradient(circle at 40% 0%, rgba(124, 58, 237, 0.26), transparent 38%);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42), inset 0 0 34px rgba(0, 149, 255, 0.06);
+}
+
+.jarvis-route .smart-sidebar::before {
+  position: absolute;
+  top: -1px;
+  left: 34px;
+  width: 106px;
+  height: 2px;
+  content: '';
+  background: linear-gradient(90deg, transparent, #06b6d4, #7c3aed, transparent);
+  filter: drop-shadow(0 0 8px #06b6d4);
+}
+
+.jarvis-route .brand {
+  min-height: 96px;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 10px;
+  justify-items: start;
+  padding: 10px 8px 14px;
+  color: #f8fbff;
+}
+
+.jarvis-route .brand-mark {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 32px;
+  color: #e0f2fe;
+  background:
+    radial-gradient(circle, rgba(124, 58, 237, 0.72), rgba(0, 149, 255, 0.3) 58%, transparent 60%),
+    rgba(2, 10, 28, 0.94);
+  box-shadow: 0 0 28px rgba(56, 189, 248, 0.62), inset 0 0 18px rgba(124, 58, 237, 0.5);
+}
+
+.jarvis-route .brand-text {
+  display: block;
+}
+
+.jarvis-route .brand-text strong {
+  display: block;
+  color: #f8fbff;
+  font-size: 16px;
+  line-height: 1.05;
+}
+
+.jarvis-route .brand-text small {
+  color: #aebae2;
+  font-size: 11px;
+}
+
+.jarvis-route .side-nav {
+  justify-items: stretch;
+  gap: 8px;
+}
+
+.jarvis-route .nav-item {
+  width: 100%;
+  min-height: 48px;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 8px;
+  justify-items: start;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 4px 14px 4px 14px;
+  color: #d9e2ff;
+  font-size: 13px;
+  background: transparent;
+}
+
+.jarvis-route .nav-item .material-symbols-rounded {
+  flex: 0 0 auto;
+  font-size: 22px;
+  color: #93c5fd;
+}
+
+.jarvis-route .nav-item span:last-child {
+  display: block;
+}
+
+.jarvis-route .nav-item:hover {
+  color: #fff;
+  border-color: rgba(0, 195, 255, 0.2);
+  background: rgba(0, 149, 255, 0.08);
+}
+
+.jarvis-route .nav-item.active {
+  color: #fff;
+  border-color: rgba(124, 58, 237, 0.42);
+  background: linear-gradient(135deg, rgba(103, 41, 255, 0.72), rgba(16, 104, 255, 0.26));
+  box-shadow: 0 0 26px rgba(103, 41, 255, 0.28), inset 4px 0 0 #8b5cf6;
+}
+
+.jarvis-route .nav-item.active::after {
+  right: -10px;
+  background: #22e6ff;
+  box-shadow: 0 0 18px rgba(34, 230, 255, 0.8);
+}
+
+.jarvis-route .sidebar-footer {
+  justify-items: stretch;
+}
+
+.jarvis-route .ai-quick-action,
+.jarvis-route .notification-action,
+.jarvis-route .logout-button,
+.jarvis-route .user-card {
+  width: 100%;
+  border-color: rgba(0, 195, 255, 0.16);
+  border-radius: 4px 14px 4px 14px;
+  color: #d9e2ff;
+  background: rgba(3, 10, 28, 0.74);
+}
+
+.jarvis-route .ai-quick-action,
+.jarvis-route .notification-action {
+  min-height: 44px;
+}
+
+.jarvis-route .user-card {
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  justify-items: start;
+  gap: 9px;
+  padding: 9px;
+}
+
+.jarvis-route .avatar {
+  background: linear-gradient(145deg, #7c3aed, #06b6d4);
+}
+
+.jarvis-route .user-info strong,
+.jarvis-route .user-info small {
+  display: block;
+}
+
+.jarvis-route .user-info strong {
+  color: #f8fbff;
+  font-size: 13px;
+}
+
+.jarvis-route .user-info small,
+.jarvis-route .profile-label {
+  color: #aebae2;
+}
+
+.jarvis-route .logout-button {
+  grid-template-columns: 38px minmax(0, 1fr);
+  justify-items: start;
+  padding: 0 10px;
+}
+
+.jarvis-route .logout-button span:last-child {
+  display: block;
+}
+
+.jarvis-route .smart-content {
+  overflow: visible;
+  border-color: rgba(0, 195, 255, 0.18);
+  border-radius: 4px 24px 4px 24px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.jarvis-route .notifications-popover {
+  left: 258px;
+  bottom: 24px;
+  width: min(380px, calc(100vw - 286px));
+  border-color: rgba(0, 195, 255, 0.26);
+  border-radius: 6px 20px 6px 20px;
+  background:
+    linear-gradient(145deg, rgba(3, 10, 28, 0.97), rgba(2, 6, 18, 0.97)),
+    radial-gradient(circle at 40% 0%, rgba(0, 195, 255, 0.16), transparent 42%);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48), inset 0 0 28px rgba(0, 149, 255, 0.05);
+}
+
 @media (prefers-color-scheme: dark) {
   :host {
     --text-strong: #f8fafc;
@@ -726,10 +924,10 @@
   }
 
   .notifications-popover {
-    left: auto;
-    right: 0;
-    bottom: 74px;
-    width: min(320px, calc(100vw - 20px));
+    left: 10px;
+    right: 10px;
+    bottom: 84px;
+    width: auto;
   }
 
   .side-nav {
