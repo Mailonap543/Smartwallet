@@ -71,14 +71,6 @@ O projeto possui pipelines automatizados para build, teste, qualidade de código
 
 ### Badges do CI/CD
 
-Adicione ao seu README:
-
-```markdown
-![Build](https://github.com/<owner>/smartwallet/actions/workflows/ci.yml/badge.svg)
-![CodeQL](https://github.com/<owner>/smartwallet/actions/workflows/codeql-analysis.yml/badge.svg)
-![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=smartwallet-backend&metric=alert_status)
-![Coverage](https://codecov.io/gh/<owner>/smartwallet/branch/main/graph/badge.svg)
-```
 
 ### Secrets Necessários
 
@@ -136,15 +128,4 @@ docker build -t smartwallet/backend .
 ```bash
 mvn test
 ```
-Inclui testes de integração para market, wallet, watchlist e news.
 
-## Notas de segurança
-- PRNG inseguro removido (uso de `SecureRandom`)
-- Logs não expõem parâmetros controlados pelo usuário
-- Autenticação definitiva ainda pendente; usar JWT/OAuth em produção
-
-## Próximos passos sugeridos
-- Implementar auth real (JWT/OAuth2) e remover stub `X-User-Id`
-- Ingestão externa de mercado/dividendos/earnings e agenda
-- Remover mocks do frontend e integrar totalmente aos endpoints
-- Cobrir acessibilidade (WCAG 2.2), observabilidade e testes E2E
