@@ -57,7 +57,7 @@ import { ApiService, Asset } from '../../services/api.service';
     .empty a { color: var(--primary-light); }
   `]
 })
-export class FavoritesComponent {
+export class FavoritesComponent implements OnInit {
   private api = inject(ApiService);
   favorites: Asset[] = [];
 

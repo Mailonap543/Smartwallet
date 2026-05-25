@@ -5,13 +5,16 @@ services:
       dockerfile: Dockerfile
     container_name: smartwallet-api-prod
     environment:
-      SPRING_PROFILES_ACTIVE: production
-      DATABASE_URL: jdbc:postgresql://postgres:5432/smartwallet_production
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: postgres
       DB_USER: postgres
       DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SMARTWALLET_AI_PYTHON_MOCK_ENABLED: "false"
+      SMARTWALLET_AI_PYTHON_BASE_URL: http://ai-python-service:8001
       STRIPE_API_KEY: ${STRIPE_API_KEY}
       BRAPI_KEY: ${BRAPI_KEY}
     ports:
@@ -20,6 +23,8 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      ai-python-service:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health"]
@@ -35,6 +40,21 @@ services:
         reservations:
           cpus: '0.5'
           memory: 512M
+
+  ai-python-service:
+    build:
+      context: ./ai-python-service
+      dockerfile: Dockerfile
+    container_name: smartwallet-ai-python-prod
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health', timeout=3)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: always
 
   frontend:
     build:
@@ -80,3 +100,36 @@ services:
         limits:
           cpus: '0.5'
           memory: 128M
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: smartwallet-postgres-prod
+    environment:
+      POSTGRES_DB: smartwallet
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d smartwallet"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    container_name: smartwallet-redis-prod
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+volumes:
+  postgres_data:
+  redis_data:

@@ -17,7 +17,7 @@ describe('ApiService', () => {
     const response = await fetch('/api/test');
     const data = await response.json();
 
-    expect(mockFetch).toHaveBeenCalledWith('/api/test', expect.any(Object));
+    expect(mockFetch).toHaveBeenCalledWith('/api/test');
     expect(data.success).toBe(true);
   });
 

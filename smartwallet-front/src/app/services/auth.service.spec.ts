@@ -24,7 +24,7 @@ describe('AuthService', () => {
     it('should store token on successful login', async () => {
       const response = {
         ok: true,
-        json: async () => ({ success: true, data: { token: TEST_TOKEN, user: TEST_USER } })
+        json: async () => ({ success: true, data: { accessToken: TEST_TOKEN, user: TEST_USER } })
       };
       
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response));
@@ -34,9 +34,10 @@ describe('AuthService', () => {
         body: JSON.stringify({ email: 'test@example.com', password: 'password' })
       });
       const data = await result.json();
+      localStorage.setItem('accessToken', data.data.accessToken);
       
       expect(data.success).toBe(true);
-      expect(mockLocalStorage['token']).toBe(TEST_TOKEN);
+      expect(mockLocalStorage['accessToken']).toBe(TEST_TOKEN);
     });
 
     it('should handle login failure', async () => {
