@@ -351,3 +351,288 @@ main.smart-content apx-chart {
     padding: 12px;
   }
 }
+
+/* Jarvis visual system for all authenticated screens */
+.smart-shell.jarvis-route main.smart-content {
+  color: #f8fbff;
+}
+
+.smart-shell.jarvis-route .wallet-page,
+.smart-shell.jarvis-route .profile-page,
+.smart-shell.jarvis-route .calculators-page,
+.smart-shell.jarvis-route .favorites-page {
+  width: 100%;
+  max-width: none;
+  min-height: 100%;
+  padding: 14px;
+  color: #f8fbff;
+  background:
+    linear-gradient(rgba(0, 198, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 198, 255, 0.035) 1px, transparent 1px),
+    radial-gradient(circle at 52% 8%, rgba(0, 153, 255, 0.2), transparent 30%),
+    linear-gradient(145deg, #02040d 0%, #050b1c 48%, #02040d 100%);
+  background-size: 34px 34px, 34px 34px, auto, auto;
+}
+
+.smart-shell.jarvis-route .min-h-screen.bg-gray-900 {
+  min-height: 100%;
+  padding: 14px;
+  color: #f8fbff;
+  background:
+    linear-gradient(rgba(0, 198, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 198, 255, 0.035) 1px, transparent 1px),
+    radial-gradient(circle at 52% 8%, rgba(0, 153, 255, 0.2), transparent 30%),
+    linear-gradient(145deg, #02040d 0%, #050b1c 48%, #02040d 100%) !important;
+  background-size: 34px 34px, 34px 34px, auto, auto;
+}
+
+.smart-shell.jarvis-route .min-h-screen.bg-gray-900 > nav {
+  display: none !important;
+}
+
+.smart-shell.jarvis-route .min-h-screen.bg-gray-900 > header,
+.smart-shell.jarvis-route .wallet-hero,
+.smart-shell.jarvis-route .profile-hero,
+.smart-shell.jarvis-route .calc-hero {
+  min-height: 82px;
+  margin: 0 0 8px;
+  padding: 14px 20px;
+  border: 1px solid rgba(0, 195, 255, 0.18) !important;
+  border-radius: 4px 22px 4px 22px !important;
+  color: #f8fbff;
+  background:
+    linear-gradient(135deg, rgba(4, 12, 30, 0.84), rgba(2, 5, 16, 0.86)),
+    radial-gradient(circle at 60% 0%, rgba(0, 195, 255, 0.16), transparent 40%) !important;
+  box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.06), 0 20px 60px rgba(0, 0, 0, 0.32) !important;
+}
+
+.smart-shell.jarvis-route .min-h-screen.bg-gray-900 > header > div,
+.smart-shell.jarvis-route .max-w-7xl,
+.smart-shell.jarvis-route .max-w-4xl {
+  max-width: none !important;
+  margin-inline: 0 !important;
+}
+
+.smart-shell.jarvis-route .min-h-screen.bg-gray-900 > main,
+.smart-shell.jarvis-route .max-w-7xl.px-6,
+.smart-shell.jarvis-route .max-w-4xl {
+  padding: 10px 0 0 !important;
+}
+
+.smart-shell.jarvis-route .wallet-hero h1,
+.smart-shell.jarvis-route .profile-hero h1,
+.smart-shell.jarvis-route .calc-hero h1,
+.smart-shell.jarvis-route .min-h-screen.bg-gray-900 h1,
+.smart-shell.jarvis-route .favorites-page h1 {
+  color: #f8fbff !important;
+  font-size: clamp(28px, 3vw, 34px) !important;
+  line-height: 1 !important;
+}
+
+.smart-shell.jarvis-route .eyebrow,
+.smart-shell.jarvis-route .ticker,
+.smart-shell.jarvis-route .symbol,
+.smart-shell.jarvis-route .text-blue-400 {
+  color: #22e6ff !important;
+}
+
+.smart-shell.jarvis-route p,
+.smart-shell.jarvis-route small,
+.smart-shell.jarvis-route label,
+.smart-shell.jarvis-route dt,
+.smart-shell.jarvis-route .text-gray-300,
+.smart-shell.jarvis-route .text-gray-400,
+.smart-shell.jarvis-route .text-gray-500,
+.smart-shell.jarvis-route .asset-col .name,
+.smart-shell.jarvis-route .metric small,
+.smart-shell.jarvis-route .panel-header p,
+.smart-shell.jarvis-route .card-heading p,
+.smart-shell.jarvis-route .profile-title p,
+.smart-shell.jarvis-route .calc-hero p {
+  color: #b8c5e8 !important;
+}
+
+.smart-shell.jarvis-route .text-white,
+.smart-shell.jarvis-route h2,
+.smart-shell.jarvis-route h3,
+.smart-shell.jarvis-route dd,
+.smart-shell.jarvis-route strong,
+.smart-shell.jarvis-route .metric span,
+.smart-shell.jarvis-route .preference-row strong,
+.smart-shell.jarvis-route .price .value {
+  color: #f8fbff !important;
+}
+
+.smart-shell.jarvis-route .wallet-hero,
+.smart-shell.jarvis-route .profile-hero,
+.smart-shell.jarvis-route .calc-hero,
+.smart-shell.jarvis-route .summary-card,
+.smart-shell.jarvis-route .tabs,
+.smart-shell.jarvis-route .calculator-tabs,
+.smart-shell.jarvis-route .holdings-panel,
+.smart-shell.jarvis-route .empty-panel,
+.smart-shell.jarvis-route .profile-card,
+.smart-shell.jarvis-route .calc-card,
+.smart-shell.jarvis-route .favorites-page app-card,
+.smart-shell.jarvis-route .bg-gray-800,
+.smart-shell.jarvis-route .bg-gray-800\/50,
+.smart-shell.jarvis-route .bg-gray-700\/50,
+.smart-shell.jarvis-route .bg-gray-700 {
+  border: 1px solid rgba(0, 195, 255, 0.2) !important;
+  border-radius: 8px 18px 8px 18px !important;
+  background:
+    linear-gradient(135deg, rgba(4, 12, 30, 0.88), rgba(2, 6, 18, 0.88)),
+    radial-gradient(circle at 50% 0%, rgba(0, 195, 255, 0.15), transparent 38%) !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.36), inset 0 0 38px rgba(0, 149, 255, 0.04) !important;
+}
+
+.smart-shell.jarvis-route .summary-card.total,
+.smart-shell.jarvis-route .result-card,
+.smart-shell.jarvis-route .risk-summary {
+  border: 1px solid rgba(39, 226, 155, 0.24) !important;
+  background:
+    radial-gradient(circle at 90% 12%, rgba(39, 226, 155, 0.24), transparent 32%),
+    linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(18, 60, 55, 0.86)) !important;
+}
+
+.smart-shell.jarvis-route .primary-action,
+.smart-shell.jarvis-route .hero-action,
+.smart-shell.jarvis-route .shortcut-card a,
+.smart-shell.jarvis-route .preference-link,
+.smart-shell.jarvis-route .bg-blue-600,
+.smart-shell.jarvis-route button[type='submit'],
+.smart-shell.jarvis-route .calculator-tabs button.active,
+.smart-shell.jarvis-route .tabs button.active {
+  border: 1px solid rgba(39, 226, 155, 0.32) !important;
+  color: #fff !important;
+  background: linear-gradient(135deg, #3b22d5, #6729ff 54%, #1068ff) !important;
+  box-shadow: 0 18px 40px rgba(60, 74, 255, 0.26) !important;
+}
+
+.smart-shell.jarvis-route .soft-action,
+.smart-shell.jarvis-route .secondary-action,
+.smart-shell.jarvis-route .icon-action,
+.smart-shell.jarvis-route .calculator-tabs button,
+.smart-shell.jarvis-route .tabs button,
+.smart-shell.jarvis-route button,
+.smart-shell.jarvis-route .rounded-lg {
+  border-color: rgba(124, 58, 237, 0.34) !important;
+  color: #d9e2ff !important;
+  background: rgba(11, 18, 45, 0.78) !important;
+}
+
+.smart-shell.jarvis-route button:hover,
+.smart-shell.jarvis-route a:hover {
+  transform: translateY(-1px);
+}
+
+.smart-shell.jarvis-route input,
+.smart-shell.jarvis-route select,
+.smart-shell.jarvis-route textarea {
+  min-height: 42px;
+  border: 1px solid rgba(0, 195, 255, 0.2) !important;
+  border-radius: 11px !important;
+  color: #f8fbff !important;
+  background: rgba(2, 10, 28, 0.74) !important;
+  outline: 0;
+}
+
+.smart-shell.jarvis-route input:focus,
+.smart-shell.jarvis-route select:focus,
+.smart-shell.jarvis-route textarea:focus {
+  border-color: rgba(34, 230, 255, 0.68) !important;
+  box-shadow: 0 0 0 4px rgba(34, 230, 255, 0.1) !important;
+}
+
+.smart-shell.jarvis-route table,
+.smart-shell.jarvis-route .overflow-hidden table {
+  color: #f8fbff;
+  background: rgba(3, 10, 28, 0.78) !important;
+}
+
+.smart-shell.jarvis-route thead,
+.smart-shell.jarvis-route .bg-gray-700\/50 {
+  background: rgba(29, 31, 91, 0.58) !important;
+}
+
+.smart-shell.jarvis-route th,
+.smart-shell.jarvis-route td {
+  border-bottom-color: rgba(0, 195, 255, 0.14) !important;
+}
+
+.smart-shell.jarvis-route th {
+  color: #b8c5e8 !important;
+}
+
+.smart-shell.jarvis-route .holding-row,
+.smart-shell.jarvis-route .event-row,
+.smart-shell.jarvis-route .info-list div,
+.smart-shell.jarvis-route .preference-row,
+.smart-shell.jarvis-route fieldset {
+  color: #f8fbff !important;
+  border-color: rgba(0, 195, 255, 0.16) !important;
+  background: rgba(5, 12, 32, 0.72) !important;
+}
+
+.smart-shell.jarvis-route .summary-icon,
+.smart-shell.jarvis-route .card-heading > .material-symbols-rounded,
+.smart-shell.jarvis-route .shortcut-icon,
+.smart-shell.jarvis-route .profile-avatar,
+.smart-shell.jarvis-route .asset-badge,
+.smart-shell.jarvis-route .date-box,
+.smart-shell.jarvis-route .empty-state > .material-symbols-rounded,
+.smart-shell.jarvis-route .empty-panel > .material-symbols-rounded {
+  color: #b8a8ff !important;
+  background: radial-gradient(circle at 35% 25%, rgba(124, 58, 237, 0.84), rgba(23, 37, 84, 0.6)) !important;
+  box-shadow: 0 0 22px rgba(124, 58, 237, 0.34) !important;
+}
+
+.smart-shell.jarvis-route .positive,
+.smart-shell.jarvis-route .text-green-400,
+.smart-shell.jarvis-route .status-pill,
+.smart-shell.jarvis-route .change.positive {
+  color: #27e29b !important;
+}
+
+.smart-shell.jarvis-route .negative,
+.smart-shell.jarvis-route .text-red-400,
+.smart-shell.jarvis-route .change.negative {
+  color: #fb7185 !important;
+}
+
+.smart-shell.jarvis-route .fixed.inset-0 {
+  background: rgba(0, 0, 0, 0.68) !important;
+  backdrop-filter: blur(14px);
+}
+
+.smart-shell.jarvis-route .w-full.max-w-md {
+  border: 1px solid rgba(0, 195, 255, 0.22) !important;
+  border-radius: 8px 22px 8px 22px !important;
+  background:
+    linear-gradient(135deg, rgba(4, 12, 30, 0.96), rgba(2, 6, 18, 0.96)),
+    radial-gradient(circle at 50% 0%, rgba(0, 195, 255, 0.14), transparent 38%) !important;
+}
+
+.smart-shell.jarvis-route .favorites-page {
+  display: grid;
+  gap: 16px;
+}
+
+.smart-shell.jarvis-route .favorites-list {
+  display: grid;
+  gap: 12px;
+}
+
+.smart-shell.jarvis-route .favorites-page app-card {
+  padding: 16px !important;
+}
+
+@media (max-width: 980px) {
+  .smart-shell.jarvis-route .wallet-page,
+  .smart-shell.jarvis-route .profile-page,
+  .smart-shell.jarvis-route .calculators-page,
+  .smart-shell.jarvis-route .favorites-page,
+  .smart-shell.jarvis-route .min-h-screen.bg-gray-900 {
+    padding: 12px;
+  }
+}

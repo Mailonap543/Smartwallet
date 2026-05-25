@@ -1,4 +1,7 @@
 spring:
+  config:
+    import: optional:file:.env[.properties],optional:file:.env.local[.properties]
+
   application:
     name: smartwallet
   main:
@@ -105,14 +108,18 @@ market:
     interval-ms: ${MARKET_INGEST_INTERVAL_MS:3600000}
 
 smartwallet:
+  google-search:
+    enabled: ${SMARTWALLET_GOOGLE_SEARCH_ENABLED:true}
+    api-key: ${SMARTWALLET_GOOGLE_SEARCH_API_KEY:sua_chave}
+    search-engine-id: ${SMARTWALLET_GOOGLE_SEARCH_ENGINE_ID:seu_cx}
   ai:
     python:
-      # true = usa MockPythonAiClient (default seguro)
+      # true = usa MockPythonAiClient
       # false = usa HttpPythonAiClient (microserviço Python real)
-      mock-enabled: ${SMARTWALLET_AI_PYTHON_MOCK_ENABLED:true}
+      mock-enabled: ${SMARTWALLET_AI_PYTHON_MOCK_ENABLED:false}
       base-url: ${SMARTWALLET_AI_PYTHON_BASE_URL:http://localhost:8001}
       chat-path: ${SMARTWALLET_AI_PYTHON_CHAT_PATH:/chat}
-      timeout-ms: ${SMARTWALLET_AI_PYTHON_TIMEOUT_MS:5000}
+      timeout-ms: ${SMARTWALLET_AI_PYTHON_TIMEOUT_MS:2000}
 
 management:
   endpoints:

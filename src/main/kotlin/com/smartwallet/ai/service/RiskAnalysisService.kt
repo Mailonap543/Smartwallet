@@ -197,9 +197,4 @@ class RiskAnalysisService {
         )
     }
 
-    private fun BigDecimal.pow(n: Int): BigDecimal {
-        var result = BigDecimal.ONE
-        repeat(n) { result = result.multiply(this) }
-        return result
-    }
 }

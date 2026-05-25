@@ -13,7 +13,7 @@ import { AuthService } from '../../services/auth.service';
       <!-- Header -->
       <header class="bg-gray-800 border-b border-gray-700 px-6 py-4">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
-          <h1 class="text-2xl font-bold text-white">SmartWallet</h1>
+          <h1 class="text-2xl font-bold text-white">Dashboard</h1>
           <div class="flex items-center gap-4">
             <span class="text-gray-300">{{ auth.user()?.fullName }}</span>
             <button (click)="auth.logout()" class="text-gray-400 hover:text-white">Sair</button>
@@ -25,7 +25,7 @@ import { AuthService } from '../../services/auth.service';
       <nav class="bg-gray-800/50 border-b border-gray-700 px-6">
         <div class="max-w-7xl mx-auto flex gap-6">
           <a routerLink="/dashboard" class="py-4 px-2 text-blue-400 border-b-2 border-blue-400 font-medium">Dashboard</a>
-          <a routerLink="/assets" class="py-4 px-2 text-gray-400 hover:text-white transition-colors">Ativos</a>
+          <a routerLink="/market" class="py-4 px-2 text-gray-400 hover:text-white transition-colors">Ativos</a>
           <a routerLink="/ai-analysis" class="py-4 px-2 text-gray-400 hover:text-white transition-colors">Análise IA</a>
         </div>
       </nav>
@@ -117,7 +117,7 @@ import { AuthService } from '../../services/auth.service';
           <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-lg font-semibold text-white">Ativos</h3>
-              <a routerLink="/assets" class="text-blue-400 hover:text-blue-300">Ver todos</a>
+              <a routerLink="/market" class="text-blue-400 hover:text-blue-300">Ver todos</a>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full">

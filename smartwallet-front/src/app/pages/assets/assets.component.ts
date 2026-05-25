@@ -14,7 +14,7 @@ import { ToastService } from '../../shared/toast.service';
       <!-- Header -->
       <header class="bg-gray-800 border-b border-gray-700 px-6 py-4">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
-          <h1 class="text-2xl font-bold text-white">SmartWallet</h1>
+          <h1 class="text-2xl font-bold text-white">Ativos</h1>
           <div class="flex items-center gap-4">
             <span class="text-gray-300">Ativos</span>
           </div>
@@ -25,7 +25,7 @@ import { ToastService } from '../../shared/toast.service';
       <nav class="bg-gray-800/50 border-b border-gray-700 px-6">
         <div class="max-w-7xl mx-auto flex gap-6">
           <a routerLink="/dashboard" class="py-4 px-2 text-gray-400 hover:text-white transition-colors">Dashboard</a>
-          <a routerLink="/assets" class="py-4 px-2 text-blue-400 border-b-2 border-blue-400 font-medium">Ativos</a>
+          <a routerLink="/market" class="py-4 px-2 text-blue-400 border-b-2 border-blue-400 font-medium">Ativos</a>
           <a routerLink="/ai-analysis" class="py-4 px-2 text-gray-400 hover:text-white transition-colors">Análise IA</a>
         </div>
       </nav>

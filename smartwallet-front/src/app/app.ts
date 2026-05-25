@@ -18,6 +18,7 @@ export class App {
   private readonly api = inject(ApiService);
 
   protected showNavigation = !this.isPublicRoute(this.router.url);
+  protected isJarvisRoute = this.isJarvisUrl(this.router.url);
   protected readonly user = this.auth.user;
   protected notificationsOpen = false;
   protected notifications: NotificationItem[] = [];
@@ -29,7 +30,7 @@ export class App {
 
   protected readonly navigationItems = [
     { label: 'Dashboard', path: '/dashboard', icon: 'dashboard', exact: true },
-    { label: 'Ativos', path: '/market', icon: 'monitoring', exact: false },
+    { label: 'Ativos', path: '/market', icon: 'monitoring', exact: true },
     { label: 'Inteligencia IA', path: '/ai-analysis', icon: 'smart_toy', exact: false },
     { label: 'Objetivos', path: '/calculators', icon: 'target', exact: false },
     { label: 'Relatorios', path: '/favorites', icon: 'description', exact: false },
@@ -44,6 +45,7 @@ export class App {
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe(event => {
         this.showNavigation = !this.isPublicRoute(event.urlAfterRedirects);
+        this.isJarvisRoute = this.isJarvisUrl(event.urlAfterRedirects);
         if (this.showNavigation) {
           this.loadNotifications();
         }
@@ -57,6 +59,10 @@ export class App {
 
   private isPublicRoute(url: string): boolean {
     return ['/login', '/register', '/home'].some(route => url.startsWith(route));
+  }
+
+  private isJarvisUrl(url: string): boolean {
+    return !this.isPublicRoute(url);
   }
 
   protected logout(): void {
@@ -104,6 +110,12 @@ export class App {
   }
 
   private loadNotifications(): void {
+    if (!this.auth.getToken()) {
+      this.notifications = [];
+      this.unreadNotifications = 0;
+      return;
+    }
+
     this.api.getNotifications().subscribe({
       next: notifications => {
         this.notifications = notifications;

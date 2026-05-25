@@ -25,7 +25,7 @@ import { AuthService } from '../../services/auth.service';
           <label class="field">
             <span>E-mail</span>
             <div class="input-shell">
-              <span class="material-symbols-rounded" aria-hidden="true">mail</span>
+              <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">mail</span>
               <input
                 type="email"
                 [(ngModel)]="email"
@@ -40,7 +40,7 @@ import { AuthService } from '../../services/auth.service';
           <label class="field">
             <span>Senha</span>
             <div class="input-shell">
-              <span class="material-symbols-rounded" aria-hidden="true">lock</span>
+              <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">lock</span>
               <input
                 [type]="showPassword ? 'text' : 'password'"
                 [(ngModel)]="password"
@@ -50,7 +50,7 @@ import { AuthService } from '../../services/auth.service';
                 required
               />
               <button class="icon-button" type="button" (click)="showPassword = !showPassword" aria-label="Mostrar ou ocultar senha">
-                <span class="material-symbols-rounded" aria-hidden="true">{{ showPassword ? 'visibility' : 'visibility_off' }}</span>
+                <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">{{ showPassword ? 'visibility' : 'visibility_off' }}</span>
               </button>
             </div>
           </label>
@@ -87,7 +87,7 @@ import { AuthService } from '../../services/auth.service';
 
         <section class="security-card">
           <div class="security-visual">
-            <span class="material-symbols-rounded" aria-hidden="true">shield_lock</span>
+            <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">shield_lock</span>
           </div>
           <div>
             <h2>Sua seguranca e <span>nossa prioridade</span></h2>
@@ -594,12 +594,25 @@ export class LoginComponent {
         void this.router.navigate(['/dashboard']);
       },
       error: (err) => {
-        this.error = err?.error?.message || err?.message || 'Erro ao fazer login';
+        this.error = this.getLoginErrorMessage(err);
       }
     });
   }
 
   protected loginWithProvider(provider: 'Google' | 'Apple' | 'Microsoft'): void {
-    this.error = `Login com ${provider} ainda precisa ser conectado no backend.`;
+    this.error = '';
+    this.auth.loginWithProvider(provider);
+  }
+
+  private getLoginErrorMessage(err: any): string {
+    if (err?.status === 0) {
+      return 'Não foi possível conectar ao servidor. Inicie o backend na porta 8080 e tente novamente.';
+    }
+
+    if (err?.status === 401 || err?.status === 403) {
+      return 'E-mail ou senha inválidos.';
+    }
+
+    return err?.error?.message || err?.message || 'Erro ao fazer login';
   }
 }

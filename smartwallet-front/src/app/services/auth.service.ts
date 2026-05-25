@@ -2,6 +2,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, catchError, of, map, throwError, finalize, shareReplay } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface LoginRequest {
   email: string;
@@ -36,6 +37,8 @@ export interface User {
   role?: string;
 }
 
+export type SocialAuthProvider = 'Google' | 'Apple' | 'Microsoft';
+
 interface ApiResponse<T> {
   success: boolean;
   message: string;
@@ -51,7 +54,12 @@ interface JwtPayload {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api/auth';
+  private apiUrl = `${environment.apiUrl}/api/auth`;
+  private socialProviderIds: Record<SocialAuthProvider, string> = {
+    Google: 'google',
+    Apple: 'apple',
+    Microsoft: 'microsoft'
+  };
   
   private userSignal = signal<User | null>(null);
   private tokenSignal = signal<string | null>(null);
@@ -176,6 +184,18 @@ export class AuthService {
         return throwError(() => error);
       })
     );
+  }
+
+  loginWithProvider(provider: SocialAuthProvider): void {
+    const providerId = this.socialProviderIds[provider];
+    const currentUrl = typeof window !== 'undefined' ? window.location.href : '/dashboard';
+
+    localStorage.setItem('smartwallet-social-provider', providerId);
+    localStorage.setItem('smartwallet-social-return-url', currentUrl);
+
+    if (typeof window !== 'undefined') {
+      window.location.assign(`${environment.apiUrl}/oauth2/authorization/${providerId}`);
+    }
   }
 
   logout(): void {

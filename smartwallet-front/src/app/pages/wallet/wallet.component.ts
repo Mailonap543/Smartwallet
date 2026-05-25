@@ -28,11 +28,11 @@ interface Holding {
 
         <div class="hero-actions">
           <button class="soft-action" type="button" routerLink="/market">
-            <span class="material-symbols-rounded" aria-hidden="true">monitoring</span>
+            <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">monitoring</span>
             Buscar ativos
           </button>
           <button class="primary-action" type="button" (click)="showAddModal = true">
-            <span class="material-symbols-rounded" aria-hidden="true">add</span>
+            <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">add</span>
             Nova movimentacao
           </button>
         </div>
@@ -40,13 +40,13 @@ interface Holding {
 
       <section class="summary" aria-label="Resumo da carteira">
         <article class="summary-card total">
-          <span class="summary-icon material-symbols-rounded" aria-hidden="true">account_balance_wallet</span>
+          <span class="summary-icon material-symbols-rounded notranslate" aria-hidden="true">account_balance_wallet</span>
           <span class="label">Patrimonio Total</span>
           <strong>{{ totalValue | currency:'BRL' }}</strong>
           <small>Valor atual consolidado</small>
         </article>
         <article class="summary-card">
-          <span class="summary-icon material-symbols-rounded" aria-hidden="true">trending_up</span>
+          <span class="summary-icon material-symbols-rounded notranslate" aria-hidden="true">trending_up</span>
           <span class="label">Lucro/Prejuizo</span>
           <strong [class.positive]="totalPL >= 0" [class.negative]="totalPL < 0">
             {{ totalPL >= 0 ? '+' : '' }}{{ totalPL | currency:'BRL' }}
@@ -54,7 +54,7 @@ interface Holding {
           <small [class.positive]="totalPL >= 0" [class.negative]="totalPL < 0">{{ totalPLPercent | number:'1.2-2' }}%</small>
         </article>
         <article class="summary-card">
-          <span class="summary-icon material-symbols-rounded" aria-hidden="true">payments</span>
+          <span class="summary-icon material-symbols-rounded notranslate" aria-hidden="true">payments</span>
           <span class="label">Total Investido</span>
           <strong>{{ totalInvested | currency:'BRL' }}</strong>
           <small>Capital aplicado</small>
@@ -63,15 +63,15 @@ interface Holding {
 
       <nav class="tabs" aria-label="Navegacao da carteira">
         <button [class.active]="activeTab === 'holdings'" (click)="activeTab = 'holdings'">
-          <span class="material-symbols-rounded" aria-hidden="true">inventory_2</span>
+          <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">inventory_2</span>
           Ativos
         </button>
         <button [class.active]="activeTab === 'transactions'" (click)="activeTab = 'transactions'">
-          <span class="material-symbols-rounded" aria-hidden="true">swap_vert</span>
+          <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">swap_vert</span>
           Movimentacoes
         </button>
         <button [class.active]="activeTab === 'dividends'" (click)="activeTab = 'dividends'">
-          <span class="material-symbols-rounded" aria-hidden="true">redeem</span>
+          <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">redeem</span>
           Proventos
         </button>
       </nav>
@@ -84,7 +84,7 @@ interface Holding {
               <p>{{ holdings.length }} ativo(s) nesta carteira</p>
             </div>
             <button class="icon-action" type="button" aria-label="Mais opcoes">
-              <span class="material-symbols-rounded" aria-hidden="true">more_horiz</span>
+              <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">more_horiz</span>
             </button>
           </div>
 
@@ -111,17 +111,17 @@ interface Holding {
                       {{ holding.profitLoss >= 0 ? '+' : '' }}{{ holding.profitLossPercent | number:'1.2-2' }}%
                     </small>
                   </div>
-                  <span class="row-arrow material-symbols-rounded" aria-hidden="true">chevron_right</span>
+                  <span class="row-arrow material-symbols-rounded notranslate" aria-hidden="true">chevron_right</span>
                 </a>
               }
             </div>
           } @else {
             <div class="empty-state">
-              <span class="material-symbols-rounded" aria-hidden="true">account_balance_wallet</span>
+              <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">account_balance_wallet</span>
               <h3>Nenhum ativo ainda</h3>
               <p>Adicione sua primeira movimentacao para montar sua carteira.</p>
               <button class="primary-action" type="button" (click)="showAddModal = true">
-                <span class="material-symbols-rounded" aria-hidden="true">add</span>
+                <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">add</span>
                 Adicionar ativo
               </button>
             </div>
@@ -129,17 +129,17 @@ interface Holding {
         </section>
       } @else if (activeTab === 'transactions') {
         <section class="empty-panel">
-          <span class="material-symbols-rounded" aria-hidden="true">swap_vert</span>
+          <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">swap_vert</span>
           <h2>Movimentacoes</h2>
           <p>As compras, vendas e ajustes da carteira vao aparecer aqui.</p>
           <button class="primary-action" type="button" (click)="showAddModal = true">
-            <span class="material-symbols-rounded" aria-hidden="true">add</span>
+            <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">add</span>
             Nova movimentacao
           </button>
         </section>
       } @else {
         <section class="empty-panel">
-          <span class="material-symbols-rounded" aria-hidden="true">redeem</span>
+          <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">redeem</span>
           <h2>Proventos</h2>
           <p>Dividendos e rendimentos serao organizados nesta aba.</p>
         </section>

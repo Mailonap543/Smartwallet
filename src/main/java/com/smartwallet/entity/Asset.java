@@ -34,7 +34,7 @@ public class Asset {
     @Column(length = 100)
     private String name;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = AssetTypeConverter.class)
     @Column(name = "asset_type", nullable = false, length = 20)
     private AssetType assetType;
 
