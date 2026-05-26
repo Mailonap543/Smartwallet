@@ -2,12 +2,13 @@ package com.smartwallet.bank.controller;
 
 import static com.smartwallet.bank.dto.BankDtos.*;
 import com.smartwallet.bank.service.BankAggregatorService;
+import com.smartwallet.bank.service.BankPaymentService;
 import com.smartwallet.dto.ApiResponse;
+import com.smartwallet.security.AuthUserResolver;
 import com.smartwallet.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,22 +21,19 @@ import java.util.Map;
 public class BankController {
 
     private final BankAggregatorService bankAggregatorService;
+    private final BankPaymentService bankPaymentService;
+    private final AuthUserResolver authUserResolver;
 
     @GetMapping("/institutions")
     public ResponseEntity<ApiResponse<List<Institution>>> getInstitutions() {
-        if (!bankAggregatorService.isEnabled()) {
-            return ResponseEntity.ok(ApiResponse.error("Bank integration not enabled"));
-        }
-        
         List<Institution> institutions = bankAggregatorService.getAvailableInstitutions();
         return ResponseEntity.ok(ApiResponse.success(institutions));
     }
 
     @PostMapping("/connect")
     public ResponseEntity<ApiResponse<BankConnectionResponse>> connectBank(
-            @AuthenticationPrincipal CustomUserDetails user,
             @RequestBody BankConnectionRequest request) {
-        
+        CustomUserDetails user = authUserResolver.currentUser();
         if (!bankAggregatorService.isEnabled()) {
             return ResponseEntity.ok(ApiResponse.error("Bank integration not enabled"));
         }
@@ -71,9 +69,8 @@ public class BankController {
 
     @PostMapping("/disconnect")
     public ResponseEntity<ApiResponse<Map<String, Boolean>>> disconnectBank(
-            @AuthenticationPrincipal CustomUserDetails user,
             @RequestBody Map<String, String> request) {
-        
+        authUserResolver.currentUser();
         String accessToken = request.get("accessToken");
         boolean disconnected = bankAggregatorService.disconnectAccount(accessToken);
         
@@ -87,7 +84,23 @@ public class BankController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getStatus() {
         return ResponseEntity.ok(ApiResponse.success(Map.of(
             "enabled", bankAggregatorService.isEnabled(),
-            "service", "bank_aggregator"
+            "service", "bank_aggregator",
+            "mockPayments", true
         )));
+    }
+
+    @PostMapping("/payments")
+    public ResponseEntity<ApiResponse<PaymentResponse>> createPayment(
+            @RequestBody PaymentRequest request) {
+        CustomUserDetails user = authUserResolver.currentUser();
+        PaymentResponse response = bankPaymentService.createPayment(user.getId(), request);
+        return ResponseEntity.ok(ApiResponse.success("Pagamento criado com sucesso", response));
+    }
+
+    @GetMapping("/payments")
+    public ResponseEntity<ApiResponse<List<PaymentResponse>>> getPayments() {
+        CustomUserDetails user = authUserResolver.currentUser();
+        List<PaymentResponse> response = bankPaymentService.getUserPayments(user.getId());
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

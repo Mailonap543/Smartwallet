@@ -1,9 +1,14 @@
 package com.smartwallet.service.portfolio;
 
 import com.smartwallet.dto.asset.*;
+import com.smartwallet.dto.payment.AssetPaymentRequest;
+import com.smartwallet.dto.payment.AssetPaymentResponse;
 import com.smartwallet.dto.transaction.*;
 import com.smartwallet.dto.wallet.*;
 import com.smartwallet.entity.*;
+import com.smartwallet.bank.dto.BankDtos;
+import com.smartwallet.bank.dto.BankDtos.PaymentRequest;
+import com.smartwallet.bank.service.BankPaymentService;
 import com.smartwallet.exception.BusinessException;
 import com.smartwallet.exception.ResourceNotFoundException;
 import com.smartwallet.repository.*;
@@ -17,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,6 +40,7 @@ public class PortfolioService {
     private final UserRepository userRepository;
     private final WalletService walletService;
     private final TransactionService transactionService;
+    private final BankPaymentService bankPaymentService;
 
     @Transactional
     public WalletResponse createWallet(Long userId, CreateWalletRequest request) {
@@ -185,6 +192,59 @@ public class PortfolioService {
     }
 
     @Transactional
+    public AssetPaymentResponse payAssetPurchase(Long walletId, Long userId, AssetPaymentRequest request) {
+        walletService.validateWalletAccess(walletId, userId);
+        Wallet wallet = walletService.getWalletEntityById(walletId);
+
+        BigDecimal fees = request.fees() != null ? request.fees() : BigDecimal.ZERO;
+        BigDecimal amount = request.quantity().multiply(request.price()).add(fees);
+        String symbol = normalizeSymbol(request.symbol());
+
+        BankDtos.PaymentResponse payment = bankPaymentService.createPayment(userId, new PaymentRequest(
+                request.institutionId(),
+                amount,
+                "BRL",
+                "PIX",
+                null,
+                "Smartwallet Investimentos",
+                "Compra de " + symbol + " pela carteira " + wallet.getName(),
+                "ASSET_PURCHASE",
+                symbol
+        ));
+
+        Asset asset = assetRepository.findByWalletIdAndSymbol(walletId, symbol)
+                .orElseGet(() -> createEmptyAssetForPayment(wallet, request, symbol));
+
+        if (asset.getCurrentPrice() == null || asset.getCurrentPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            asset.setCurrentPrice(request.price());
+            assetRepository.save(asset);
+        }
+
+        TransactionResponse transaction = transactionService.createTransaction(
+                userId,
+                asset.getId(),
+                new CreateTransactionRequest(
+                        Transaction.TransactionType.BUY,
+                        request.quantity(),
+                        request.price(),
+                        fees,
+                        request.transactionDate() != null ? request.transactionDate().atStartOfDay() : LocalDate.now().atStartOfDay(),
+                        request.notes() != null && !request.notes().isBlank()
+                                ? request.notes()
+                                : "Compra paga via " + payment.institutionName()
+                )
+        );
+
+        Asset updatedAsset = assetRepository.findById(asset.getId())
+                .orElseThrow(() -> new ResourceNotFoundException(ASSET_NOT_FOUND));
+        walletService.recalculateWalletTotals(updatedAsset.getWallet());
+
+        logger.info("Asset payment completed: {} via {}", symbol, payment.institutionName());
+
+        return new AssetPaymentResponse(payment, AssetResponse.fromEntity(updatedAsset), transaction);
+    }
+
+    @Transactional
     public List<AssetResponse> getWalletAssets(Long walletId, Long userId) {
         walletService.validateWalletAccess(walletId, userId);
         
@@ -263,5 +323,24 @@ public class PortfolioService {
 
     private String normalizeSymbol(String symbol) {
         return symbol.trim().toUpperCase();
+    }
+
+    private Asset createEmptyAssetForPayment(Wallet wallet, AssetPaymentRequest request, String symbol) {
+        Asset asset = Asset.builder()
+                .wallet(wallet)
+                .symbol(symbol)
+                .name(request.name().trim())
+                .assetType(request.assetType() != null ? request.assetType() : AssetType.STOCK)
+                .quantity(BigDecimal.ZERO)
+                .purchasePrice(request.price())
+                .averagePrice(BigDecimal.ZERO)
+                .currentPrice(request.price())
+                .purchaseDate(request.transactionDate() != null ? request.transactionDate() : LocalDate.now())
+                .totalInvested(BigDecimal.ZERO)
+                .currentValue(BigDecimal.ZERO)
+                .profitLoss(BigDecimal.ZERO)
+                .build();
+
+        return assetRepository.save(asset);
     }
 }

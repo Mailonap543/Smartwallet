@@ -67,8 +67,16 @@ public enum PlanType {
     public boolean isUnlimited(int value) { return this.details.maxWallets == -1 && value == -1; }
 
     public static PlanType fromString(String value) {
+        if (value == null) {
+            return FREE;
+        }
+
         return java.util.Arrays.stream(values())
-            .filter(p -> p.name().equalsIgnoreCase(value))
+            .filter(p -> p.name().equalsIgnoreCase(value)
+                    || p.getDisplayName().equalsIgnoreCase(value)
+                    || ("BASIC".equalsIgnoreCase(value) && p == FREE)
+                    || ("BASICO".equalsIgnoreCase(value) && p == FREE)
+                    || ("ULTIMATE".equalsIgnoreCase(value) && p == ENTERPRISE))
             .findFirst()
             .orElse(FREE);
     }

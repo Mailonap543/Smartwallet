@@ -3,8 +3,8 @@ import { authGuard } from './guards/auth.guard';
 import { LoginComponent } from './pages/login/login.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: 'home', loadComponent: () => import('./pages/homepage/homepage.component').then(m => m.HomepageComponent) },
+  { path: '', loadComponent: () => import('./pages/homepage/homepage.component').then(m => m.HomepageComponent) },
+  { path: 'home', redirectTo: '', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'register', loadComponent: () => import('./pages/register/register.component').then(m => m.RegisterComponent) },
   { path: 'dashboard', canActivate: [authGuard], loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent) },
@@ -19,13 +19,15 @@ export const routes: Routes = [
   
   { path: 'assets', redirectTo: 'market', pathMatch: 'full' },
   { path: 'wallet', canActivate: [authGuard], loadComponent: () => import('./pages/wallet/wallet.component').then(m => m.WalletComponent) },
+  { path: 'banks', canActivate: [authGuard], loadComponent: () => import('./pages/banks/banks.component').then(m => m.BanksComponent) },
   { path: 'favorites', canActivate: [authGuard], loadComponent: () => import('./pages/favorites/favorites.component').then(m => m.FavoritesComponent) },
   { path: 'calculators', canActivate: [authGuard], loadComponent: () => import('./pages/calculators/calculators.component').then(m => m.CalculatorsComponent) },
   { path: 'profile', canActivate: [authGuard], loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent) },
+  { path: 'settings', canActivate: [authGuard], loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent) },
   
   { path: 'ai-analysis', canActivate: [authGuard], loadComponent: () => import('./pages/ai-analysis/ai-analysis.component').then(m => m.AiAnalysisComponent) },
   { path: 'ai-chat', redirectTo: 'ai', pathMatch: 'full' },
   { path: 'ai', canActivate: [authGuard], loadComponent: () => import('./pages/ai-chat/ai-chat.component').then(m => m.AiChatComponent) },
   { path: 'subscription', canActivate: [authGuard], loadComponent: () => import('./pages/subscription/subscription.component').then(m => m.SubscriptionComponent) },
-  { path: '**', redirectTo: 'dashboard' }
+  { path: '**', redirectTo: '' }
 ];

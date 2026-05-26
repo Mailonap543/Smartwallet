@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/market")
+@RequestMapping({"/api/v1/market", "/api/market"})
 public class MarketController {
 
     private static final Logger log = LoggerFactory.getLogger(MarketController.class);
@@ -118,24 +118,47 @@ public class MarketController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/assets/{symbol}/quote")
+    @GetMapping({"/assets/{symbol}/quote", "/quote/{symbol}"})
     public ResponseEntity<ApiResponse<Map<String, Object>>> getQuote(@PathVariable String symbol) {
         return assetRepository.findBySymbol(symbol.toUpperCase())
-            .map(asset -> {
-                Map<String, Object> quote = Map.of(
-                    "symbol", asset.getSymbol(),
-                    "name", asset.getName(),
-                    PRICE_PARAM, asset.getCurrentPrice() != null ? asset.getCurrentPrice() : 0,
-                    "changePercent", asset.getChangePercent() != null ? asset.getChangePercent() : 0,
-                    "dayHigh", asset.getDayHigh() != null ? asset.getDayHigh() : 0,
-                    "dayLow", asset.getDayLow() != null ? asset.getDayLow() : 0,
-                    "volume", asset.getDayVolume() != null ? asset.getDayVolume() : 0,
-                    "marketCap", asset.getMarketCap() != null ? asset.getMarketCap() : 0,
-                    "updatedAt", asset.getLastQuoteAt() != null ? asset.getLastQuoteAt().toString() : ""
-                );
-                return ResponseEntity.ok(ApiResponse.success(quote));
-            })
+            .map(asset -> ResponseEntity.ok(ApiResponse.success(buildQuote(asset))))
             .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/quotes")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getQuotes(@RequestBody List<String> symbols) {
+        List<Map<String, Object>> quotes = symbols.stream()
+            .map(String::trim)
+            .filter(symbol -> !symbol.isBlank())
+            .map(String::toUpperCase)
+            .flatMap(symbol -> assetRepository.findBySymbol(symbol).stream())
+            .map(this::buildQuote)
+            .toList();
+
+        return ResponseEntity.ok(ApiResponse.success(quotes));
+    }
+
+    @GetMapping("/status")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getStatus() {
+        return ResponseEntity.ok(ApiResponse.success(Map.of(
+            STATUS_PARAM, "OPEN",
+            "label", "Mercado em operacao",
+            "source", "Smartwallet"
+        )));
+    }
+
+    private Map<String, Object> buildQuote(Asset asset) {
+        return Map.of(
+            "symbol", asset.getSymbol(),
+            "name", asset.getName(),
+            PRICE_PARAM, asset.getCurrentPrice() != null ? asset.getCurrentPrice() : 0,
+            "changePercent", asset.getChangePercent() != null ? asset.getChangePercent() : 0,
+            "dayHigh", asset.getDayHigh() != null ? asset.getDayHigh() : 0,
+            "dayLow", asset.getDayLow() != null ? asset.getDayLow() : 0,
+            "volume", asset.getDayVolume() != null ? asset.getDayVolume() : 0,
+            "marketCap", asset.getMarketCap() != null ? asset.getMarketCap() : 0,
+            "updatedAt", asset.getLastQuoteAt() != null ? asset.getLastQuoteAt().toString() : ""
+        );
     }
 
     @GetMapping("/featured")
@@ -151,16 +174,45 @@ public class MarketController {
     }
 
     @GetMapping("/categories")
-    public ResponseEntity<ApiResponse<List<AssetCategory>>> getCategories() {
-        List<AssetCategory> categories = categoryRepository.findAllByOrderByDisplayOrder();
-        return ResponseEntity.ok(ApiResponse.success(categories));
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getCategories() {
+        try {
+            List<AssetCategory> categories = categoryRepository.findByIsActiveTrueOrderByDisplayOrder();
+            if (categories.isEmpty()) {
+                categories = categoryRepository.findAllByOrderByDisplayOrder();
+            }
+
+            List<Map<String, Object>> response = categories.stream()
+                .map(this::buildCategory)
+                .toList();
+
+            return ResponseEntity.ok(ApiResponse.success(response.isEmpty() ? defaultCategories() : response));
+        } catch (RuntimeException ex) {
+            log.warn("Could not load market categories. Returning defaults. Cause: {}", ex.getMessage());
+            return ResponseEntity.ok(ApiResponse.success(defaultCategories()));
+        }
     }
 
     @GetMapping("/categories/{code}")
-    public ResponseEntity<ApiResponse<AssetCategory>> getCategory(@PathVariable String code) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getCategory(@PathVariable String code) {
         return categoryRepository.findByCode(code)
-            .map(cat -> ResponseEntity.ok(ApiResponse.success(cat)))
-            .orElse(ResponseEntity.notFound().build());
+            .map(cat -> ResponseEntity.ok(ApiResponse.success(buildCategory(cat))))
+            .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    private Map<String, Object> buildCategory(AssetCategory category) {
+        return Map.<String, Object>of(
+            "code", category.getCode(),
+            "name", category.getName()
+        );
+    }
+
+    private List<Map<String, Object>> defaultCategories() {
+        return List.of(
+            Map.<String, Object>of("code", "ACOES", "name", "Acoes"),
+            Map.<String, Object>of("code", "FIIS", "name", "FIIs"),
+            Map.<String, Object>of("code", "BDRS", "name", "BDRs"),
+            Map.<String, Object>of("code", "RENDA_FIXA", "name", "Renda fixa")
+        );
     }
 
     @GetMapping("/assets/{symbol}/history")

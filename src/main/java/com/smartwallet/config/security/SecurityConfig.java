@@ -62,6 +62,7 @@ public class SecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
 
+                .requestMatchers(new AntPathRequestMatcher("/api/v1/admin/**")).hasRole("ADMIN")
                 .requestMatchers(new AntPathRequestMatcher("/api/subscription/**")).authenticated()
                 .requestMatchers(new AntPathRequestMatcher("/api/market/**")).authenticated()
                 .requestMatchers(new AntPathRequestMatcher("/api/notifications/**")).authenticated()

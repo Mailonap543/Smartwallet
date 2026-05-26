@@ -73,8 +73,10 @@ export interface Transaction {
   price: number;
   totalValue: number;
   fees?: number;
+  totalWithFees?: number;
   transactionDate: string;
   notes?: string;
+  createdAt?: string;
 }
 
 export interface PortfolioSummary {
@@ -166,6 +168,61 @@ export interface NotificationItem {
   createdAt: string;
 }
 
+export interface BankInstitution {
+  id: string;
+  name: string;
+  logo?: string | null;
+  primaryColor?: string | null;
+  category: 'BR_DIGITAL' | 'INVESTMENT' | 'INTERNATIONAL' | string;
+  country: string;
+  paymentEnabled: boolean;
+  investmentEnabled: boolean;
+}
+
+export interface BankPaymentRequest {
+  institutionId: string;
+  amount: number;
+  currency?: string;
+  method?: string;
+  pixKey?: string | null;
+  beneficiaryName?: string | null;
+  description?: string;
+  referenceType?: string;
+  referenceId?: string;
+}
+
+export interface BankPaymentResponse {
+  paymentId: string;
+  status: string;
+  institutionId: string;
+  institutionName: string;
+  amount: number;
+  currency: string;
+  method: string;
+  checkoutUrl?: string;
+  pixCopyPaste?: string;
+  message?: string;
+  createdAt: string;
+}
+
+export interface AssetPaymentRequest {
+  institutionId: string;
+  symbol: string;
+  name: string;
+  assetType?: string;
+  quantity: number;
+  price: number;
+  fees?: number;
+  transactionDate?: string;
+  notes?: string;
+}
+
+export interface AssetPaymentResponse {
+  payment: BankPaymentResponse;
+  asset: Asset;
+  transaction: Transaction;
+}
+
 interface LegacyAlert {
   id: number;
   userId: number;
@@ -186,6 +243,8 @@ export class ApiService {
   private toast = inject(ToastService);
   private auth = inject(AuthService);
   private baseUrl = environment.apiUrl + '/api';
+  private marketUrl = environment.apiUrl + '/api/v1/market';
+  private watchlistUrl = environment.apiUrl + '/api/v1/watchlist';
 
   private handleError(error: any, defaultMsg = 'Algo deu errado') {
     const message = error?.error?.message || error?.message || defaultMsg;
@@ -334,8 +393,27 @@ export class ApiService {
       );
   }
 
+  payAssetPurchase(walletId: number, payload: AssetPaymentRequest): Observable<AssetPaymentResponse> {
+    return this.http.post<ApiResponse<AssetPaymentResponse>>(`${this.baseUrl}/portfolio/wallets/${walletId}/asset-payments`, payload)
+      .pipe(
+        map((res: ApiResponse<AssetPaymentResponse>) => ({
+          ...res.data,
+          payment: this.mapBankPayment((res.data as AssetPaymentResponse).payment)
+        }) as AssetPaymentResponse),
+        catchError(err => this.handleError(err, 'Erro ao pagar compra de ação'))
+      );
+  }
+
+  getTransactions(): Observable<Transaction[]> {
+    return this.http.get<ApiResponse<Transaction[]>>(`${this.baseUrl}/portfolio/transactions`)
+      .pipe(
+        map((res: ApiResponse<Transaction[]>) => res.data as Transaction[]),
+        catchError(err => this.optionalArray<Transaction>(err))
+      );
+  }
+
   getAssetBySymbol(symbol: string): Observable<Asset> {
-    return this.http.get<ApiResponse<Asset>>(`${this.baseUrl}/market/assets/${symbol}`)
+    return this.http.get<ApiResponse<Asset>>(`${this.marketUrl}/assets/${symbol}`)
       .pipe(
         map((res: ApiResponse<Asset>) => res.data as Asset),
         catchError(err => {
@@ -353,31 +431,41 @@ export class ApiService {
   }
 
   getFeatured(): Observable<Asset[]> {
-    return this.http.get<ApiResponse<Asset[]>>(`${this.baseUrl}/market/featured`)
+    return this.http.get<ApiResponse<Asset[]>>(`${this.marketUrl}/featured`)
       .pipe(
         map((res: ApiResponse<Asset[]>) => res.data as Asset[]),
-        catchError(err => this.handleError(err))
+        catchError(err => this.optionalArray<Asset>(err))
       );
   }
 
   getTrending(): Observable<Asset[]> {
-    return this.http.get<ApiResponse<Asset[]>>(`${this.baseUrl}/market/trending`)
+    return this.http.get<ApiResponse<Asset[]>>(`${this.marketUrl}/trending`)
       .pipe(
         map((res: ApiResponse<Asset[]>) => res.data as Asset[]),
-        catchError(err => this.handleError(err))
+        catchError(err => this.optionalArray<Asset>(err))
       );
   }
 
   getCategories(): Observable<{code: string; name: string}[]> {
-    return this.http.get<ApiResponse<{code: string; name: string}[]>>(`${this.baseUrl}/market/categories`)
+    return this.http.get<ApiResponse<{code: string; name: string}[]>>(`${this.marketUrl}/categories`)
       .pipe(
         map((res: ApiResponse<{code: string; name: string}[]>) => res.data as {code: string; name: string}[]),
-        catchError(err => this.handleError(err))
+        catchError(err => {
+          if (err?.status === 0 || err?.status === 404 || err?.status === 500) {
+            return of([
+              { code: 'ACOES', name: 'Acoes' },
+              { code: 'FIIS', name: 'FIIs' },
+              { code: 'BDRS', name: 'BDRs' },
+              { code: 'RENDA_FIXA', name: 'Renda fixa' }
+            ]);
+          }
+          return this.handleError(err);
+        })
       );
   }
 
   getFactsBySymbol(symbol: string): Observable<any[]> {
-    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/facts/${symbol}`)
+    return this.http.get<ApiResponse<any[]>>(`${this.marketUrl}/facts/${symbol}`)
       .pipe(
         map((res: ApiResponse<any[]>) => res.data as any[]),
         catchError(err => this.optionalArray<any>(err))
@@ -385,7 +473,7 @@ export class ApiService {
   }
 
   getDividendsBySymbol(symbol: string): Observable<any[]> {
-    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/assets/${symbol}/dividends`)
+    return this.http.get<ApiResponse<any[]>>(`${this.marketUrl}/assets/${symbol}/dividends`)
       .pipe(
         map((res: ApiResponse<any[]>) => res.data as any[]),
         catchError(err => this.optionalArray<any>(err))
@@ -393,7 +481,7 @@ export class ApiService {
   }
 
   getEarningsBySymbol(symbol: string): Observable<any[]> {
-    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/assets/${symbol}/earnings`)
+    return this.http.get<ApiResponse<any[]>>(`${this.marketUrl}/assets/${symbol}/earnings`)
       .pipe(
         map((res: ApiResponse<any[]>) => res.data as any[]),
         catchError(err => this.optionalArray<any>(err))
@@ -401,7 +489,7 @@ export class ApiService {
   }
 
   getHistory(symbol: string, period = '3M'): Observable<any[]> {
-    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/assets/${symbol}/history?period=${period}`)
+    return this.http.get<ApiResponse<any[]>>(`${this.marketUrl}/assets/${symbol}/history?period=${period}`)
       .pipe(
         map((res: ApiResponse<any[]>) => res.data as any[]),
         catchError(err => this.optionalArray<any>(err))
@@ -417,7 +505,7 @@ export class ApiService {
   }
 
   searchMarket(query: string, category?: string, page = 0, size = 20): Observable<{content: Asset[]; totalElements: number; totalPages: number}> {
-    let url = `${this.baseUrl}/market/search?q=${encodeURIComponent(query)}&page=${page}&size=${size}`;
+    let url = `${this.marketUrl}/search?q=${encodeURIComponent(query)}&page=${page}&size=${size}`;
     if (category) url += `&category=${category}`;
     return this.http.get<ApiResponse<{content: Asset[]; totalElements: number; totalPages: number}>>(url)
       .pipe(
@@ -427,7 +515,7 @@ export class ApiService {
   }
 
   getRankings(category?: string, page = 0, size = 10): Observable<Record<string, Asset[]>> {
-    let url = `${this.baseUrl}/market/rankings?page=${page}&size=${size}`;
+    let url = `${this.marketUrl}/rankings?page=${page}&size=${size}`;
     if (category) url += `&category=${category}`;
     return this.http.get<any>(url)
       .pipe(
@@ -437,7 +525,7 @@ export class ApiService {
   }
 
   getRankingByType(type: string, page = 0, size = 20): Observable<Asset[]> {
-    return this.http.get<any>(`${this.baseUrl}/market/rankings/${type}?page=${page}&size=${size}`)
+    return this.http.get<any>(`${this.marketUrl}/rankings/${type}?page=${page}&size=${size}`)
       .pipe(
         map((res: any) => res.data as Asset[]),
         catchError(err => this.handleError(err))
@@ -445,7 +533,7 @@ export class ApiService {
   }
 
   getAssetHistory(symbol: string, period = '3M'): Observable<any[]> {
-    return this.http.get<any>(`${this.baseUrl}/market/assets/${symbol}/history?period=${period}`)
+    return this.http.get<any>(`${this.marketUrl}/assets/${symbol}/history?period=${period}`)
       .pipe(
         map((res: any) => res.data as any[]),
         catchError(err => this.optionalArray<any>(err))
@@ -453,7 +541,7 @@ export class ApiService {
   }
 
   getAssetDividends(symbol: string): Observable<any[]> {
-    return this.http.get<any>(`${this.baseUrl}/market/assets/${symbol}/dividends`)
+    return this.http.get<any>(`${this.marketUrl}/assets/${symbol}/dividends`)
       .pipe(
         map((res: any) => res.data as any[]),
         catchError(err => this.optionalArray<any>(err))
@@ -461,7 +549,7 @@ export class ApiService {
   }
 
   getAssetEarnings(symbol: string): Observable<any[]> {
-    return this.http.get<any>(`${this.baseUrl}/market/assets/${symbol}/earnings`)
+    return this.http.get<any>(`${this.marketUrl}/assets/${symbol}/earnings`)
       .pipe(
         map((res: any) => res.data as any[]),
         catchError(err => this.optionalArray<any>(err))
@@ -469,7 +557,7 @@ export class ApiService {
   }
 
   runScreener(filters: any): Observable<Asset[]> {
-    return this.http.post<any>(`${this.baseUrl}/market/screener`, filters)
+    return this.http.post<any>(`${this.marketUrl}/screener`, filters)
       .pipe(
         map((res: any) => res.data as Asset[]),
         catchError(err => this.handleError(err))
@@ -477,7 +565,7 @@ export class ApiService {
   }
 
   getScreenerPresets(): Observable<Record<string, {name: string; description: string}>> {
-    return this.http.get<any>(`${this.baseUrl}/market/screener/presets`)
+    return this.http.get<any>(`${this.marketUrl}/screener/presets`)
       .pipe(
         map((res: any) => res.data as Record<string, {name: string; description: string}>),
         catchError(err => this.handleError(err))
@@ -574,26 +662,60 @@ export class ApiService {
   }
 
   getQuote(symbol: string): Observable<MarketQuote | null> {
-    return this.http.get<ApiResponse<MarketQuote>>(`${this.baseUrl}/market/quote/${symbol}`)
+    return this.http.get<ApiResponse<MarketQuote>>(`${this.marketUrl}/assets/${symbol}/quote`)
       .pipe(
         map((res: ApiResponse<MarketQuote>) => res.success ? res.data as MarketQuote : null),
-        catchError(err => this.handleError(err))
+        catchError(err => {
+          if (err?.status === 0 || err?.status === 404) {
+            return of(null);
+          }
+          return this.handleError(err);
+        })
       );
   }
 
   getQuotes(symbols: string[]): Observable<MarketQuote[]> {
-    return this.http.post<ApiResponse<MarketQuote[]>>(`${this.baseUrl}/market/quotes`, symbols)
+    return this.http.post<ApiResponse<MarketQuote[]>>(`${this.marketUrl}/quotes`, symbols)
       .pipe(
         map((res: ApiResponse<MarketQuote[]>) => res.data as MarketQuote[]),
-        catchError(err => this.handleError(err))
+        catchError(err => this.optionalArray<MarketQuote>(err))
       );
   }
 
   getMarketStatus(): Observable<any> {
-    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/market/status`)
+    return this.http.get<ApiResponse<any>>(`${this.marketUrl}/status`)
       .pipe(
         map((res: ApiResponse<any>) => res.data as any),
-        catchError(err => this.handleError(err))
+        catchError(err => {
+          if (err?.status === 0 || err?.status === 404) {
+            return of({ status: 'OPEN', label: 'Mercado em operacao' });
+          }
+          return this.handleError(err);
+        })
+      );
+  }
+
+  getBankInstitutions(): Observable<BankInstitution[]> {
+    return this.http.get<ApiResponse<BankInstitution[]>>(`${this.baseUrl}/bank/institutions`)
+      .pipe(
+        map((res: ApiResponse<BankInstitution[]>) => (res.data || []).map(item => this.mapBankInstitution(item))),
+        catchError(err => this.optionalArray<BankInstitution>(err))
+      );
+  }
+
+  createBankPayment(payload: BankPaymentRequest): Observable<BankPaymentResponse> {
+    return this.http.post<ApiResponse<BankPaymentResponse>>(`${this.baseUrl}/bank/payments`, payload)
+      .pipe(
+        map((res: ApiResponse<BankPaymentResponse>) => this.mapBankPayment(res.data)),
+        catchError(err => this.handleError(err, 'Erro ao criar pagamento'))
+      );
+  }
+
+  getBankPayments(): Observable<BankPaymentResponse[]> {
+    return this.http.get<ApiResponse<BankPaymentResponse[]>>(`${this.baseUrl}/bank/payments`)
+      .pipe(
+        map((res: ApiResponse<BankPaymentResponse[]>) => (res.data || []).map(item => this.mapBankPayment(item))),
+        catchError(err => this.optionalArray<BankPaymentResponse>(err))
       );
   }
 
@@ -615,7 +737,7 @@ export class ApiService {
   }
 
   getFavorites(): Observable<any[]> {
-    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/market/favorites`)
+    return this.http.get<ApiResponse<any[]>>(`${this.watchlistUrl}/favorites`)
       .pipe(
         map((res: ApiResponse<any[]>) => res.data as any[]),
         catchError(err => this.optionalArray<any>(err))
@@ -623,7 +745,7 @@ export class ApiService {
   }
 
   removeFavorite(symbol: string): Observable<any> {
-    return this.http.delete<ApiResponse<any>>(`${this.baseUrl}/market/favorites/${symbol}`)
+    return this.http.delete<ApiResponse<any>>(`${this.watchlistUrl}/favorite/${symbol}`)
       .pipe(
         map((res: ApiResponse<any>) => res.data),
         catchError(err => this.handleError(err))
@@ -667,6 +789,35 @@ export class ApiService {
       message: `${condition}. Preparado para virar aviso por WhatsApp quando a IA liberar uma oportunidade.`,
       isRead: false,
       createdAt: alert.createdAt || new Date().toISOString()
+    };
+  }
+
+  private mapBankInstitution(raw: any): BankInstitution {
+    return {
+      id: raw.id,
+      name: raw.name,
+      logo: raw.logo ?? null,
+      primaryColor: raw.primaryColor ?? raw.primary_color ?? null,
+      category: raw.category ?? 'BR_DIGITAL',
+      country: raw.country ?? 'Brasil',
+      paymentEnabled: raw.paymentEnabled ?? raw.payment_enabled ?? false,
+      investmentEnabled: raw.investmentEnabled ?? raw.investment_enabled ?? false
+    };
+  }
+
+  private mapBankPayment(raw: any): BankPaymentResponse {
+    return {
+      paymentId: raw.paymentId ?? raw.payment_id,
+      status: raw.status,
+      institutionId: raw.institutionId ?? raw.institution_id,
+      institutionName: raw.institutionName ?? raw.institution_name,
+      amount: raw.amount,
+      currency: raw.currency,
+      method: raw.method,
+      checkoutUrl: raw.checkoutUrl ?? raw.checkout_url,
+      pixCopyPaste: raw.pixCopyPaste ?? raw.pix_copy_paste,
+      message: raw.message,
+      createdAt: raw.createdAt ?? raw.created_at
     };
   }
 

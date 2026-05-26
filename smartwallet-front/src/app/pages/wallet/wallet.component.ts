@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ApiService, Asset, Wallet } from '../../services/api.service';
+import { ApiService, Asset, Wallet, BankInstitution, Transaction, AssetPaymentResponse } from '../../services/api.service';
 
 interface Holding {
   asset: Asset;
@@ -16,7 +17,7 @@ interface Holding {
 @Component({
   selector: 'app-wallet',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   template: `
     <div class="wallet-page">
       <header class="wallet-hero">
@@ -31,9 +32,9 @@ interface Holding {
             <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">monitoring</span>
             Buscar ativos
           </button>
-          <button class="primary-action" type="button" (click)="showAddModal = true">
+          <button class="primary-action" type="button" (click)="activeTab = 'payments'">
             <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">add</span>
-            Nova movimentacao
+            Comprar acao
           </button>
         </div>
       </header>
@@ -69,6 +70,10 @@ interface Holding {
         <button [class.active]="activeTab === 'transactions'" (click)="activeTab = 'transactions'">
           <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">swap_vert</span>
           Movimentacoes
+        </button>
+        <button [class.active]="activeTab === 'payments'" (click)="activeTab = 'payments'">
+          <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">payments</span>
+          Pagamento de acoes
         </button>
         <button [class.active]="activeTab === 'dividends'" (click)="activeTab = 'dividends'">
           <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">redeem</span>
@@ -120,22 +125,136 @@ interface Holding {
               <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">account_balance_wallet</span>
               <h3>Nenhum ativo ainda</h3>
               <p>Adicione sua primeira movimentacao para montar sua carteira.</p>
-              <button class="primary-action" type="button" (click)="showAddModal = true">
+              <button class="primary-action" type="button" (click)="activeTab = 'payments'">
                 <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">add</span>
-                Adicionar ativo
+                Comprar ativo
               </button>
             </div>
           }
         </section>
       } @else if (activeTab === 'transactions') {
-        <section class="empty-panel">
-          <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">swap_vert</span>
-          <h2>Movimentacoes</h2>
-          <p>As compras, vendas e ajustes da carteira vao aparecer aqui.</p>
-          <button class="primary-action" type="button" (click)="showAddModal = true">
-            <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">add</span>
-            Nova movimentacao
-          </button>
+        @if (transactions.length) {
+          <section class="transactions-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Movimentacoes</h2>
+                <p>{{ transactions.length }} registro(s) de compra, venda e proventos</p>
+              </div>
+              <button class="primary-action compact" type="button" (click)="activeTab = 'payments'">
+                <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">add_card</span>
+                Comprar
+              </button>
+            </div>
+
+            <div class="transactions-list">
+              @for (transaction of transactions; track transaction.id) {
+                <article class="transaction-row">
+                  <span class="transaction-icon material-symbols-rounded notranslate" translate="no" aria-hidden="true">
+                    {{ transaction.transactionType === 'SELL' ? 'south_west' : transaction.transactionType === 'DIVIDEND' ? 'redeem' : 'north_east' }}
+                  </span>
+                  <div>
+                    <strong>{{ transaction.transactionType }}</strong>
+                    <small>{{ transaction.transactionDate | date:'dd/MM/yyyy' }} · {{ transaction.notes || 'Movimentacao registrada' }}</small>
+                  </div>
+                  <span>{{ transaction.quantity | number:'1.0-4' }} x {{ transaction.price | currency:'BRL' }}</span>
+                  <strong>{{ transaction.totalValue | currency:'BRL' }}</strong>
+                </article>
+              }
+            </div>
+          </section>
+        } @else {
+          <section class="empty-panel">
+            <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">swap_vert</span>
+            <h2>Movimentacoes</h2>
+            <p>As compras, vendas e ajustes da carteira vao aparecer aqui.</p>
+            <button class="primary-action" type="button" (click)="activeTab = 'payments'">
+              <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">add</span>
+              Comprar acao
+            </button>
+          </section>
+        }
+      } @else if (activeTab === 'payments') {
+        <section class="payment-panel">
+          <div class="panel-header">
+            <div>
+              <h2>Comprar ações com banco digital</h2>
+              <p>Escolha a carteira, o banco e registre a compra como pagamento aprovado.</p>
+            </div>
+            <span class="payment-badge">
+              <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">verified</span>
+              Bancos integrados
+            </span>
+          </div>
+
+          <form class="asset-payment-form" (ngSubmit)="submitAssetPayment()">
+            <label>
+              Carteira
+              <select name="walletId" [(ngModel)]="selectedWalletId">
+                @for (wallet of wallets; track wallet.id) {
+                  <option [ngValue]="wallet.id">{{ wallet.name }}</option>
+                }
+              </select>
+            </label>
+
+            <label>
+              Banco
+              <select name="institutionId" [(ngModel)]="assetPayment.institutionId">
+                @for (bank of bankInstitutions; track bank.id) {
+                  <option [value]="bank.id">{{ bank.name }} · {{ bank.country }}</option>
+                }
+              </select>
+            </label>
+
+            <label>
+              Código
+              <input name="symbol" type="text" [(ngModel)]="assetPayment.symbol" placeholder="PETR4" />
+            </label>
+
+            <label>
+              Nome
+              <input name="name" type="text" [(ngModel)]="assetPayment.name" placeholder="Petrobras PN" />
+            </label>
+
+            <label>
+              Quantidade
+              <input name="quantity" type="number" min="0.0001" step="0.0001" [(ngModel)]="assetPayment.quantity" />
+            </label>
+
+            <label>
+              Preço
+              <input name="price" type="number" min="0.01" step="0.01" [(ngModel)]="assetPayment.price" />
+            </label>
+
+            <label>
+              Taxas
+              <input name="fees" type="number" min="0" step="0.01" [(ngModel)]="assetPayment.fees" />
+            </label>
+
+            <label class="wide">
+              Observação
+              <input name="notes" type="text" [(ngModel)]="assetPayment.notes" placeholder="Compra via banco digital" />
+            </label>
+
+            <div class="payment-summary">
+              <span>Total estimado</span>
+              <strong>{{ assetPaymentTotal() | currency:'BRL' }}</strong>
+            </div>
+
+            <button class="primary-action pay-submit" type="submit" [disabled]="paymentSubmitting || !selectedWalletId">
+              <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">add_card</span>
+              {{ paymentSubmitting ? 'Processando...' : 'Pagar e adicionar na carteira' }}
+            </button>
+          </form>
+
+          @if (paymentResult) {
+            <div class="payment-success">
+              <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">check_circle</span>
+              <div>
+                <strong>{{ paymentResult.payment.institutionName }} aprovou o pagamento</strong>
+                <small>{{ paymentResult.asset.symbol }} entrou na carteira · {{ paymentResult.payment.paymentId }}</small>
+              </div>
+            </div>
+          }
         </section>
       } @else {
         <section class="empty-panel">
@@ -333,6 +452,8 @@ interface Holding {
     }
 
     .holdings-panel,
+    .transactions-panel,
+    .payment-panel,
     .empty-panel {
       padding: 22px;
       border: 1px solid rgba(148, 163, 184, 0.18);
@@ -358,6 +479,156 @@ interface Holding {
     .holdings-list {
       display: grid;
       gap: 10px;
+    }
+
+    .transactions-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .transaction-row {
+      display: grid;
+      grid-template-columns: 46px minmax(180px, 1fr) minmax(150px, auto) minmax(120px, auto);
+      align-items: center;
+      gap: 14px;
+      min-height: 70px;
+      padding: 12px 14px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 18px;
+      background: rgba(248, 250, 252, 0.74);
+    }
+
+    .transaction-icon {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      color: #0f8b59;
+      background: rgba(16, 185, 129, 0.12);
+    }
+
+    .transaction-row strong,
+    .transaction-row span {
+      font-weight: 900;
+    }
+
+    .transaction-row small {
+      display: block;
+      margin-top: 4px;
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .compact {
+      min-height: 42px;
+      padding: 0 14px;
+    }
+
+    .payment-panel {
+      display: grid;
+      gap: 18px;
+    }
+
+    .payment-badge {
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      border-radius: 999px;
+      color: #0f8b59;
+      font-size: 12px;
+      font-weight: 900;
+      background: rgba(16, 185, 129, 0.12);
+    }
+
+    .asset-payment-form {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      align-items: end;
+    }
+
+    .asset-payment-form label {
+      display: grid;
+      gap: 7px;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .asset-payment-form input,
+    .asset-payment-form select {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 14px;
+      padding: 0 12px;
+      color: #0f172a;
+      background: rgba(248, 250, 252, 0.86);
+      outline: 0;
+    }
+
+    .asset-payment-form input:focus,
+    .asset-payment-form select:focus {
+      border-color: rgba(16, 185, 129, 0.62);
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+    }
+
+    .asset-payment-form .wide {
+      grid-column: span 2;
+    }
+
+    .payment-summary {
+      min-height: 58px;
+      display: grid;
+      align-content: center;
+      gap: 3px;
+      padding: 10px 14px;
+      border: 1px solid rgba(16, 185, 129, 0.18);
+      border-radius: 16px;
+      background: rgba(236, 253, 245, 0.72);
+    }
+
+    .payment-summary span {
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .payment-summary strong {
+      color: #047647;
+      font-size: 20px;
+    }
+
+    .pay-submit {
+      width: 100%;
+    }
+
+    .payment-success {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      padding: 14px;
+      border: 1px solid rgba(16, 185, 129, 0.22);
+      border-radius: 18px;
+      color: #0f172a;
+      background: rgba(236, 253, 245, 0.82);
+    }
+
+    .payment-success > .material-symbols-rounded {
+      color: #059669;
+      font-size: 38px;
+    }
+
+    .payment-success small {
+      display: block;
+      margin-top: 4px;
+      color: #64748b;
+      font-weight: 700;
     }
 
     .holding-row {
@@ -445,6 +716,8 @@ interface Holding {
       .summary-card,
       .tabs,
       .holdings-panel,
+      .transactions-panel,
+      .payment-panel,
       .empty-panel {
         border-color: rgba(124, 58, 237, 0.22);
         background:
@@ -458,12 +731,38 @@ interface Holding {
         background: rgba(10, 14, 38, 0.72);
       }
 
+      .transaction-row,
+      .payment-success {
+        color: #f8fafc;
+        border-color: rgba(124, 58, 237, 0.18);
+        background: rgba(10, 14, 38, 0.72);
+      }
+
+      .asset-payment-form label,
+      .transaction-row small,
+      .payment-success small {
+        color: #b8c1dd;
+      }
+
+      .asset-payment-form input,
+      .asset-payment-form select {
+        color: #f8fafc;
+        border-color: rgba(124, 58, 237, 0.22);
+        background: rgba(10, 14, 38, 0.72);
+      }
+
+      .payment-summary {
+        border-color: rgba(39, 226, 155, 0.22);
+        background: rgba(15, 23, 42, 0.72);
+      }
+
       .wallet-hero p,
       .panel-header p,
       .empty-state p,
       .empty-panel p,
       .asset-col .name,
       .metric small,
+      .payment-summary span,
       .summary-card .label,
       .summary-card small {
         color: #b8c1dd;
@@ -503,6 +802,23 @@ interface Holding {
         grid-template-columns: 48px 1fr 28px;
       }
 
+      .transaction-row {
+        grid-template-columns: 46px minmax(0, 1fr);
+      }
+
+      .transaction-row > span,
+      .transaction-row > strong {
+        grid-column: 2;
+      }
+
+      .asset-payment-form {
+        grid-template-columns: 1fr;
+      }
+
+      .asset-payment-form .wide {
+        grid-column: auto;
+      }
+
       .metric {
         display: none;
       }
@@ -511,18 +827,33 @@ interface Holding {
 })
 export class WalletComponent implements OnInit {
   private api = inject(ApiService);
-  activeTab: 'holdings' | 'transactions' | 'dividends' = 'holdings';
+  activeTab: 'holdings' | 'transactions' | 'payments' | 'dividends' = 'holdings';
   holdings: Holding[] = [];
+  transactions: Transaction[] = [];
   totalValue = 0;
   totalPL = 0;
   totalPLPercent = 0;
   totalInvested = 0;
-  showAddModal = false;
   wallets: Wallet[] = [];
   selectedWalletId: number | null = null;
+  bankInstitutions: BankInstitution[] = [];
+  paymentSubmitting = false;
+  paymentResult: AssetPaymentResponse | null = null;
+  assetPayment = {
+    institutionId: '',
+    symbol: '',
+    name: '',
+    assetType: 'STOCK',
+    quantity: 1,
+    price: 0,
+    fees: 0,
+    notes: ''
+  };
 
   ngOnInit() {
     this.loadWallets();
+    this.loadBanks();
+    this.loadTransactions();
   }
 
   loadWallets() {
@@ -554,6 +885,56 @@ export class WalletComponent implements OnInit {
         this.totalInvested = this.totalValue - this.totalPL;
         this.totalPLPercent = this.totalInvested ? (this.totalPL / this.totalInvested) * 100 : 0;
       }
+    });
+  }
+
+  loadTransactions() {
+    this.api.getTransactions().subscribe({
+      next: transactions => this.transactions = transactions
+    });
+  }
+
+  loadBanks() {
+    this.api.getBankInstitutions().subscribe({
+      next: banks => {
+        this.bankInstitutions = banks.filter(bank => bank.paymentEnabled);
+        this.assetPayment.institutionId = this.bankInstitutions.find(bank => bank.id === 'nubank')?.id
+          || this.bankInstitutions.find(bank => bank.id === 'mercado-pago')?.id
+          || this.bankInstitutions[0]?.id
+          || '';
+      }
+    });
+  }
+
+  assetPaymentTotal(): number {
+    return (Number(this.assetPayment.quantity) || 0) * (Number(this.assetPayment.price) || 0) + (Number(this.assetPayment.fees) || 0);
+  }
+
+  submitAssetPayment() {
+    if (!this.selectedWalletId || this.paymentSubmitting) {
+      return;
+    }
+
+    this.paymentSubmitting = true;
+    this.paymentResult = null;
+
+    this.api.payAssetPurchase(this.selectedWalletId, {
+      institutionId: this.assetPayment.institutionId,
+      symbol: this.assetPayment.symbol.trim().toUpperCase(),
+      name: this.assetPayment.name.trim() || this.assetPayment.symbol.trim().toUpperCase(),
+      assetType: this.assetPayment.assetType,
+      quantity: Number(this.assetPayment.quantity),
+      price: Number(this.assetPayment.price),
+      fees: Number(this.assetPayment.fees || 0),
+      notes: this.assetPayment.notes
+    }).subscribe({
+      next: result => {
+        this.paymentResult = result;
+        this.paymentSubmitting = false;
+        this.loadAssets(this.selectedWalletId as number);
+        this.loadTransactions();
+      },
+      error: () => this.paymentSubmitting = false
     });
   }
 }

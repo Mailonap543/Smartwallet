@@ -13,7 +13,7 @@ import { SearchBarComponent } from '../search-bar/search-bar.component';
       <!-- Header -->
       <header class="header">
         <div class="header-left">
-          <a routerLink="/home" class="logo">SmartWallet</a>
+          <a routerLink="/dashboard" class="logo">SmartWallet</a>
           <app-search-bar class="header-search" />
         </div>
         <div class="header-right">
