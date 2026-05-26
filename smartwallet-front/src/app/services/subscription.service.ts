@@ -2,12 +2,16 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
+import { BankPaymentResponse } from './api.service';
 
 export interface Plan {
   name: string;
   displayName: string;
   description: string;
   monthlyPrice: number;
+  annualPrice: number;
+  annualDiscountPercent: number;
   maxWallets: number;
   maxAssets: number;
   aiAnalysis: boolean;
@@ -15,6 +19,11 @@ export interface Plan {
   bankIntegration: boolean;
   advancedReports: boolean;
   dataHistoryDays: number;
+  features: string[];
+  unavailableFeatures: string[];
+  highlighted: boolean;
+  accentColor: string;
+  displayOrder: number;
 }
 
 export interface PlanFeatures {
@@ -29,13 +38,31 @@ export interface PlanFeatures {
   availableFeatures: string[];
 }
 
+export interface PlanCheckoutResponse {
+  plan: Plan;
+  payment: BankPaymentResponse | null;
+  billingCycle: 'MONTHLY' | 'ANNUAL';
+  amount: number;
+}
+
+export interface AdminPlanUpdate {
+  displayName?: string;
+  description?: string;
+  monthlyPrice?: number;
+  annualDiscountPercent?: number;
+  highlighted?: boolean;
+  accentColor?: string;
+  active?: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class SubscriptionService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
-  private baseUrl = 'http://localhost:8080/api';
+  private baseUrl = `${environment.apiUrl}/api`;
+  private adminBaseUrl = `${environment.apiUrl}/api/v1/admin`;
 
   private getHeaders() {
     return this.auth.getAuthHeaders();
@@ -60,6 +87,27 @@ export class SubscriptionService {
     return this.http.post<any>(`${this.baseUrl}/subscription/upgrade`, { plan: planName }, { headers: this.getHeaders() });
   }
 
+  checkoutPlan(planName: string, billingCycle: 'MONTHLY' | 'ANNUAL', institutionId: string): Observable<PlanCheckoutResponse> {
+    return this.http.post<any>(
+      `${this.baseUrl}/subscription/checkout`,
+      { plan: planName, billingCycle, institutionId },
+      { headers: this.getHeaders() }
+    ).pipe(map(res => ({
+      ...res.data,
+      payment: res.data.payment ? this.mapPayment(res.data.payment) : null
+    }) as PlanCheckoutResponse));
+  }
+
+  getAdminPlans(): Observable<Plan[]> {
+    return this.http.get<any>(`${this.adminBaseUrl}/plans`, { headers: this.getHeaders() })
+      .pipe(map(res => res.data as Plan[]));
+  }
+
+  updateAdminPlan(planName: string, data: AdminPlanUpdate): Observable<Plan> {
+    return this.http.put<any>(`${this.adminBaseUrl}/plans/${planName}`, data, { headers: this.getHeaders() })
+      .pipe(map(res => res.data as Plan));
+  }
+
   cancelSubscription(): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/subscription/cancel`, {}, { headers: this.getHeaders() });
   }
@@ -78,5 +126,21 @@ export class SubscriptionService {
       case 'bank': return 'bank';
       default: return 'wallet';
     }
+  }
+
+  private mapPayment(raw: any): BankPaymentResponse {
+    return {
+      paymentId: raw.paymentId ?? raw.payment_id,
+      status: raw.status,
+      institutionId: raw.institutionId ?? raw.institution_id,
+      institutionName: raw.institutionName ?? raw.institution_name,
+      amount: raw.amount,
+      currency: raw.currency,
+      method: raw.method,
+      checkoutUrl: raw.checkoutUrl ?? raw.checkout_url,
+      pixCopyPaste: raw.pixCopyPaste ?? raw.pix_copy_paste,
+      message: raw.message,
+      createdAt: raw.createdAt ?? raw.created_at
+    };
   }
 }

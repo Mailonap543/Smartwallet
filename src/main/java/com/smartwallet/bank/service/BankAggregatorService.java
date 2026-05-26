@@ -16,6 +16,33 @@ public class BankAggregatorService {
 
 private static final Logger log = LoggerFactory.getLogger(BankAggregatorService.class);
     private static final String ACCESS_TOKEN_KEY = "access_token";
+    private static final List<Institution> SUPPORTED_INSTITUTIONS = List.of(
+            new Institution("nubank", "Nubank", null, "#820AD1", "BR_DIGITAL", "Brasil", true, false),
+            new Institution("inter", "Inter", null, "#FF7A00", "BR_DIGITAL", "Brasil", true, true),
+            new Institution("c6-bank", "C6 Bank", null, "#111827", "BR_DIGITAL", "Brasil", true, true),
+            new Institution("picpay", "PicPay", null, "#11C76F", "BR_DIGITAL", "Brasil", true, false),
+            new Institution("mercado-pago", "Mercado Pago", null, "#00A8E0", "BR_DIGITAL", "Brasil", true, false),
+            new Institution("neon", "Neon", null, "#00AEEF", "BR_DIGITAL", "Brasil", true, false),
+            new Institution("pagbank", "PagBank", null, "#FFD600", "BR_DIGITAL", "Brasil", true, false),
+            new Institution("banco-pan", "Banco Pan", null, "#00A4FF", "BR_DIGITAL", "Brasil", true, false),
+            new Institution("next", "Next", null, "#00D35F", "BR_DIGITAL", "Brasil", true, false),
+            new Institution("iti", "iti", null, "#FF6B00", "BR_DIGITAL", "Brasil", true, false),
+            new Institution("will-bank", "Will Bank", null, "#FFE100", "BR_DIGITAL", "Brasil", true, false),
+            new Institution("sofisa-direto", "Sofisa Direto", null, "#1D4ED8", "BR_DIGITAL", "Brasil", true, true),
+            new Institution("btg-pactual", "BTG Pactual", null, "#111827", "BR_DIGITAL", "Brasil", true, true),
+            new Institution("banco-original", "Banco Original", null, "#00A86B", "BR_DIGITAL", "Brasil", true, false),
+            new Institution("recargapay", "RecargaPay", null, "#6D28D9", "BR_DIGITAL", "Brasil", true, false),
+            new Institution("xp", "XP", null, "#111827", "INVESTMENT", "Brasil", true, true),
+            new Institution("genial", "Genial Investimentos", null, "#0046AD", "INVESTMENT", "Brasil", true, true),
+            new Institution("rico", "Rico", null, "#F97316", "INVESTMENT", "Brasil", true, true),
+            new Institution("clear", "Clear", null, "#0EA5E9", "INVESTMENT", "Brasil", true, true),
+            new Institution("agora", "Agora Investimentos", null, "#0F766E", "INVESTMENT", "Brasil", true, true),
+            new Institution("revolut", "Revolut", null, "#111827", "INTERNATIONAL", "Internacional", true, true),
+            new Institution("wise", "Wise", null, "#9FE870", "INTERNATIONAL", "Internacional", true, false),
+            new Institution("monzo", "Monzo", null, "#FF4D56", "INTERNATIONAL", "Internacional", true, false),
+            new Institution("n26", "N26", null, "#48AC98", "INTERNATIONAL", "Internacional", true, false),
+            new Institution("chime", "Chime", null, "#00C389", "INTERNATIONAL", "Internacional", true, false)
+    );
     private final WebClient webClient;
     private final String aggregatorApiKey;
     private final String aggregatorBaseUrl;
@@ -208,23 +235,17 @@ private static final Logger log = LoggerFactory.getLogger(BankAggregatorService.
     }
 
     public List<Institution> getAvailableInstitutions() {
-        if (!enabled) return Collections.emptyList();
+        return new ArrayList<>(SUPPORTED_INSTITUTIONS);
+    }
 
-        try {
-            @SuppressWarnings("unchecked")
-            List<Institution> institutions = webClient.get()
-                    .uri("/v1/institutions")
-                    .retrieve()
-                    .bodyToMono((Class<List<Institution>>) (Class<?>) List.class)
-                    .block();
-
-            return institutions != null ? institutions : Collections.emptyList();
-            
-        } catch (Exception e) {
-            log.error("Failed to get institutions: {}", e.getMessage());
+    public Optional<Institution> findInstitution(String institutionId) {
+        if (institutionId == null || institutionId.isBlank()) {
+            return Optional.empty();
         }
 
-        return Collections.emptyList();
+        return getAvailableInstitutions().stream()
+                .filter(institution -> institution.id().equalsIgnoreCase(institutionId))
+                .findFirst();
     }
 
     public boolean isEnabled() {

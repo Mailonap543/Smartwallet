@@ -15,7 +15,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
     "com.smartwallet.market.model",
     "com.smartwallet.watchlist.model",
     "com.smartwallet.news.entity",
-    "com.smartwallet.audit.model"
+    "com.smartwallet.audit.model",
+    "com.smartwallet.subscription.entity",
+    "com.smartwallet.bank.entity"
 })
 @EnableJpaRepositories(basePackages = "com.smartwallet")
 public class TestConfig {

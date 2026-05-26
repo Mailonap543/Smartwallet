@@ -67,51 +67,11 @@ import { AuthService } from '../../services/auth.service';
           </button>
         </article>
 
-        <article class="profile-card preferences-card">
-          <div class="card-heading">
-            <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">tune</span>
-            <div>
-              <h2>Preferencias</h2>
-              <p>Preferencias usadas para personalizar alertas e recomendacoes.</p>
-            </div>
-          </div>
-
-          <div class="risk-summary">
-            <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">psychology</span>
-            <div>
-              <small>Perfil de risco atual</small>
-              <strong>{{ riskProfile }}</strong>
-              <p>{{ riskDescription }}</p>
-            </div>
-          </div>
-
-          <div class="preference-row">
-            <span>Tema do sistema</span>
-            <strong>Automatico</strong>
-          </div>
-          <div class="preference-row">
-            <span>Pontuacao da pesquisa</span>
-            <strong>{{ riskScoreLabel }}</strong>
-          </div>
-          <div class="preference-row">
-            <span>Alertas de oportunidade</span>
-            <strong>Preparado</strong>
-          </div>
-          <div class="preference-row">
-            <span>Canal futuro</span>
-            <strong>WhatsApp</strong>
-          </div>
-          <a class="preference-link" routerLink="/calculators" aria-label="Refazer pesquisa de perfil de risco">
-            <span class="material-symbols-rounded notranslate" translate="no" aria-hidden="true">edit_note</span>
-            Refazer pesquisa de risco
-          </a>
-        </article>
-
         <article class="profile-card shortcut-card">
-          <div class="shortcut-icon material-symbols-rounded notranslate" aria-hidden="true">smart_toy</div>
-          <h2>Carteira inteligente</h2>
-          <p>Use a IA para revisar sua carteira e encontrar oportunidades de melhoria.</p>
-          <a routerLink="/ai-analysis">Abrir inteligencia IA</a>
+          <div class="shortcut-icon material-symbols-rounded notranslate" aria-hidden="true">settings</div>
+          <h2>Configuracoes</h2>
+          <p>Ajuste alertas, perfil de risco, WhatsApp e preferencias do sistema.</p>
+          <a routerLink="/settings">Abrir configuracoes</a>
         </article>
       </section>
     </div>
@@ -433,16 +393,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class ProfileComponent {
   private readonly auth = inject(AuthService);
-  private readonly riskStorageKey = 'smartwallet-risk-profile';
   protected readonly user = this.auth.user;
-  protected riskProfile = 'Nao definido';
-  protected riskDescription = 'Responda a pesquisa nas calculadoras para personalizar alertas e recomendacoes.';
-  protected riskScoreLabel = '-';
-
-  constructor() {
-    this.loadRiskProfile();
-    window.addEventListener('storage', () => this.loadRiskProfile());
-  }
 
   protected get initials(): string {
     const name = this.user()?.fullName?.trim();
@@ -459,21 +410,5 @@ export class ProfileComponent {
 
   protected logout(): void {
     this.auth.logout();
-  }
-
-  private loadRiskProfile(): void {
-    const savedProfile = localStorage.getItem(this.riskStorageKey);
-    if (!savedProfile) {
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(savedProfile) as { profile?: string; description?: string; score?: number };
-      this.riskProfile = parsed.profile || this.riskProfile;
-      this.riskDescription = parsed.description || this.riskDescription;
-      this.riskScoreLabel = parsed.score ? `${parsed.score} / 24` : this.riskScoreLabel;
-    } catch {
-      localStorage.removeItem(this.riskStorageKey);
-    }
   }
 }

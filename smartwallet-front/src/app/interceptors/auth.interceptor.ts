@@ -25,16 +25,24 @@ function isAuthEndpoint(url: string): boolean {
 
 function isOptionalMarketNotFound(error: unknown, url: string): boolean {
   return error instanceof HttpErrorResponse
-    && error.status === 404
     && (
+      (error.status === 500 && (
+        url.includes('/api/v1/market/categories')
+        || url.includes('/api/market/categories')
+      ))
+      || (error.status === 404 && (
       url.includes('/api/market/favorites')
+      || url.includes('/api/v1/watchlist/favorites')
       || url.includes('/api/v1/alerts')
       || url.includes('/api/notifications')
       || url.includes('/api/market/facts/')
+      || url.includes('/api/v1/market/facts/')
       || /\/api\/market\/assets\/[^/]+$/.test(url)
+      || /\/api\/v1\/market\/assets\/[^/]+$/.test(url)
       || url.includes('/dividends')
       || url.includes('/earnings')
       || url.includes('/history')
+      ))
     );
 }
 

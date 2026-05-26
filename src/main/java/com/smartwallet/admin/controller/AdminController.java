@@ -7,7 +7,11 @@ import com.smartwallet.market.repository.AssetCategoryRepository;
 import com.smartwallet.market.repository.AssetRepository;
 import com.smartwallet.news.entity.NewsItem;
 import com.smartwallet.news.repository.NewsRepository;
+import com.smartwallet.subscription.dto.AdminPlanUpdateRequest;
+import com.smartwallet.subscription.dto.PlanCatalogResponse;
+import com.smartwallet.subscription.service.PlanService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,16 +19,19 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/admin")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private final AssetRepository assetRepository;
     private final AssetCategoryRepository categoryRepository;
     private final NewsRepository newsRepository;
+    private final PlanService planService;
 
-    public AdminController(AssetRepository assetRepository, AssetCategoryRepository categoryRepository, NewsRepository newsRepository) {
+    public AdminController(AssetRepository assetRepository, AssetCategoryRepository categoryRepository, NewsRepository newsRepository, PlanService planService) {
         this.assetRepository = assetRepository;
         this.categoryRepository = categoryRepository;
         this.newsRepository = newsRepository;
+        this.planService = planService;
     }
 
     @GetMapping("/stats")
@@ -89,6 +96,20 @@ public class AdminController {
     public ResponseEntity<ApiResponse<List<NewsItem>>> getAllNews() {
         List<NewsItem> news = newsRepository.findAll();
         return ResponseEntity.ok(ApiResponse.success(news));
+    }
+
+    @GetMapping("/plans")
+    public ResponseEntity<ApiResponse<List<PlanCatalogResponse>>> getPlans() {
+        return ResponseEntity.ok(ApiResponse.success(planService.getAvailablePlans()));
+    }
+
+    @PutMapping("/plans/{planName}")
+    public ResponseEntity<ApiResponse<PlanCatalogResponse>> updatePlan(
+            @PathVariable String planName,
+            @RequestBody AdminPlanUpdateRequest request) {
+
+        PlanCatalogResponse response = planService.updatePlanSettings(planName, request);
+        return ResponseEntity.ok(ApiResponse.success("Plano atualizado", response));
     }
 
     @PostMapping("/news")

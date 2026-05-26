@@ -5,7 +5,7 @@
 set -e
 
 echo "==========================================="
-echo "  🔍 Validação Local do Pipeline CI"
+echo "   Validação Local do Pipeline CI"
 echo "==========================================="
 
 # Cores

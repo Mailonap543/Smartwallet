@@ -186,9 +186,14 @@ export class AuthService {
     );
   }
 
-  loginWithProvider(provider: SocialAuthProvider): void {
+  loginWithProvider(provider: SocialAuthProvider): boolean {
     const providerId = this.socialProviderIds[provider];
     const currentUrl = typeof window !== 'undefined' ? window.location.href : '/dashboard';
+
+    if (!environment.socialAuthEnabled) {
+      localStorage.setItem('smartwallet-social-provider', providerId);
+      return false;
+    }
 
     localStorage.setItem('smartwallet-social-provider', providerId);
     localStorage.setItem('smartwallet-social-return-url', currentUrl);
@@ -196,6 +201,8 @@ export class AuthService {
     if (typeof window !== 'undefined') {
       window.location.assign(`${environment.apiUrl}/oauth2/authorization/${providerId}`);
     }
+
+    return true;
   }
 
   logout(): void {

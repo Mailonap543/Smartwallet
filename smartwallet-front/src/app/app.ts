@@ -36,8 +36,10 @@ export class App {
     { label: 'Relatorios', path: '/favorites', icon: 'description', exact: false },
     { label: 'Calendario', path: '/market/dividends', icon: 'calendar_month', exact: false },
     { label: 'Carteira', path: '/wallet', icon: 'account_balance_wallet', exact: false },
+    { label: 'Bancos', path: '/banks', icon: 'account_balance', exact: false },
+    { label: 'Assinaturas', path: '/subscription', icon: 'workspace_premium', exact: false },
     { label: 'Perfil', path: '/profile', icon: 'person', exact: true },
-    { label: 'Configuracoes', path: '/subscription', icon: 'settings', exact: false }
+    { label: 'Configuracoes', path: '/settings', icon: 'settings', exact: false }
   ];
 
   constructor() {
@@ -58,7 +60,12 @@ export class App {
   }
 
   private isPublicRoute(url: string): boolean {
-    return ['/login', '/register', '/home'].some(route => url.startsWith(route));
+    const cleanUrl = url.split('?')[0].split('#')[0];
+    return cleanUrl === '/' || cleanUrl === '' || ['/login', '/register', '/home'].some(route => cleanUrl.startsWith(route));
+  }
+
+  private isJarvisUrl(url: string): boolean {
+    return !this.isPublicRoute(url);
   }
 
   private isJarvisUrl(url: string): boolean {

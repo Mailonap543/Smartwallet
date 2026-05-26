@@ -2,6 +2,8 @@ package com.smartwallet.controller;
 
 import com.smartwallet.dto.ApiResponse;
 import com.smartwallet.dto.asset.*;
+import com.smartwallet.dto.payment.AssetPaymentRequest;
+import com.smartwallet.dto.payment.AssetPaymentResponse;
 import com.smartwallet.dto.transaction.*;
 import com.smartwallet.dto.wallet.*;
 import com.smartwallet.security.AuthUserResolver;
@@ -66,6 +68,16 @@ public class PortfolioController {
         CustomUserDetails currentUser = authUserResolver.currentUser();
         List<AssetResponse> response = portfolioService.getWalletAssets(walletId, currentUser.getId());
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PostMapping("/wallets/{walletId}/asset-payments")
+    public ResponseEntity<ApiResponse<AssetPaymentResponse>> payAssetPurchase(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PathVariable Long walletId,
+            @Valid @RequestBody AssetPaymentRequest request) {
+        CustomUserDetails currentUser = authUserResolver.currentUser();
+        AssetPaymentResponse response = portfolioService.payAssetPurchase(walletId, currentUser.getId(), request);
+        return ResponseEntity.ok(ApiResponse.success("Compra de ação paga com sucesso", response));
     }
 
     @PutMapping("/assets/{assetId}/price")
