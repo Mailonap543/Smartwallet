@@ -15,7 +15,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
     "com.smartwallet.news.entity",
     "com.smartwallet.watchlist.entity",
     "com.smartwallet.notification",
-    "com.smartwallet.portfolio.model",
     "com.smartwallet.subscription.entity",
     "com.smartwallet.bank.entity"
 })

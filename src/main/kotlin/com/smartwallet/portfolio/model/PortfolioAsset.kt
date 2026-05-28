@@ -5,8 +5,6 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 
-@Entity
-@Table(name = "portfolio_assets")
 data class PortfolioAsset(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,

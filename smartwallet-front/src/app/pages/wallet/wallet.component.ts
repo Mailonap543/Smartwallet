@@ -1,8 +1,33 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiService, Asset, Wallet, BankInstitution, Transaction, AssetPaymentResponse } from '../../services/api.service';
+
+type WalletTab = 'holdings' | 'transactions' | 'payments' | 'dividends';
+
+interface WalletAdminConfig {
+  adminEditable: boolean;
+  adminKey: string;
+  defaultTab: WalletTab;
+  routeTabAliases: Record<string, WalletTab>;
+}
+
+const WALLET_ADMIN_CONFIG: WalletAdminConfig = {
+  adminEditable: true,
+  adminKey: 'wallet.defaultTab',
+  defaultTab: 'holdings',
+  routeTabAliases: {
+    assets: 'holdings',
+    holdings: 'holdings',
+    transactions: 'transactions',
+    movimentacoes: 'transactions',
+    payments: 'payments',
+    pagamentos: 'payments',
+    dividends: 'dividends',
+    proventos: 'dividends'
+  }
+};
 
 interface Holding {
   asset: Asset;
@@ -189,7 +214,7 @@ interface Holding {
           <form class="asset-payment-form" (ngSubmit)="submitAssetPayment()">
             <label>
               Carteira
-              <select name="walletId" [(ngModel)]="selectedWalletId">
+              <select name="walletId" [(ngModel)]="selectedWalletId" (ngModelChange)="onWalletSelectionChange($event)">
                 @for (wallet of wallets; track wallet.id) {
                   <option [ngValue]="wallet.id">{{ wallet.name }}</option>
                 }
@@ -827,7 +852,8 @@ interface Holding {
 })
 export class WalletComponent implements OnInit {
   private api = inject(ApiService);
-  activeTab: 'holdings' | 'transactions' | 'payments' | 'dividends' = 'holdings';
+  private route = inject(ActivatedRoute);
+  activeTab: WalletTab = WALLET_ADMIN_CONFIG.defaultTab;
   holdings: Holding[] = [];
   transactions: Transaction[] = [];
   totalValue = 0;
@@ -836,6 +862,7 @@ export class WalletComponent implements OnInit {
   totalInvested = 0;
   wallets: Wallet[] = [];
   selectedWalletId: number | null = null;
+  private routeWalletId: number | null = null;
   bankInstitutions: BankInstitution[] = [];
   paymentSubmitting = false;
   paymentResult: AssetPaymentResponse | null = null;
@@ -851,6 +878,14 @@ export class WalletComponent implements OnInit {
   };
 
   ngOnInit() {
+    this.route.paramMap.subscribe(params => {
+      this.routeWalletId = this.parseWalletId(params.get('walletId'));
+      this.activeTab = this.resolveTab(params.get('tab'));
+      if (this.routeWalletId && this.wallets.length) {
+        this.selectWallet(this.routeWalletId);
+      }
+    });
+
     this.loadWallets();
     this.loadBanks();
     this.loadTransactions();
@@ -861,11 +896,44 @@ export class WalletComponent implements OnInit {
       next: wallets => {
         this.wallets = wallets;
         if (wallets.length) {
-          this.selectedWalletId = wallets[0].id;
-          this.loadAssets(wallets[0].id);
+          const preferredWalletId = this.getPreferredWalletId(wallets);
+          this.selectWallet(preferredWalletId);
         }
       }
     });
+  }
+
+  onWalletSelectionChange(walletId: number | null) {
+    if (walletId) {
+      this.selectWallet(walletId);
+    }
+  }
+
+  private selectWallet(walletId: number) {
+    this.selectedWalletId = walletId;
+    this.loadAssets(walletId);
+  }
+
+  private getPreferredWalletId(wallets: Wallet[]): number {
+    const routeWallet = wallets.find(wallet => wallet.id === this.routeWalletId);
+    return routeWallet?.id ?? wallets[0].id;
+  }
+
+  private parseWalletId(value: string | null): number | null {
+    if (!value) {
+      return null;
+    }
+
+    const walletId = Number(value);
+    return Number.isFinite(walletId) && walletId > 0 ? walletId : null;
+  }
+
+  private resolveTab(tab: string | null): WalletTab {
+    if (!tab) {
+      return WALLET_ADMIN_CONFIG.defaultTab;
+    }
+
+    return WALLET_ADMIN_CONFIG.routeTabAliases[tab.toLowerCase()] ?? WALLET_ADMIN_CONFIG.defaultTab;
   }
 
   loadAssets(walletId: number) {

@@ -108,6 +108,11 @@ market:
     interval-ms: ${MARKET_INGEST_INTERVAL_MS:3600000}
 
 smartwallet:
+  seed:
+    passive-income:
+      enabled: ${SMARTWALLET_SEED_PASSIVE_INCOME_ENABLED:true}
+      user-email: ${SMARTWALLET_SEED_PASSIVE_INCOME_USER_EMAIL:}
+      reset-on-start: ${SMARTWALLET_SEED_PASSIVE_INCOME_RESET_ON_START:true}
   google-search:
     enabled: ${SMARTWALLET_GOOGLE_SEARCH_ENABLED:true}
     api-key: ${SMARTWALLET_GOOGLE_SEARCH_API_KEY:sua_chave}

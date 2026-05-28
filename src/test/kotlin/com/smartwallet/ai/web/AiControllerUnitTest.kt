@@ -11,6 +11,7 @@ import com.smartwallet.entity.User
 import com.smartwallet.entity.Wallet
 import com.smartwallet.repository.AssetRepository
 import com.smartwallet.repository.WalletRepository
+import com.smartwallet.security.AuthUserResolver
 import com.smartwallet.security.CustomUserDetails
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -27,6 +28,7 @@ class AiControllerUnitTest {
     private lateinit var walletRepository: WalletRepository
     private lateinit var assetRepository: AssetRepository
     private lateinit var jarvisChatService: JarvisChatService
+    private lateinit var authUserResolver: AuthUserResolver
 
     private val userId = 1L
     private lateinit var userDetails: CustomUserDetails
@@ -37,7 +39,8 @@ class AiControllerUnitTest {
         walletRepository = mock()
         assetRepository = mock()
         jarvisChatService = mock()
-        aiController = AiController(aiService, walletRepository, assetRepository, jarvisChatService)
+        authUserResolver = mock()
+        aiController = AiController(aiService, walletRepository, assetRepository, jarvisChatService, authUserResolver)
         userDetails = CustomUserDetails(createUser())
     }
 
@@ -118,6 +121,19 @@ class AiControllerUnitTest {
         val response = aiController.chatWithJarvis(userDetails, request)
 
         assertNotNull(response.body?.data?.sessionId)
+    }
+
+    @Test
+    fun `risk endpoint resolves user from security context fallback`() {
+        whenever(authUserResolver.currentUser()).thenReturn(userDetails)
+        whenever(walletRepository.findByUserId(userId)).thenReturn(createWallets())
+        whenever(assetRepository.findByUserId(userId)).thenReturn(createAssets())
+        whenever(aiService.analyzePortfolio(eq(userId), any(), any())).thenReturn(createAnalysisResult())
+
+        val response = aiController.getRiskMetrics(null)
+
+        assertTrue(response.body?.success == true)
+        assertEquals(RiskLevel.MODERATE, response.body?.data?.riskLevel)
     }
 
     private fun createWallets(): List<Wallet> = listOf(

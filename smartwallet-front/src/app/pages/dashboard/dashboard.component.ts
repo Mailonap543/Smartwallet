@@ -96,7 +96,7 @@ import { AuthService } from '../../services/auth.service';
               <h3 class="text-lg font-semibold text-white mb-4">Wallets</h3>
               <div class="space-y-3">
                 @for (wallet of wallets(); track wallet.id) {
-                  <a [routerLink]="['/wallet', wallet.id]" class="block p-4 bg-gray-700/50 rounded-lg hover:bg-gray-700 transition-colors">
+                  <a [routerLink]="['/wallet', wallet.id, 'assets']" class="block p-4 bg-gray-700/50 rounded-lg hover:bg-gray-700 transition-colors">
                     <div class="flex items-center justify-between">
                       <span class="text-white font-medium">{{ wallet.name }}</span>
                       <span class="text-gray-400">{{ wallet.totalBalance | currency:'BRL' }}</span>

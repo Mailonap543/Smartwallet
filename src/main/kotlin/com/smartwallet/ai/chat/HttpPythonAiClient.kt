@@ -29,7 +29,8 @@ class HttpPythonAiClient(
         val payload = PythonJarvisChatRequest(
             message = request.message,
             sessionId = request.sessionId,
-            context = context
+            context = context,
+            webSearch = request.webSearch
         )
 
         return try {
@@ -45,7 +46,16 @@ class HttpPythonAiClient(
                 log.warn("Python AI returned empty response, using local fallback")
                 JarvisReplyBuilder.buildLocal(request, context)
             } else {
-                JarvisChatResponse(reply = response.reply, sessionId = response.sessionId)
+                JarvisChatResponse(
+                    reply = response.reply,
+                    sessionId = response.sessionId,
+                    googleUrl = response.googleUrl,
+                    searchResults = response.searchResults,
+                    intent = response.intent,
+                    confidence = response.confidence,
+                    actions = response.actions,
+                    capabilities = response.capabilities
+                )
             }
         } catch (ex: Exception) {
             log.warn("Python AI unavailable at {}{}, using fallback. reason={}", baseUrl, chatPath, ex.message)

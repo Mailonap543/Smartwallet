@@ -51,6 +51,25 @@ public class PortfolioController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @PutMapping("/wallets/{walletId}")
+    public ResponseEntity<ApiResponse<WalletResponse>> updateWallet(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PathVariable Long walletId,
+            @Valid @RequestBody UpdateWalletRequest request) {
+        CustomUserDetails currentUser = authUserResolver.currentUser();
+        WalletResponse response = portfolioService.updateWallet(walletId, currentUser.getId(), request);
+        return ResponseEntity.ok(ApiResponse.success("Carteira atualizada com sucesso", response));
+    }
+
+    @DeleteMapping("/wallets/{walletId}")
+    public ResponseEntity<ApiResponse<Void>> deleteWallet(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PathVariable Long walletId) {
+        CustomUserDetails currentUser = authUserResolver.currentUser();
+        portfolioService.deleteWallet(walletId, currentUser.getId());
+        return ResponseEntity.ok(ApiResponse.success("Carteira excluida com sucesso", null));
+    }
+
     @PostMapping("/wallets/{walletId}/assets")
     public ResponseEntity<ApiResponse<AssetResponse>> addAsset(
             @AuthenticationPrincipal CustomUserDetails user,
@@ -98,6 +117,15 @@ public class PortfolioController {
         CustomUserDetails currentUser = authUserResolver.currentUser();
         AssetResponse response = portfolioService.updateAsset(assetId, currentUser.getId(), request);
         return ResponseEntity.ok(ApiResponse.success("Ativo atualizado com sucesso", response));
+    }
+
+    @DeleteMapping("/assets/{assetId}")
+    public ResponseEntity<ApiResponse<Void>> deleteAsset(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PathVariable Long assetId) {
+        CustomUserDetails currentUser = authUserResolver.currentUser();
+        portfolioService.deleteAsset(assetId, currentUser.getId());
+        return ResponseEntity.ok(ApiResponse.success("Ativo excluido com sucesso", null));
     }
 
     @PostMapping("/assets/{assetId}/transactions")

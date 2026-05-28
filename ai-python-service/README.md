@@ -1,56 +1,48 @@
 # SmartWallet Python AI Service
 
-Microserviço Python para conversar com o backend Kotlin via HTTP. Integração com LLMs para análise inteligente.
+Microservico Python do Jarvis SmartWallet. Ele conversa com o backend Kotlin via HTTP, recebe o contexto da carteira e responde com analise educacional.
 
-## ✨ Funcionalidades
+## Funcionalidades
 
-- ✅ Endpoint `/health` - Status do serviço
-- ✅ Endpoint `/chat` - Chat com contexto de carteira
-- ✅ Integração com OpenAI (GPT-4o-mini) via LangChain
-- ✅ Fallback local quando LLM não está disponível
-- ✅ Suporte a `.env` para configuração
+- Endpoint `/health` para status do servico
+- Endpoint `/skills` para listar capacidades do Jarvis
+- Endpoint `/chat` com contexto de carteira
+- Intencoes locais inspiradas em assistentes Jarvis: ajuda, hora/data, risco, resumo, analise, compra, venda, oportunidade, rebalanceamento e pesquisa web
+- Memoria curta por `sessionId`
+- Insights locais de risco, diversificacao, liquidez e retorno ajustado ao risco
+- Integracao opcional com OpenAI via LangChain
+- Fallback local quando LLM nao esta disponivel
+
+Comandos desktop do exemplo original, como desligar computador, reiniciar, screenshot e tocar musica local, nao foram habilitados porque o SmartWallet e um app financeiro web/backend. A entrada por voz fica no navegador e o backend fica focado em carteira, mercado e seguranca.
 
 ## Como rodar localmente
 
 ```bash
 cd ai-python-service
 
-# Criar ambiente virtual
-python -m venv .venv
-.venv\Scripts\activate  # Windows
-# source .venv/bin/activate  # Linux/Mac
+py -3.12 -m venv .venv
+.venv\Scripts\activate
 
-# Instalar dependências
 pip install -r requirements.txt
-
-# Configurar variáveis de ambiente (opcional)
 copy .env.example .env
-# Editar .env com sua OPENAI_API_KEY
 
-# Rodar o servidor
 uvicorn main:app --host 0.0.0.0 --port 8001 --reload
 ```
 
-## Configuração
+Use Python 3.12 localmente, o mesmo usado no `Dockerfile`. Python 3.14 ainda pode falhar ao instalar o `pydantic-core` fixado nas dependencias.
 
-### Variáveis de ambiente (.env)
+## Configuracao
 
-| Variável | Descrição | Padrão |
-|----------|-----------|--------|
-| `OPENAI_API_KEY` | Chave da API OpenAI | (obrigatória para LLM) |
-| `OPENAI_MODEL` | Modelo GPT a usar | `gpt-4o-mini` |
+| Variavel | Descricao | Padrao |
+| --- | --- | --- |
+| `OPENAI_API_KEY` | Chave da API OpenAI | vazia |
+| `OPENAI_MODEL` | Modelo a usar | `gpt-4o-mini` |
 | `HOST` | Host do servidor | `0.0.0.0` |
 | `PORT` | Porta do servidor | `8001` |
+| `JARVIS_MEMORY_MAX_HISTORY` | Mensagens mantidas por sessao | `200` |
+| `JARVIS_MEMORY_RETENTION_DAYS` | Dias de retencao da memoria em processo | `180` |
 
-### Com LLM (recomendado)
-
-1. Obtenha uma API key da OpenAI
-2. Configure no `.env`: `OPENAI_API_KEY=sk-...`
-3. O serviço usará automaticamente o GPT para respostas inteligentes
-
-### Sem LLM (modo fallback)
-
-Se `OPENAI_API_KEY` não estiver configurada, o serviço usará respostas pré-definidas locais.
+Sem `OPENAI_API_KEY`, o Jarvis usa respostas locais estruturadas.
 
 ## Endpoints
 
@@ -59,17 +51,24 @@ Se `OPENAI_API_KEY` não estiver configurada, o serviço usará respostas pré-d
 ```json
 {
   "ok": true,
-  "llm_available": true
+  "llm_available": false,
+  "skills_count": 9
 }
 ```
+
+### GET /skills
+
+Retorna as capacidades ativas do Jarvis SmartWallet.
 
 ### POST /chat
 
 Request:
+
 ```json
 {
-  "message": "Qual meu nível de risco?",
+  "message": "Qual meu nivel de risco?",
   "sessionId": "optional-session-id",
+  "webSearch": true,
   "context": {
     "riskMetrics": {
       "portfolioVolatility": 15.5,
@@ -95,14 +94,19 @@ Request:
 ```
 
 Response:
+
 ```json
 {
-  "reply": "Seu nível de risco é MODERATE com score 50...",
-  "sessionId": "uuid-or-provided-session-id"
+  "reply": "Leitura de risco da carteira...",
+  "sessionId": "optional-session-id",
+  "intent": "risco",
+  "confidence": 0.63,
+  "actions": ["revisar_alertas_de_risco"],
+  "capabilities": ["resumo_da_carteira"]
 }
 ```
 
-## Integração com Backend Kotlin
+## Integracao com Backend Kotlin
 
 No `application.yaml` do backend:
 
@@ -110,29 +114,16 @@ No `application.yaml` do backend:
 smartwallet:
   ai:
     python:
-      mock-enabled: false  # false = usa HttpPythonAiClient (este serviço)
+      mock-enabled: false
       base-url: http://localhost:8001
       timeout-ms: 5000
 ```
 
-## Dependências
-
-- **FastAPI** - Framework web assíncrono
-- **LangChain** - Framework para aplicações LLM
-- **LangChain-OpenAI** - Integração OpenAI para LangChain
-- **OpenAI** - SDK oficial da OpenAI
-- **Python-dotenv** - Carregamento de variáveis de ambiente
+O Kotlin tambem pode anexar resultados/link de Google Search quando o chat envia `webSearch=true` e a pergunta pede dados atuais.
 
 ## Desenvolvimento
 
 ```bash
-# Instalar dependências de desenvolvimento
 pip install pytest httpx
-
-# Rodar testes
-pytest tests/
-
-# Lint
-pip install ruff
-ruff check .
+pytest
 ```

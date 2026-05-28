@@ -5,6 +5,7 @@ import com.smartwallet.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -71,6 +72,17 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
             false,
             "Dados invalidos ou incompletos",
+            null,
+            HttpStatus.BAD_REQUEST.value()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityException() {
+        ErrorResponse error = new ErrorResponse(
+            false,
+            "Nao foi possivel salvar os dados. Verifique os campos obrigatorios e tente novamente.",
             null,
             HttpStatus.BAD_REQUEST.value()
         );

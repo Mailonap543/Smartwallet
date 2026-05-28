@@ -10,6 +10,7 @@ import com.smartwallet.ai.model.Recommendation
 import com.smartwallet.common.ApiResponse
 import com.smartwallet.repository.AssetRepository
 import com.smartwallet.repository.WalletRepository
+import com.smartwallet.security.AuthUserResolver
 import com.smartwallet.security.CustomUserDetails
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -25,12 +26,13 @@ class AiController(
     private val aiService: AIService,
     private val walletRepository: WalletRepository,
     private val assetRepository: AssetRepository,
-    private val jarvisChatService: JarvisChatService
+    private val jarvisChatService: JarvisChatService,
+    private val authUserResolver: AuthUserResolver
 ) {
 
     @GetMapping("/analyze")
-    fun analyzePortfolio(@AuthenticationPrincipal user: CustomUserDetails): ResponseEntity<ApiResponse<AIService.AnalysisResult>> {
-        val userId = user.id
+    fun analyzePortfolio(@AuthenticationPrincipal user: CustomUserDetails?): ResponseEntity<ApiResponse<AIService.AnalysisResult>> {
+        val userId = currentUser(user).id
         val wallets = walletRepository.findByUserId(userId)
         val assets = assetRepository.findByUserId(userId)
         val result = aiService.analyzePortfolio(userId, wallets, assets)
@@ -38,8 +40,8 @@ class AiController(
     }
 
     @GetMapping("/risk")
-    fun getRiskMetrics(@AuthenticationPrincipal user: CustomUserDetails): ResponseEntity<ApiResponse<RiskMetrics>> {
-        val userId = user.id
+    fun getRiskMetrics(@AuthenticationPrincipal user: CustomUserDetails?): ResponseEntity<ApiResponse<RiskMetrics>> {
+        val userId = currentUser(user).id
         val wallets = walletRepository.findByUserId(userId)
         val assets = assetRepository.findByUserId(userId)
         val result = aiService.analyzePortfolio(userId, wallets, assets)
@@ -47,8 +49,8 @@ class AiController(
     }
 
     @GetMapping("/score")
-    fun getPortfolioScore(@AuthenticationPrincipal user: CustomUserDetails): ResponseEntity<ApiResponse<ScoreMetrics>> {
-        val userId = user.id
+    fun getPortfolioScore(@AuthenticationPrincipal user: CustomUserDetails?): ResponseEntity<ApiResponse<ScoreMetrics>> {
+        val userId = currentUser(user).id
         val wallets = walletRepository.findByUserId(userId)
         val assets = assetRepository.findByUserId(userId)
         val result = aiService.analyzePortfolio(userId, wallets, assets)
@@ -56,8 +58,8 @@ class AiController(
     }
 
     @GetMapping("/recommendations")
-    fun getRecommendations(@AuthenticationPrincipal user: CustomUserDetails): ResponseEntity<ApiResponse<List<Recommendation>>> {
-        val userId = user.id
+    fun getRecommendations(@AuthenticationPrincipal user: CustomUserDetails?): ResponseEntity<ApiResponse<List<Recommendation>>> {
+        val userId = currentUser(user).id
         val wallets = walletRepository.findByUserId(userId)
         val assets = assetRepository.findByUserId(userId)
         val result = aiService.analyzePortfolio(userId, wallets, assets)
@@ -66,10 +68,10 @@ class AiController(
 
     @PostMapping("/chat")
     fun chatWithJarvis(
-        @AuthenticationPrincipal user: CustomUserDetails,
+        @AuthenticationPrincipal user: CustomUserDetails?,
         @RequestBody request: JarvisChatRequest
     ): ResponseEntity<ApiResponse<JarvisChatResponse>> {
-        val userId = user.id
+        val userId = currentUser(user).id
         val wallets = walletRepository.findByUserId(userId)
         val assets = assetRepository.findByUserId(userId)
 
@@ -78,4 +80,7 @@ class AiController(
 
         return ResponseEntity.ok(ApiResponse(success = true, message = "Resposta gerada", data = reply))
     }
+
+    private fun currentUser(user: CustomUserDetails?): CustomUserDetails =
+        user ?: authUserResolver.currentUser()
 }

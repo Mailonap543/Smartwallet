@@ -24,6 +24,14 @@ class JarvisChatModelsTest {
 
         assertEquals("Test", request.message)
         assertNull(request.sessionId)
+        assertFalse(request.webSearch)
+    }
+
+    @Test
+    fun `JarvisChatRequest supports web search flag`() {
+        val request = JarvisChatRequest(message = "PETR4 hoje", webSearch = true)
+
+        assertTrue(request.webSearch)
     }
 
     @Test
@@ -106,5 +114,6 @@ class JarvisChatModelsTest {
 
         assertEquals("Python response", response.reply)
         assertEquals("new-session", response.sessionId)
+        assertTrue(response.actions.isEmpty())
     }
 }
