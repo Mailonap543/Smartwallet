@@ -29,19 +29,19 @@ BEGIN
         SET symbol = COALESCE(NULLIF(pa.symbol, ''), a.symbol)
         FROM assets a
         WHERE pa.asset_id = a.id
-          AND (pa.symbol IS NULL OR pa.symbol = '');
+          AND NULLIF(pa.symbol, '') IS NULL;
 
         UPDATE portfolio_assets pa
         SET name = COALESCE(NULLIF(pa.name, ''), a.name)
         FROM assets a
         WHERE pa.asset_id = a.id
-          AND (pa.name IS NULL OR pa.name = '');
+          AND NULLIF(pa.name, '') IS NULL;
 
         UPDATE portfolio_assets pa
         SET asset_type = COALESCE(NULLIF(pa.asset_type, ''), a.asset_type)
         FROM assets a
         WHERE pa.asset_id = a.id
-          AND (pa.asset_type IS NULL OR pa.asset_type = '');
+          AND NULLIF(pa.asset_type, '') IS NULL;
 
         ALTER TABLE portfolio_assets ALTER COLUMN asset_id DROP NOT NULL;
     END IF;
@@ -49,15 +49,15 @@ END $$;
 
 UPDATE portfolio_assets
 SET symbol = COALESCE(NULLIF(symbol, ''), 'ASSET-' || id)
-WHERE symbol IS NULL OR symbol = '';
+WHERE NULLIF(symbol, '') IS NULL;
 
 UPDATE portfolio_assets
 SET name = COALESCE(NULLIF(name, ''), symbol)
-WHERE name IS NULL OR name = '';
+WHERE NULLIF(name, '') IS NULL;
 
 UPDATE portfolio_assets
 SET asset_type = COALESCE(NULLIF(asset_type, ''), 'OTHER')
-WHERE asset_type IS NULL OR asset_type = '';
+WHERE NULLIF(asset_type, '') IS NULL;
 
 UPDATE portfolio_assets
 SET current_price = COALESCE(current_price, purchase_price)

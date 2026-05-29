@@ -115,3 +115,5 @@ gradle-app.setting
 Thumbs.db
 Desktop.ini
 $RECYCLE.BIN/
+node_modules/
+.env

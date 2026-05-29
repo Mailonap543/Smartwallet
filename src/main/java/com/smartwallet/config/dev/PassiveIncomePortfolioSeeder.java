@@ -45,6 +45,7 @@ public class PassiveIncomePortfolioSeeder implements ApplicationRunner {
             Renda mensal estimada: R$ 82,50. Renda anual estimada: R$ 990,00.
             Yield mensal medio: 0,825%. Yield anual medio: 9,90%.
             """;
+    private static final String DEFAULT_PRICE_TEN = "10.00";
 
     private final UserRepository userRepository;
     private final WalletRepository walletRepository;
@@ -185,13 +186,13 @@ public class PassiveIncomePortfolioSeeder implements ApplicationRunner {
 
     private List<SeedAsset> seedAssets() {
         return List.of(
-                new SeedAsset("MXRF11", "Maxi Renda", AssetType.FII, bd("100"), bd("10.00"), bd("1000.00"), bd("10.00"), bd("1.00")),
+                new SeedAsset("MXRF11", "Maxi Renda", AssetType.FII, bd("100"), bd(DEFAULT_PRICE_TEN), bd("1000.00"), bd(DEFAULT_PRICE_TEN), bd("1.00")),
                 new SeedAsset("HGLG11", "CSHG Logistica", AssetType.FII, bd("10"), bd("160.00"), bd("1600.00"), bd("11.20"), bd("0.70")),
                 new SeedAsset("KNRI11", "Kinea Renda Imobiliaria", AssetType.FII, bd("10"), bd("150.00"), bd("1500.00"), bd("10.50"), bd("0.70")),
                 new SeedAsset("VISC11", "Vinci Shopping Centers", AssetType.FII, bd("10"), bd("110.00"), bd("1100.00"), bd("8.80"), bd("0.80")),
                 new SeedAsset("BBAS3", "Banco do Brasil", AssetType.STOCK, bd("50"), bd("28.00"), bd("1400.00"), bd("11.60"), bd("0.83")),
                 new SeedAsset("TAEE11", "Taesa", AssetType.STOCK, bd("30"), bd("35.00"), bd("1050.00"), bd("9.50"), bd("0.90")),
-                new SeedAsset("ITSA4", "Itausa", AssetType.STOCK, bd("100"), bd("10.00"), bd("1000.00"), bd("6.50"), bd("0.65")),
+                new SeedAsset("ITSA4", "Itausa", AssetType.STOCK, bd("100"), bd(DEFAULT_PRICE_TEN), bd("1000.00"), bd("6.50"), bd("0.65")),
                 new SeedAsset("TESOURO_SELIC", "Tesouro Selic", AssetType.BOND, bd("1"), bd("850.00"), bd("850.00"), bd("6.40"), bd("0.75")),
                 new SeedAsset("CDB_110_CDI", "CDB 110% CDI", AssetType.BOND, bd("1"), bd("500.00"), bd("500.00"), bd("4.00"), bd("0.80"))
         );

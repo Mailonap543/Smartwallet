@@ -21,11 +21,14 @@ except ImportError:
 
 try:
     from langchain_openai import ChatOpenAI
-    from langchain_core.messages import HumanMessage, SystemMessage
+    from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
     LANGCHAIN_AVAILABLE = True
 except ImportError:
     LANGCHAIN_AVAILABLE = False
+
+# Import real-time data service
+from enhanced_realtime_data_service import enhanced_realtime_data_service
 
 
 def get_int_env(name: str, default: int, minimum: int, maximum: int) -> int:
@@ -54,6 +57,9 @@ CAPABILITIES = [
     "contexto_de_mercado",
     "memoria_curta_por_sessao",
     "comandos_de_hora_data_e_ajuda",
+    "dados_em_tempo_real",
+    "noticias_google_integradas",
+    "analise_multiativa"
 ]
 
 DETERMINISTIC_INTENTS = {
@@ -170,6 +176,45 @@ def generate_with_llm(
         f"- {item.titulo}: {item.recomendacao}" for item in insights[:4]
     ) or "- Sem alertas criticos detectados."
 
+     # Fetch real-time data for mentioned tickers
+     asset_data_text = ""
+     try:
+         tickers = parsed.entities.get("tickers") or []
+         if tickers:
+             asset_data_list = []
+             for ticker in tickers[:5]:  # Limit to 5 tickers to avoid too many requests
+                 data = enhanced_realtime_data_service.get_asset_data(ticker.strip().upper())
+                 if "error" not in data:
+                     asset_data_list.append(data)
+             
+             if asset_data_list:
+                 asset_data_text = "\nDados em tempo real dos ativos mencionados:\n"
+                 for data in asset_data_list:
+                     symbol = data.get('symbol', 'N/A')
+                     price = data.get('current_price', 0)
+                     change = data.get('change', 0)
+                     change_pct = data.get('change_percent', 0)
+                     div_yield = data.get('dividend_yield', 0)
+                     currency = data.get('currency', 'BRL')
+                     
+                     # Format change with sign
+                     change_str = f"+{change:.2f}" if change > 0 else f"{change:.2f}"
+                     change_pct_str = f"+{change_pct:.2f}%" if change_pct > 0 else f"{change_pct:.2f}%"
+                     
+                     asset_line = f"- {symbol}: {currency} {price:.2f} ({change_str} / {change_pct_str})"
+                     if div_yield > 0:
+                         asset_line += f", Div. Yield: {div_yield:.2f}%"
+                     asset_data_text += asset_line + "\n"
+                     
+                     # Add recent news
+                     news = enhanced_realtime_data_service.get_market_news(symbol=symbol, limit=1)
+                     if news and isinstance(news, list) and len(news) > 0 and "error" not in news[0]:
+                         news_item = news[0]
+                         asset_data_text += f"  Última notícia: {news_item.get('title', 'N/A')} ({news_item.get('source', 'Fonte: Google News')})\n"
+         except Exception:
+             # Silently fail to avoid breaking the main flow
+             pass
+
     system_prompt = """Voce e Jarvis, o assistente de IA do SmartWallet.
 Responda em portugues do Brasil, com tom direto e util.
 Use o contexto da carteira, a intencao detectada e os insights locais.
@@ -184,7 +229,7 @@ Confianca: {parsed.confidence:.2f}
 Entidades: {parsed.entities}
 Insights locais:
 {insight_text}
-
+{asset_data_text}
 Historico recente:
 {history_text}
 
@@ -226,6 +271,70 @@ def skills() -> dict:
             "screenshot_local",
             "tocar_musica_local",
         ],
+    }
+
+
+@app.get("/data/health")
+def data_health() -> dict:
+    """Health check for the enhanced real-time data service"""
+    stats = enhanced_realtime_data_service.get_cache_stats()
+    return {
+        "service": "EnhancedRealTimeDataService",
+        "status": "healthy",
+        "brapi_configured": bool(enhanced_realtime_data_service.brapi_token),
+        "google_news_configured": bool(enhanced_realtime_data_service.google_api_key and enhanced_realtime_data_service.google_cse_id),
+        "cache_stats": stats,
+        "rate_limited": enhanced_realtime_data_service._is_rate_limited(),
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+@app.get("/data/test/{symbol}")
+def test_data_service(symbol: str) -> dict:
+    """Test endpoint to fetch data for a specific symbol"""
+    data = enhanced_realtime_data_service.get_asset_data(symbol.upper())
+    news = enhanced_realtime_data_service.get_market_news(symbol=symbol.upper(), limit=2)
+    return {
+        "symbol": symbol.upper(),
+        "data": data,
+        "news": news,
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+@app.get("/data/calendar")
+def get_calendar_data() -> dict:
+    """
+    Get portfolio data formatted for calendar integration
+    This would typically be called by the frontend to populate calendar events
+    """
+    # In a real implementation, this would fetch actual portfolio data
+    # For now, we'll return a structure that shows what calendar data could look like
+    return {
+        "calendar_events": [
+            {
+                "title": "Dividendo previsto: MXRF11",
+                "date": "2026-06-15",
+                "type": "dividendo",
+                "symbol": "MXRF11",
+                "amount": "R$ 0,85",
+                "description": "Dividendo mensal do MXRF11"
+            },
+            {
+                "title": "Reunião de resultados: PETR4",
+                "date": "2026-07-20",
+                "type": "resultado",
+                "symbol": "PETR4",
+                "description": "Divulgação do resultado do 2T26"
+            }
+        ],
+        "portfolio_summary": {
+            "total_value": 0,  # Would be calculated from actual portfolio
+            "last_updated": datetime.now().isoformat(),
+            "data_source": "EnhancedRealTimeDataService"
+        },
+        "instructions": "Use este endpoint para sincronizar dados da carteira com o calendário do usuário",
+        "timestamp": datetime.now().isoformat()
     }
 
 
@@ -322,7 +431,7 @@ def build_help_reply() -> str:
         "- perguntas de compra, venda e oportunidade com checklist de risco;",
         "- analise de tickers quando voce citar codigos como PETR4 ou MXRF11;",
         "- hora/data e contexto economico basico;",
-        "- pesquisa atual via Google quando o botao Google estiver ligado no chat.",
+        "- pesquisa atual via Google (notícias e dados em tempo real);",
         "",
         "Aviso: informacao educacional, nao recomendacao financeira.",
     ])
@@ -407,6 +516,38 @@ def build_trade_reply(kind: str, context: JarvisContext, parsed: ParsedMessage) 
     target = f" para {', '.join(tickers)}" if tickers else ""
     amount = f" Valor citado: R$ {values[0]:,.2f}." if values else ""
 
+     # Fetch real-time data for tickers
+     asset_data_text = ""
+     try:
+         if tickers:
+             asset_data_list = []
+             for ticker in tickers[:3]:  # Limit to 3 tickers for trade replies
+                 data = enhanced_realtime_data_service.get_asset_data(ticker.strip().upper())
+                 if "error" not in data:
+                     asset_data_list.append(data)
+             
+             if asset_data_list:
+                 asset_data_text = "\nDados em tempo real:\n"
+                 for data in asset_data_list:
+                     symbol = data.get('symbol', 'N/A')
+                     price = data.get('current_price', 0)
+                     change = data.get('change', 0)
+                     change_pct = data.get('change_percent', 0)
+                     div_yield = data.get('dividend_yield', 0)
+                     currency = data.get('currency', 'BRL')
+                     
+                     # Format change with sign
+                     change_str = f"+{change:.2f}" if change > 0 else f"{change:.2f}"
+                     change_pct_str = f"+{change_pct:.2f}%" if change_pct > 0 else f"{change_pct:.2f}%"
+                     
+                     asset_line = f"- {symbol}: {currency} {price:.2f} ({change_str} / {change_pct_str})"
+                     if div_yield > 0:
+                         asset_line += f", Div. Yield: {div_yield:.2f}%"
+                     asset_data_text += asset_line + "\n"
+     except Exception:
+         # Silently fail to avoid breaking the main flow
+         pass
+
     if kind == "compra":
         checklist = [
             "verifique se a compra reduz ou aumenta a concentracao;",
@@ -429,6 +570,9 @@ def build_trade_reply(kind: str, context: JarvisContext, parsed: ParsedMessage) 
     ]
     if amount:
         lines.append(f"-{amount}")
+    if asset_data_text:
+        lines.append("")
+        lines.append(asset_data_text.strip())
     lines.extend(["", "Checklist:"])
     lines.extend(f"- {item}" for item in checklist)
     lines.extend(["", "Aviso: isso e apoio educacional, nao recomendacao financeira."])
@@ -442,6 +586,38 @@ def build_opportunity_reply(context: JarvisContext, parsed: ParsedMessage) -> st
         if rec.type.upper() in {"BUY_OPPORTUNITY", "WATCH_LIST", "HOLD"}
     ] or context.recommendations
 
+     # Fetch real-time data for tickers
+     asset_data_text = ""
+     try:
+         if tickers:
+             asset_data_list = []
+             for ticker in tickers[:3]:  # Limit to 3 tickers
+                 data = enhanced_realtime_data_service.get_asset_data(ticker.strip().upper())
+                 if "error" not in data:
+                     asset_data_list.append(data)
+             
+             if asset_data_list:
+                 asset_data_text = "\nDados em tempo real:\n"
+                 for data in asset_data_list:
+                     symbol = data.get('symbol', 'N/A')
+                     price = data.get('current_price', 0)
+                     change = data.get('change', 0)
+                     change_pct = data.get('change_percent', 0)
+                     div_yield = data.get('dividend_yield', 0)
+                     currency = data.get('currency', 'BRL')
+                     
+                     # Format change with sign
+                     change_str = f"+{change:.2f}" if change > 0 else f"{change:.2f}"
+                     change_pct_str = f"+{change_pct:.2f}%" if change_pct > 0 else f"{change_pct:.2f}%"
+                     
+                     asset_line = f"- {symbol}: {currency} {price:.2f} ({change_str} / {change_pct_str})"
+                     if div_yield > 0:
+                         asset_line += f", Div. Yield: {div_yield:.2f}%"
+                     asset_data_text += asset_line + "\n"
+     except Exception:
+         # Silently fail to avoid breaking the main flow
+         pass
+
     lines = [
         "Mapa de oportunidade educacional:",
         f"- Tickers citados: {', '.join(tickers) if tickers else 'nenhum ticker especifico'}",
@@ -451,6 +627,8 @@ def build_opportunity_reply(context: JarvisContext, parsed: ParsedMessage) -> st
         "O que priorizar:",
     ]
     lines.extend(format_recommendations(opportunities[:3]))
+    if asset_data_text:
+        lines.extend(["", asset_data_text.strip()])
     lines.extend(["", "Para dados atuais, deixe a pesquisa Google ligada no chat."])
     return "\n".join(lines)
 
@@ -458,11 +636,52 @@ def build_opportunity_reply(context: JarvisContext, parsed: ParsedMessage) -> st
 def build_web_search_reply(parsed: ParsedMessage) -> str:
     tickers = parsed.entities.get("tickers") or []
     subject = f" sobre {', '.join(tickers)}" if tickers else ""
-    return (
-        f"Entendi que voce quer informacao atual{subject}. "
-        "Quando o botao Google estiver ligado, o backend anexa fontes e um link de pesquisa junto da resposta. "
-        "Depois eu uso essas fontes como apoio, mantendo a decisao final no checklist de risco da carteira."
-    )
+    
+    # Get news using the enhanced service
+    if tickers:
+        # Get news for the first ticker mentioned
+        news_items = enhanced_realtime_data_service.get_google_news(
+            query=tickers[0], 
+            limit=3
+        )
+        
+        news_text = "\nÚltimas notícias:\n"
+        for item in news_items:
+            if "error" not in item:
+                news_text += f"• {item.get('title', 'Sem título')}\n"
+                if item.get('summary'):
+                    news_text += f"  {item.get('summary')}\n"
+                news_text += f"  ({item.get('source', 'Fonte: Google News')})\n\n"
+            else:
+                news_text += f"• {item.get('summary', 'Não foi possível obter notícias')}\n\n"
+        
+        return (
+            f"Entendi que você quer informação atual{subject}. "
+            f"{news_text.strip()}"
+            "Depois eu uso essas fontes como apoio, mantendo a decisão final no checklist de risco da carteira."
+        )
+    else:
+        # General market news
+        news_items = enhanced_realtime_data_service.get_google_news(
+            query="mercado financeiro Brasil", 
+            limit=3
+        )
+        
+        news_text = "\nÚltimas notícias do mercado:\n"
+        for item in news_items:
+            if "error" not in item:
+                news_text += f"• {item.get('title', 'Sem título')}\n"
+                if item.get('summary'):
+                    news_text += f"  {item.get('summary')}\n"
+                news_text += f"  ({item.get('source', 'Fonte: Google News')})\n\n"
+            else:
+                news_text += f"• {item.get('summary', 'Não foi possível obter notícias do mercado')}\n\n"
+        
+        return (
+            f"Entendi que você quer informação atual do mercado. "
+            f"{news_text.strip()}"
+            "Depois eu uso essas fontes como apoio, mantendo a decisão final no checklist de risco da carteira."
+        )
 
 
 def build_analysis_reply(context: JarvisContext, parsed: ParsedMessage, insights: List[MarketInsight]) -> str:
@@ -474,6 +693,39 @@ def build_analysis_reply(context: JarvisContext, parsed: ParsedMessage, insights
         f"- Diversificacao: {context.scoreMetrics.diversificationScore}/100",
         f"- Risco-retorno: {context.scoreMetrics.riskReturnScore}/100",
     ]
+
+     # Add real-time data for tickers
+     if tickers:
+         try:
+             lines.append("")
+             lines.append("Dados em tempo real:")
+             for ticker in tickers[:5]:  # Limit to 5 tickers
+                 data = enhanced_realtime_data_service.get_asset_data(ticker.strip().upper())
+                 if "error" not in data:
+                     symbol = data.get('symbol', 'N/A')
+                     price = data.get('current_price', 0)
+                     change = data.get('change', 0)
+                     change_pct = data.get('change_percent', 0)
+                     div_yield = data.get('dividend_yield', 0)
+                     currency = data.get('currency', 'BRL')
+                     
+                     # Format change with sign
+                     change_str = f"+{change:.2f}" if change > 0 else f"{change:.2f}"
+                     change_pct_str = f"+{change_pct:.2f}%" if change_pct > 0 else f"{change_pct:.2f}%"
+                     
+                     asset_line = f"- {symbol}: {currency} {price:.2f} ({change_str} / {change_pct_str})"
+                     if div_yield > 0:
+                         asset_line += f", Div. Yield: {div_yield:.2f}%"
+                     lines.append(asset_line)
+                     
+                     # Add recent news
+                     news = enhanced_realtime_data_service.get_market_news(symbol=symbol, limit=1)
+                     if news and isinstance(news, list) and len(news) > 0 and "error" not in news[0]:
+                         news_item = news[0]
+                         lines.append(f"  Última notícia: {news_item.get('title', 'N/A')} ({news_item.get('source', 'Fonte: Google News')})")
+         except Exception:
+             # Silently fail to avoid breaking the main flow
+             pass
 
     if insights:
         lines.extend(["", "Leitura do Jarvis:"])
