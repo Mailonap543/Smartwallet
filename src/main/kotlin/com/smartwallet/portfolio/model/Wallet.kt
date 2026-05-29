@@ -4,8 +4,6 @@ import jakarta.persistence.*
 import java.math.BigDecimal
 import java.time.Instant
 
-@Entity
-@Table(name = "wallets")
 data class Wallet(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,

@@ -67,6 +67,7 @@ public class SecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/api/market/**")).authenticated()
                 .requestMatchers(new AntPathRequestMatcher("/api/notifications/**")).authenticated()
                 .requestMatchers(new AntPathRequestMatcher("/api/payment/**")).authenticated()
+                .requestMatchers(new AntPathRequestMatcher("/api/b3/**")).authenticated()
                 .requestMatchers(new AntPathRequestMatcher("/api/wallet/**")).authenticated()
                 .requestMatchers(new AntPathRequestMatcher("/api/wallets/**")).authenticated()
                 .requestMatchers(new AntPathRequestMatcher("/api/portfolio/**")).authenticated()

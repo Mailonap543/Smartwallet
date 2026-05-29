@@ -48,6 +48,16 @@ public class PortfolioService {
     }
 
     @Transactional
+    public WalletResponse updateWallet(Long walletId, Long userId, UpdateWalletRequest request) {
+        return walletService.updateWallet(walletId, userId, request);
+    }
+
+    @Transactional
+    public void deleteWallet(Long walletId, Long userId) {
+        walletService.deleteWallet(walletId, userId);
+    }
+
+    @Transactional
     public List<WalletResponse> getUserWallets(Long userId) {
         logger.info("getUserWallets called for userId: {}", userId);
         
@@ -110,6 +120,8 @@ public class PortfolioService {
 
         asset.calculateProfitLoss();
         asset = assetRepository.save(asset);
+        createInitialBuyTransaction(asset, request);
+        transactionService.recalculateAssetFromTransactions(asset);
 
         walletService.recalculateWalletTotals(wallet);
         logger.info("Asset added: {} to wallet: {}", asset.getSymbol(), walletId);
@@ -134,6 +146,21 @@ public class PortfolioService {
         logger.info("Price updated for asset: {}", asset.getSymbol());
 
         return AssetResponse.fromEntity(asset);
+    }
+
+    @Transactional
+    public void deleteAsset(Long assetId, Long userId) {
+        Asset asset = assetRepository.findById(assetId)
+                .orElseThrow(() -> new ResourceNotFoundException(ASSET_NOT_FOUND));
+
+        walletService.validateWalletAccess(asset.getWallet().getId(), userId);
+        Wallet wallet = asset.getWallet();
+
+        transactionRepository.deleteAll(transactionRepository.findByAssetIdOrderedByDateDesc(assetId));
+        wallet.getAssets().remove(asset);
+        assetRepository.delete(asset);
+        walletService.recalculateWalletTotals(wallet);
+        logger.info("Asset deleted: {}", asset.getSymbol());
     }
 
     @Transactional
@@ -323,6 +350,23 @@ public class PortfolioService {
 
     private String normalizeSymbol(String symbol) {
         return symbol.trim().toUpperCase();
+    }
+
+    private void createInitialBuyTransaction(Asset asset, CreateAssetRequest request) {
+        BigDecimal totalValue = request.quantity().multiply(request.purchasePrice());
+        Transaction transaction = Transaction.builder()
+                .asset(asset)
+                .transactionType(Transaction.TransactionType.BUY)
+                .quantity(request.quantity())
+                .price(request.purchasePrice())
+                .totalValue(totalValue)
+                .fees(BigDecimal.ZERO)
+                .totalWithFees(totalValue)
+                .transactionDate(request.purchaseDate().atStartOfDay())
+                .notes("Compra inicial criada ao adicionar ativo")
+                .build();
+
+        transactionRepository.save(transaction);
     }
 
     private Asset createEmptyAssetForPayment(Wallet wallet, AssetPaymentRequest request, String symbol) {

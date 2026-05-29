@@ -2,9 +2,17 @@ package com.smartwallet.ai.chat
 
 import com.smartwallet.ai.AIService
 import com.smartwallet.ai.model.*
+import com.smartwallet.dto.ai.GoogleSearchResponse
+import com.smartwallet.dto.ai.GoogleSearchResult
+import com.smartwallet.service.GoogleSearchService
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -12,6 +20,7 @@ class JarvisChatServiceTest {
 
     private lateinit var jarvisChatService: JarvisChatService
     private lateinit var mockPythonAiClient: PythonAiClient
+    private lateinit var googleSearchService: GoogleSearchService
 
     @BeforeEach
     fun setup() {
@@ -20,7 +29,8 @@ class JarvisChatServiceTest {
                 return JarvisChatResponse(reply = "Mock response", sessionId = request.sessionId ?: "test-session")
             }
         }
-        jarvisChatService = JarvisChatService(mockPythonAiClient)
+        googleSearchService = mock()
+        jarvisChatService = JarvisChatService(mockPythonAiClient, googleSearchService)
     }
 
     @Test
@@ -65,6 +75,45 @@ class JarvisChatServiceTest {
         val response = jarvisChatService.chat(request, context)
 
         assertTrue(response.reply.contains("Mock response") || response.reply.isNotBlank())
+    }
+
+    @Test
+    fun `chat attaches google search when web search is enabled for market query`() {
+        whenever(googleSearchService.searchStocks(any())).thenReturn(
+            GoogleSearchResponse(
+                "PETR4 hoje",
+                true,
+                "Pesquisa concluida",
+                "https://www.google.com/search?q=PETR4",
+                listOf(
+                    GoogleSearchResult(
+                        "PETR4 cotacao",
+                        "https://example.com/petr4",
+                        "Resumo de mercado",
+                        "example.com"
+                    )
+                )
+            )
+        )
+        val request = JarvisChatRequest(message = "cotacao PETR4 hoje", webSearch = true)
+        val context = createSampleContext()
+
+        val response = jarvisChatService.chat(request, context)
+
+        assertEquals("https://www.google.com/search?q=PETR4", response.googleUrl)
+        assertEquals(1, response.searchResults.size)
+        assertTrue(response.reply.contains("Fontes atuais"))
+    }
+
+    @Test
+    fun `chat does not search web for portfolio-only question`() {
+        val request = JarvisChatRequest(message = "qual meu risco da carteira", webSearch = true)
+        val context = createSampleContext()
+
+        val response = jarvisChatService.chat(request, context)
+
+        assertNull(response.googleUrl)
+        verify(googleSearchService, never()).searchStocks(any())
     }
 
     private fun createSampleContext(): AIService.AnalysisResult {

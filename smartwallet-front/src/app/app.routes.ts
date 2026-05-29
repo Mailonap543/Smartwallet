@@ -18,6 +18,8 @@ export const routes: Routes = [
   { path: 'market/news', canActivate: [authGuard], loadComponent: () => import('./pages/news/news.component').then(m => m.NewsComponent) },
   
   { path: 'assets', redirectTo: 'market', pathMatch: 'full' },
+  { path: 'wallet/:walletId/:tab', canActivate: [authGuard], data: { adminEditable: true, adminConfigKey: 'wallet.detail.tab' }, loadComponent: () => import('./pages/wallet/wallet.component').then(m => m.WalletComponent) },
+  { path: 'wallet/:walletId', canActivate: [authGuard], data: { adminEditable: true, adminConfigKey: 'wallet.detail' }, loadComponent: () => import('./pages/wallet/wallet.component').then(m => m.WalletComponent) },
   { path: 'wallet', canActivate: [authGuard], loadComponent: () => import('./pages/wallet/wallet.component').then(m => m.WalletComponent) },
   { path: 'banks', canActivate: [authGuard], loadComponent: () => import('./pages/banks/banks.component').then(m => m.BanksComponent) },
   { path: 'favorites', canActivate: [authGuard], loadComponent: () => import('./pages/favorites/favorites.component').then(m => m.FavoritesComponent) },

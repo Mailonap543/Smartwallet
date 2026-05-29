@@ -5,6 +5,17 @@ import { RouterLink } from '@angular/router';
 import { ApiService, Wallet, Asset } from '../../services/api.service';
 import { ToastService } from '../../shared/toast.service';
 
+const ASSET_TYPE_OPTIONS = [
+  { value: 'STOCK', label: 'Ação', aliases: ['ACAO', 'AÇÃO', 'ACOES', 'AÇÕES'] },
+  { value: 'ETF', label: 'ETF', aliases: ['ETFS'] },
+  { value: 'FII', label: 'FII', aliases: ['FIIS', 'FUNDO IMOBILIARIO', 'FUNDO IMOBILIÁRIO'] },
+  { value: 'BOND', label: 'Renda Fixa', aliases: ['RENDA_FIXA', 'RENDA FIXA', 'TESOURO', 'CDB'] },
+  { value: 'FUND', label: 'Fundo', aliases: ['FUNDO', 'FUNDOS'] },
+  { value: 'CRYPTO', label: 'Criptomoeda', aliases: ['CRIPTO', 'CRIPTOMOEDA'] },
+  { value: 'CASH', label: 'Caixa', aliases: ['DINHEIRO'] },
+  { value: 'OTHER', label: 'Outro', aliases: ['OUTRO', 'OUTROS'] }
+] as const;
+
 @Component({
   selector: 'app-assets',
   standalone: true,
@@ -85,7 +96,7 @@ import { ToastService } from '../../shared/toast.service';
                     <td class="px-6 py-4 text-white font-medium">{{ asset.symbol }}</td>
                     <td class="px-6 py-4 text-gray-300">{{ asset.name }}</td>
                     <td class="px-6 py-4 text-gray-400">
-                      <span class="px-2 py-1 bg-gray-700 rounded text-xs">{{ asset.assetType }}</span>
+                      <span class="px-2 py-1 bg-gray-700 rounded text-xs">{{ assetTypeLabel(asset.assetType) }}</span>
                     </td>
                     <td class="px-6 py-4 text-right text-gray-300">{{ asset.quantity | number:'1.0-4' }}</td>
                     <td class="px-6 py-4 text-right text-gray-300">{{ asset.averagePrice | currency:'BRL' }}</td>
@@ -130,12 +141,9 @@ import { ToastService } from '../../shared/toast.service';
                 <div>
                   <label class="block text-sm text-gray-300 mb-1">Tipo</label>
                   <select [(ngModel)]="assetForm.assetType" name="assetType" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white">
-                    <option value="STOCK">Ação</option>
-                    <option value="ETF">ETF</option>
-                    <option value="FII">FII</option>
-                    <option value="CRYPTO">Criptomoeda</option>
-                    <option value="BOND">Renda Fixa</option>
-                    <option value="FUND">Fundo</option>
+                    @for (type of assetTypeOptions; track type.value) {
+                      <option [value]="type.value">{{ type.label }}</option>
+                    }
                   </select>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
@@ -172,6 +180,7 @@ export class AssetsComponent implements OnInit {
   api = inject(ApiService);
   toast = inject(ToastService);
 
+  assetTypeOptions = ASSET_TYPE_OPTIONS;
   loading = signal(true);
   wallets = signal<Wallet[]>([]);
   assets = signal<Asset[]>([]);
@@ -264,7 +273,7 @@ export class AssetsComponent implements OnInit {
     this.assetForm = {
       symbol: asset.symbol,
       name: asset.name,
-      assetType: asset.assetType || 'STOCK',
+      assetType: this.normalizeAssetType(asset.assetType || 'STOCK'),
       quantity: this.formatDecimal(asset.quantity || 0),
       purchasePrice: this.formatMoneyValue(asset.purchasePrice || 0),
       currentPrice: this.formatMoneyValue(asset.currentPrice || asset.purchasePrice || 0),
@@ -315,7 +324,7 @@ export class AssetsComponent implements OnInit {
     const assetData = {
       symbol: this.assetForm.symbol.trim().toUpperCase(),
       name: this.assetForm.name.trim(),
-      assetType: this.assetForm.assetType,
+      assetType: this.normalizeAssetType(this.assetForm.assetType),
       quantity,
       purchasePrice,
       currentPrice,
@@ -389,5 +398,25 @@ export class AssetsComponent implements OnInit {
   private parseMoney(value: string) {
     const normalized = (value || '').replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.');
     return Number(normalized) || 0;
+  }
+
+  assetTypeLabel(value?: string) {
+    return ASSET_TYPE_OPTIONS.find(option => option.value === this.normalizeAssetType(value || 'OTHER'))?.label || 'Outro';
+  }
+
+  private normalizeAssetType(value: string) {
+    const normalized = (value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[-_]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toUpperCase();
+
+    const option = ASSET_TYPE_OPTIONS.find(type =>
+      type.value === normalized || type.aliases.some(alias => alias.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[-_]/g, ' ').toUpperCase() === normalized)
+    );
+
+    return option?.value || 'OTHER';
   }
 }

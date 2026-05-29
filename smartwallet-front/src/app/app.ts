@@ -68,10 +68,6 @@ export class App {
     return !this.isPublicRoute(url);
   }
 
-  private isJarvisUrl(url: string): boolean {
-    return !this.isPublicRoute(url);
-  }
-
   protected logout(): void {
     sessionStorage.clear();
     this.auth.logout();
