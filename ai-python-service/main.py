@@ -98,10 +98,20 @@ class Recommendation(BaseModel):
     actionRequired: str
 
 
+class Holding(BaseModel):
+    symbol: str
+    name: str
+    quantity: float
+    average_price: float
+    current_value: float
+    percentage: float  # % of total portfolio
+
+
 class JarvisContext(BaseModel):
     riskMetrics: RiskMetrics
     scoreMetrics: ScoreMetrics
     recommendations: List[Recommendation]
+    portfolio_holdings: List[Holding] = []
 
 
 class ChatRequest(BaseModel):
@@ -120,6 +130,20 @@ class ChatResponse(BaseModel):
     capabilities: List[str]
 
 
+class RecommendationItem(BaseModel):
+    titulo: str
+    descricao: str
+    tipo: str
+    prioridade: int
+    acao: str
+    impacto_estimado: Optional[float] = None
+
+
+class RecommendationsResponse(BaseModel):
+    recommendations: List[RecommendationItem]
+    error: Optional[str] = None
+
+
 def get_llm():
     api_key = os.getenv("OPENAI_API_KEY")
     model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
@@ -135,9 +159,22 @@ def build_context_string(context: JarvisContext) -> str:
     score_rec_lines = "\n".join(
         f"- {line}" for line in context.scoreMetrics.recommendations[:4]
     )
-
-    return f"""
-Contexto da carteira:
+    
+    # Build portfolio holdings summary
+    holdings_summary = ""
+    if context.portfolio_holdings:
+        holdings_lines = []
+        for holding in context.portfolio_holdings[:10]:  # Limit to top 10 holdings
+            holdings_lines.append(
+                f"- {holding.symbol} ({holding.name}): {holding.quantity:,.0f} cotas "
+                f"@ R$ {holding.average_price:,.2f} = R$ {holding.current_value:,.2f} "
+                f"({holding.percentage:.1f}% da carteira)"
+            )
+        holdings_summary = "\nPosições atuais na carteira:\n" + "\n".join(holdings_lines)
+    else:
+        holdings_summary = "\nPosições atuais na carteira: Nenhuma posição detalhada disponível."
+    
+    return f"""Contexto da carteira:
 - Score geral: {context.scoreMetrics.overallScore}/100
 - Diversificacao: {context.scoreMetrics.diversificationScore}/100
 - Liquidez: {context.scoreMetrics.liquidityScore}/100
@@ -153,8 +190,7 @@ Recomendacoes principais:
 {rec_lines or "- Nenhuma recomendacao estruturada recebida."}
 
 Melhorias do score:
-{score_rec_lines or "- Nenhuma melhoria de score recebida."}
-""".strip()
+{score_rec_lines or "- Nenhuma melhoria de score recebida."}{holdings_summary}""".strip()
 
 
 def generate_with_llm(
@@ -336,6 +372,244 @@ def get_calendar_data() -> dict:
         "instructions": "Use este endpoint para sincronizar dados da carteira com o calendário do usuário",
         "timestamp": datetime.now().isoformat()
     }
+
+
+@app.post("/recommendations", response_model=RecommendationsResponse)
+def get_recommendations(payload: ChatRequest) -> RecommendationsResponse:
+    """
+    Generate investment recommendations based on the user's current portfolio context.
+    Always returns a proper JSON structure with recommendations array.
+    """
+    try:
+        context = payload.context
+        
+        # Extract existing recommendations from context
+        existing_recommendations = context.scoreMetrics.recommendations
+        
+        # Convert to the format expected by the frontend
+        recommendation_items = []
+        
+        # If we have existing recommendations in scoreMetrics (List[str]), convert them
+        if existing_recommendations:
+            for i, rec_text in enumerate(existing_recommendations[:10]):  # Limit to 10
+                # Create a structured recommendation from the text
+                # This is a simplified conversion - in a real system, you'd have more structured data
+                rec_item = RecommendationItem(
+                    titulo=f"Recomendação {i+1}",
+                    descricao=rec_text,
+                    tipo="Recomendação Geral",
+                    prioridade=max(1, 5 - i),  # Higher priority for earlier items
+                    acao="Consultar com um assessor financeiro para detalhes",
+                    impacto_estimado=None
+                )
+                recommendation_items.append(rec_item)
+        else:
+            # If no existing recommendations, generate some based on context
+            recommendation_items = _generate_context_based_recommendations(context)
+        
+        # If we still have no recommendations, return a helpful message
+        if not recommendation_items:
+            return RecommendationsResponse(
+                recommendations=[],
+                error="Nenhuma recomendação possível para sua carteira atual. Considere diversificar seus investimentos."
+            )
+        
+        return RecommendationsResponse(
+            recommendations=recommendation_items,
+            error=None
+        )
+        
+    except Exception as e:
+        # Always return a proper JSON structure, never a bare boolean or empty response
+        return RecommendationsResponse(
+            recommendations=[],
+            error=f"Erro ao gerar recomendações: {str(e)}"
+        )
+
+
+def _generate_context_based_recommendations(context: JarvisContext) -> List[RecommendationItem]:
+    """
+    Generate personalized recommendations based on the user's actual portfolio holdings.
+    This analyzes the user's real assets to provide specific, actionable advice.
+    """
+    items = []
+    
+    # Get the user's current holdings
+    holdings = context.portfolio_holdings
+    holdings_symbols = {h.symbol.upper() for h in holdings} if holdings else set()
+    
+    # If we have no holdings data, fall back to the generic approach
+    if not holdings:
+        # Fall back to generic recommendations based on scores
+        concentration_score = context.scoreMetrics.concentrationScore
+        if concentration_score < 50:  # Low concentration score means high concentration
+            items.append(RecommendationItem(
+                titulo="Diversificar Carteira",
+                descricao=f"Sua carteira apresenta alta concentração (score: {concentration_score}/100). Considere distribuir os investimentos entre mais ativos.",
+                tipo="Diversificação",
+                prioridade=1,
+                acao="Avaliar adicionar ativos de diferentes setores e classes de risco",
+                impacto_estimado=0.15
+            ))
+        
+        # Analyze diversification
+        diversification_score = context.scoreMetrics.diversificationScore
+        if diversification_score < 50:  # Low diversification score
+            items.append(RecommendationItem(
+                titulo="Aumentar Diversificação Setorial",
+                descricao=f"Score de diversificação baixo ({diversification_score}/100). Recomenda-se investir em setores atualmente subrepresentados.",
+                tipo="Setorial",
+                prioridade=2,
+                acao="Pesquisar FIIs ou ações de setores como logística, saúde ou tecnologia",
+                impacto_estimado=0.12
+            ))
+        
+        # Analyze risk level
+        risk_level = context.riskMetrics.riskLevel
+        if risk_level in ["ALTO", "Muito Alto"]:
+            items.append(RecommendationItem(
+                titulo="Reduzir Exposição ao Risco",
+                descricao=f"Nível de risco elevado ({risk_level}). Considere alocar parte da carteira em ativos mais conservadores.",
+                tipo="Gestão de Risco",
+                prioridade=1,
+                acao="Avaliar aumento da alocação em renda fixa ou fundos de baixo risco",
+                impacto_estimado=0.10
+            ))
+        
+        # Analyze Sharpe ratio
+        sharpe = context.riskMetrics.sharpeRatio
+        if sharpe < 0.5:  # Low Sharpe ratio
+            items.append(RecommendationItem(
+                titulo="Melhorar Retorno Ajustado ao Risco",
+                descricao=f"Sharpe ratio baixo ({sharpe:.2f}). Busque ativos com melhor relação risco-retorno.",
+                tipo="Performance",
+                prioridade=2,
+                acao="Comparar desempenho atual com benchmarks e considerar realocação",
+                impacto_estimado=0.08
+            ))
+        
+        # Limit to top 3 recommendations
+        return items[:3]
+    
+    # If we HAVE holdings data, make specific, personalized recommendations
+    
+    # Analyze concentration based on actual holdings
+    if holdings:
+        # Find the largest holding
+        largest_holding = max(holdings, key=lambda h: h.percentage) if holdings else None
+        if largest_holding and largest_holding.percentage > 25:  # More than 25% in one asset
+            items.append(RecommendationItem(
+                titulo=f"Reduzir Concentração em {largest_holding.symbol}",
+                descricao=f"Você tem {largest_holding.percentage:.1f}% da carteira em {largest_holding.symbol}, o que está acima do recomendado de 20-25% para um único ativo. Isso aumenta seu risco específico.",
+                tipo="Diversificação",
+                prioridade=1,
+                acao=f"Considere reduzir sua posição em {largest_holding.symbol} e redistribuir para outros ativos",
+                impacto_estimado=0.20
+            ))
+    
+    # Analyze diversification based on actual holdings
+    if len(holdings) < 5:  # Less than 5 different assets
+        items.append(RecommendationItem(
+            titulo="Aumentar Número de Ativos na Carteira",
+            descricao=f"Sua carteira tem apenas {len(holdings)} ativos diferentes. Para melhor diversificação, considere ter pelo menos 5-10 ativos de diferentes setores.",
+            tipo="Diversificação",
+            prioridade=2,
+            acao="Pesquisar adicionar ativos de setores que você ainda não possui",
+            impacto_estimado=0.15
+        ))
+    
+    # Sector analysis - identify what sectors the user is missing
+    # This is a simplified version - in production you'd have sector data for each holding
+    user_sectors = set()
+    for holding in holdings:
+        # Very basic sector detection based on common patterns in Brazilian tickers
+        symbol = holding.symbol.upper()
+        if symbol.endswith('11') and len(symbol) == 6:  # Likely a FII
+            user_sectors.add("FII")
+        elif symbol in ['PETR4', 'VALE3', 'ITUB4', 'BBDC4']:  # Example stocks
+            user_sectors.add("Energia/Materiais Primários/Bancos")
+        elif symbol in ['MXRF11', 'HGLG11', 'XPML11', 'KNRI11']:  # Example FIIs
+            user_sectors.add("FII Imobiliário")
+        else:
+            user_sectors.add("Outros")
+    
+    # Suggest sectors the user might be missing
+    suggested_sectors = []
+    if "FII" not in user_sectors and len([h for h in holdings if h.symbol.upper().endswith('11') and len(h.symbol.upper()) == 6]) == 0:
+        suggested_sectors.append("FIIs (para renda passiva)")
+    if "Energia/Materiais Primários/Bancos" not in user_sectors:
+        suggested_sectors.append("setores de energia, materiais básicos ou bancos (para dividendos)")
+    if len(user_sectors) == 0:
+        suggested_sectors = ["diversificação geral em diferentes setores"]
+    
+    if suggested_sectors:
+        items.append(RecommendationItem(
+            titulo="Diversificação Setorial",
+            descricao=f"Sua carteira tem exposição principalmente em: {', '.join(list(user_sectors)[:3]) if user_sectors else 'setores não identificados'}. Considere adicionar ativos de {suggested_sectors[0]} para melhor diversificação.",
+            tipo="Setorial",
+            prioridade=2,
+            acao=f"Pesquisar ETFs, FIIs ou ações dos setores sugeridos: {', '.join(suggested_sectors)}",
+            impacto_estimado=0.18
+        ))
+    
+    # Risk level based recommendations
+    risk_level = context.riskMetrics.riskLevel
+    if risk_level in ["ALTO", "Muito Alto"]:
+        # Look for conservative assets they might not have
+        conservative_assets = ["SBSP3", "TAEE11", "EGIE3"]  # Example low-beta/dividend stocks
+        missing_conservative = [asset for asset in conservative_assets if asset not in holdings_symbols]
+        if missing_conservative:
+            items.append(RecommendationItem(
+                titulo="Adicionar Ativos Conservadores",
+                descricao=f"Sua carteira tem nível de risco elevado ({risk_level}). Considere adicionar ativos de baixo beta e bom histórico de dividendos para reduzir volatilidade.",
+                tipo="Gestão de Risco",
+                prioridade=1,
+                acao=f"Avaliar posicionamento em ativos como {missing_conservative[0]} (exemplo de ativo conservador)",
+                impacto_estimado=0.15
+            ))
+    elif risk_level in ["BAIXO", "Muito Baixo"]:
+        # Suggest moderate growth opportunities
+        growth_assets = ["WEGE3", "RENT3", "MGLU3"]  # Example growth stocks
+        missing_growth = [asset for asset in growth_assets if asset not in holdings_symbols]
+        if missing_growth:
+            items.append(RecommendationItem(
+                titulo="Buscar Oportunidades de Crescimento",
+                descricao=f"Sua carteira tem baixo risco ({risk_level}), o que pode indicar oportunidade para aumentar ligeiramente a exposição ao crescimento.",
+                tipo="Crescimento",
+                prioridade=2,
+                acao=f"Pesquisar ações com potencial de crescimento como {missing_growth[0]} (exemplo)",
+                impacto_estimado=0.12
+            ))
+    
+    # Performance-based recommendations (Sharpe ratio)
+    sharpe = context.riskMetrics.sharpeRatio
+    if sharpe < 0.5:  # Low Sharpe ratio
+        # Suggest looking at assets with better historical risk-adjusted returns
+        items.append(RecommendationItem(
+            titulo="Melhorar Retorno Ajustado ao Risco",
+            descricao=f"Seu Sharpe ratio está baixo ({sharpe:.2f}), indicando que o retorno não está compensando adequadamente o risco assumido.",
+            tipo="Performance",
+            prioridade=2,
+            acao="Revisar desempenho de cada posição e considerar substituir ativos com baixo retorno ajustado por alternativas melhores",
+            impacto_estimado=0.10
+        ))
+    
+    # Look for specific opportunities based on current holdings
+    # Example: if they have many banking stocks, suggest diversifying
+    bank_stocks = ['ITUB4', 'BBDC4', 'BRASB3', 'SANB11']
+    user_bank_stocks = [h.symbol for h in holdings if h.symbol.upper() in bank_stocks]
+    if len(user_bank_stocks) >= 2:  # Has 2 or more bank stocks
+        items.append(RecommendationItem(
+            titulo="Reduzir Exposição Setorial aos Bancos",
+            descricao=f"Você possui {len(user_bank_stocks)} ações do setor bancário ({', '.join(user_bank_stocks)}), o que pode representar concentração excessiva neste setor.",
+            tipo="Setorial",
+            prioridade=2,
+            acao=f"Considere reduzir a exposição ao setor bancário e aumentar em outros setores como tecnologia, varejo ou utilidades públicas",
+            impacto_estimado=0.13
+        ))
+    
+    # Limit to top 4 recommendations (since we're being more specific)
+    return items[:4]
 
 
 @app.post("/chat", response_model=ChatResponse)
